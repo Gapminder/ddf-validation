@@ -1,14 +1,16 @@
 'use strict';
 const path = require('path');
 const pathExistsSync = require('./path-exists-sync');
-const ddfFileNames = require('../common/ddf-file-names');
 
-// ddf required files
+const ddfIndexSchema = require('../ddf-schema/ddf-index.schema');
+const ddfDimensionsSchema = require('../ddf-schema/ddf-dimensions.schema');
+const ddfMeasuresSchema = require('../ddf-schema/ddf-measures.schema');
 
+// check ddf required files
 module.exports = folder => {
-  return pathExistsSync(ddfPath(folder, ddfFileNames.index)) &&
-    pathExistsSync(ddfPath(folder, ddfFileNames.measures)) &&
-    pathExistsSync(ddfPath(folder, ddfFileNames.dimensions));
+  return pathExistsSync(ddfPath(folder, ddfIndexSchema.fileName)) &&
+    pathExistsSync(ddfPath(folder, ddfMeasuresSchema.fileName)) &&
+    pathExistsSync(ddfPath(folder, ddfDimensionsSchema.fileName));
 };
 
 function ddfPath(folder, file) {
