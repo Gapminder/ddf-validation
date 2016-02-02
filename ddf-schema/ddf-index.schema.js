@@ -1,4 +1,4 @@
 module.exports = {
-  fileName: '',
-  fileExp: /^ddf--dimensions\.csv$/i
+  fileName: 'ddf--index.csv',
+  fileExp: /^ddf--index\.csv$/i
 };

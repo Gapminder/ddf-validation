@@ -3,24 +3,25 @@
 const fs = require('fs');
 const Rx = require('rxjs');
 const parse = require('csv-parse');
-var Observable = Rx.Observable;
+var Subject = Rx.Subject;
 
 module.exports = function (filePath) {
+  const subject = new Subject();
+  const parser = parse({});
   let record, output = [];
-  return Observable.create(observer => {
-    const parser = parse({});
-    parser.on('readable', function(){
-      while(record = parser.read()){
-        observer.next(record);
-      }
-    });
-    parser.on('error', function(err){
-      observer.error(err);
-    });
-    parser.on('finish', function(){
-      observer.complete(output);
-    });
 
-    fs.createReadStream(filePath).pipe(parser);
-  }).publish().refCount();
+  parser.on('readable', function () {
+    while (record = parser.read()) {
+      subject.next(record);
+    }
+  });
+  parser.on('error', function (err) {
+    subject.error(err);
+  });
+  parser.on('finish', function () {
+    subject.complete(output);
+  });
+
+  fs.createReadStream(filePath).pipe(parser);
+  return subject;
 };

@@ -2,7 +2,7 @@
 const fs = require('fs');
 const Rx = require('rxjs');
 const path = require('path');
-var Observable = Rx.Observable;
+const Observable = Rx.Observable;
 
 const readdir$ = Observable.bindNodeCallback(fs.readdir);
 

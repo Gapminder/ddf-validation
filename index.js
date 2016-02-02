@@ -1,11 +1,12 @@
 'use strict';
 
 // from args
-//let folder = '~/work/gapminder/open-numbers/ddf--gapminder--systema_globalis';
-let folder = '~/work/gapminder';
+let folder = '~/work/gapminder/open-numbers/ddf--gapminder--systema_globalis';
+//let folder = '~/work/gapminder';
 
 const fs = require('fs');
 const path = require('path');
+const rx = require('rxjs');
 
 const errorCodes = require('./lib/ddf-error-codes');
 const logger = require('./utils/logger');
@@ -22,25 +23,50 @@ const files$ = require('./utils/rx-recursive-readdir')(normalizedPath);
 const folders$ = files$
   .filter(file => fs.lstatSync(file).isDirectory());
 
-const $ddfFolders = folders$
+const ddfFolders$ = folders$
   .filter(folder => require('./utils/path-is-ddf-folder-sync')(folder));
 
-// validate ddf folders
-$ddfFolders
-  .count()
-  .subscribe(ddfFoldersCount=> {
-    if (ddfFoldersCount === 0) {
-      logger.log(errorCodes.err_folder_is_not_ddf_folder.message(folder));
-      folders$.count().subscribe(foldersCount=> {
-        if (foldersCount === 1) {
-          return logger.log(errorCodes.err_folder_has_no_subfolders.message(folder));
-        }
-        logger.log(errorCodes.err_folder_has_no_ddf_subfolders.message(folder));
-      });
+// validate list of ddf folders
+ddfFolders$.count()
+  .combineLatest([ddfFolders$.toArray(), folders$.count()],
+    (ddfFoldersCount, ddfFolders, foldersCount)=> {
+      return {ddfFolders, ddfFoldersCount, foldersCount};
+    })
+  .subscribe(res => {
+    const isFolderValid = require('./lib/ddf-root-folder.validator.js')
+    (folder, res.ddfFoldersCount, res.foldersCount);
+
+    if (!isFolderValid) {
       return;
     }
-    const plural = ddfFoldersCount === 1 ? '' : 's';
-    logger.log(`Found ${ddfFoldersCount} DDF folder${plural}, processing...`);
-    logger.log('DDF folders:');
-    $ddfFolders.subscribe(folder=>logger.log(folder));
-  });
+
+    const plural = res.ddfFoldersCount === 1 ? '' : 's';
+    logger.log(`Found ${res.ddfFoldersCount} DDF folder${plural}, processing...:`);
+    logger.log(res.ddfFolders);
+
+    return validateDdfFolder(ddfFolders$);
+  }, err => console.error(err));
+
+// validate each ddfFolder
+function validateDdfFolder(ddfFolders$) {
+  ddfFolders$
+    .do(x=>console.log('Validating ddf folder', x))
+    .map(folderPath => {
+      var dimensionsFile$ = require('./ddf-utils/rx-read-dimension')(folderPath);
+      require('./lib/ddf-dimensions.validator')(folderPath, dimensionsFile$)
+        .do(x=>console.log(x))
+        .subscribe();
+
+      var dimensionsFile$ = require('./ddf-utils/rx-read-measures')(folderPath);
+      require('./lib/ddf-measures.validator')(folderPath, dimensionsFile$)
+        .do(x=>console.log(x))
+        .subscribe();
+
+
+      return folderPath;
+    })
+    //.do(x=>console.log(x))
+    .subscribe();
+
+}
+
