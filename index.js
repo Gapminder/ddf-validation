@@ -54,19 +54,18 @@ function validateDdfFolder(ddfFolders$) {
     .map(folderPath => {
       var dimensionsFile$ = require('./ddf-utils/rx-read-dimension')(folderPath);
       require('./lib/ddf-dimensions.validator')(folderPath, dimensionsFile$)
-        .do(x=>console.log(x))
-        .subscribe();
+        //.do(x=>console.log(x))
+        .subscribe(x=>x,x=>console.error(x));
 
-      var dimensionsFile$ = require('./ddf-utils/rx-read-measures')(folderPath);
-      require('./lib/ddf-measures.validator')(folderPath, dimensionsFile$)
-        .do(x=>console.log(x))
-        .subscribe();
+      var measuresFile$ = require('./ddf-utils/rx-read-measures')(folderPath);
+      require('./lib/ddf-measures.validator')(folderPath, measuresFile$)
+        //.do(x=>console.log(x))
+        .subscribe(x=>x,x=>console.error(x.stack));
 
 
-      return folderPath;
-    })
+      return measuresFile$;
+    }).subscribe()
     //.do(x=>console.log(x))
-    .subscribe();
-
+    //.subscribe();
 }
 

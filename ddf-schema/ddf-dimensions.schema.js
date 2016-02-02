@@ -98,5 +98,6 @@ const schema = {
 module.exports = {
   fileName: 'ddf--dimensions.csv',
   fileExp: /^ddf--dimensions\.csv$/i,
+  gid: 'concept',
   schema: schema
 };
