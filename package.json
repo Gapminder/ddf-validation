@@ -1,6 +1,6 @@
 {
   "name": "ddf-validation",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "DDF validion tool",
   "main": "index.js",
   "bin": {
@@ -17,7 +17,8 @@
     "console.table": "0.4.0",
     "csv": "0.4.6",
     "csvtojson": "0.5.1",
-    "lodash": "4.0.0"
+    "lodash": "4.0.0",
+    "rxjs": "5.0.0-beta.1"
   },
   "devDependencies": {
     "chai": "3.4.1",
