@@ -1,8 +1,11 @@
 {
   "name": "ddf-validation",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "DDF validion tool",
   "main": "index.js",
+  "bin": {
+    "validate-ddf": "index.js"
+  },
   "scripts": {
     "test": "./node_modules/.bin/mocha \"lib/**/*.spec.js\""
   },
@@ -11,6 +14,7 @@
   "dependencies": {
     "ajv": "3.4.0",
     "async": "1.5.2",
+    "console.table": "0.4.0",
     "csv": "0.4.6",
     "csvtojson": "0.5.1",
     "lodash": "4.0.0"

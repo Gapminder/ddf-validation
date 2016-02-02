@@ -1,12 +1,14 @@
+#! /usr/bin/env node
 'use strict';
 
 // from args
-let folder = '~/work/gapminder/open-numbers/ddf--gapminder--systema_globalis';
-//let folder = '~/work/gapminder';
+var userArgs = process.argv.slice(2);
+let folder = userArgs[0] || process.cwd();
 
 const fs = require('fs');
 const path = require('path');
 const rx = require('rxjs');
+require('console.table');
 
 const errorCodes = require('./lib/ddf-error-codes');
 const logger = require('./utils/logger');
@@ -54,25 +56,23 @@ function validateDdfFolder(ddfFolders$) {
     .map(folderPath => {
       // validate dimensions file
       const dimensionsFile$ = require('./ddf-utils/rx-read-dimension')(folderPath);
-      require('./lib/ddf-dimensions.validator')(folderPath, dimensionsFile$)
-      //.do(x=>console.log(x))
-        .subscribe(x=>x, x=>console.error(x));
+      const isDimensionsValid = require('./lib/ddf-dimensions.validator')(folderPath, dimensionsFile$);
 
       // validate measures file
       const measuresFile$ = require('./ddf-utils/rx-read-measures')(folderPath);
-      require('./lib/ddf-measures.validator')(folderPath, measuresFile$)
-      //.do(x=>console.log(x))
-        .subscribe(x=>x, x=>console.error(x.stack));
+      const isMeasuresValid = require('./lib/ddf-measures.validator')(folderPath, measuresFile$);
 
       // validate dimensions&measures unique ids
-      require('./lib/ddf-dimensions-and-measures-unique-id.validator.js')
-      (folderPath, dimensionsFile$, measuresFile$)
-        //.do(x=>console.log(x))
-        .subscribe(x=>x, x=>console.error(x.stack));
+      const isIdUnique = require('./lib/ddf-dimensions-and-measures-unique-id.validator.js')
+      (folderPath, dimensionsFile$, measuresFile$);
 
-      return measuresFile$;
-    }).subscribe();
-  //.do(x=>console.log(x))
-  //.subscribe();
+      return isDimensionsValid
+        .combineLatest([isMeasuresValid, isIdUnique], (a, b, c)=> {
+          const d = a.concat(b).concat(c);
+          console.table(d);
+          return d;
+        });
+    })
+    //.do(x=>console.log(x))
+    .subscribe(x=>x.subscribe(), x=>console.error(x.stack));
 }
-
