@@ -52,20 +52,27 @@ function validateDdfFolder(ddfFolders$) {
   ddfFolders$
     .do(x=>console.log('Validating ddf folder', x))
     .map(folderPath => {
-      var dimensionsFile$ = require('./ddf-utils/rx-read-dimension')(folderPath);
+      // validate dimensions file
+      const dimensionsFile$ = require('./ddf-utils/rx-read-dimension')(folderPath);
       require('./lib/ddf-dimensions.validator')(folderPath, dimensionsFile$)
-        //.do(x=>console.log(x))
-        .subscribe(x=>x,x=>console.error(x));
+      //.do(x=>console.log(x))
+        .subscribe(x=>x, x=>console.error(x));
 
-      var measuresFile$ = require('./ddf-utils/rx-read-measures')(folderPath);
+      // validate measures file
+      const measuresFile$ = require('./ddf-utils/rx-read-measures')(folderPath);
       require('./lib/ddf-measures.validator')(folderPath, measuresFile$)
-        //.do(x=>console.log(x))
-        .subscribe(x=>x,x=>console.error(x.stack));
+      //.do(x=>console.log(x))
+        .subscribe(x=>x, x=>console.error(x.stack));
 
+      // validate dimensions&measures unique ids
+      require('./lib/ddf-dimensions-and-measures-unique-id.validator.js')
+      (folderPath, dimensionsFile$, measuresFile$)
+        //.do(x=>console.log(x))
+        .subscribe(x=>x, x=>console.error(x.stack));
 
       return measuresFile$;
-    }).subscribe()
-    //.do(x=>console.log(x))
-    //.subscribe();
+    }).subscribe();
+  //.do(x=>console.log(x))
+  //.subscribe();
 }
 
