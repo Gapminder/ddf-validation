@@ -7,7 +7,7 @@ chai.use(sinonChai);
 
 const normilezePath = require('../utils/path-normilize');
 
-let ddfFolderValidation = require('./ddf-folder-validation');
+let ddfFolderValidation = require('../lib/ddf-root-folder.validator');
 let logger = require('../utils/logger');
 
 describe('ddf-folder-validation', () => {

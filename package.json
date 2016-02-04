@@ -7,7 +7,7 @@
     "validate-ddf": "index.js"
   },
   "scripts": {
-    "test": "./node_modules/.bin/mocha \"lib/**/*.spec.js\""
+    "test": "./node_modules/.bin/mocha \"test/**/*.spec.js\""
   },
   "author": "Dmitriy Shekhovtsov<valorkin@gmail.com>",
   "license": "MIT",
