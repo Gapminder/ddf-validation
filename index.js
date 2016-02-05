@@ -77,7 +77,7 @@ function validateDdfFolder(ddfFolders$) {
 }
 
 validateMeasureValues(ddfFolders$);
-function validateMeasureValues(ddfFolders$){
+function validateMeasureValues(ddfFolders$) {
   // 1.
   // gather measures
   // check is they are present in measures.csv
@@ -156,46 +156,61 @@ function validateMeasureValues(ddfFolders$){
         }
         return 0;
       })
-        //.do(x=>console.log(x))
-        .subscribe();
+      //.do(x=>console.log(x))
+      //.subscribe();
 
       // compare and validate dimension IDs
       dimensions$.combineLatest(dimensionsFromMvFiles$, (dimensionsFromCsv, dimensionsFromFiles) => {
-          // check missing measure in measures.csv
-          const diff1 = _.difference(dimensionsFromFiles, dimensionsFromCsv);
-          if (diff1.length) {
-            console.log(`Warning! Please add dimensions to ${dimensionsSchema.fileName}`, diff1);
-          }
-          // check missing measure values in folder
-          const diff2 = _.difference(dimensionsFromCsv, dimensionsFromFiles);
-          if (diff2.length) {
-            console.log(`Warning! Values for dimensions described in ${dimensionsSchema.fileName} are missing: `, diff2);
-          }
-          return 0;
-        })
-        //.do(x=>console.log(x))
-        .subscribe();
+        // check missing measure in measures.csv
+        const diff1 = _.difference(dimensionsFromFiles, dimensionsFromCsv);
+        if (diff1.length) {
+          console.log(`Warning! Please add dimensions to ${dimensionsSchema.fileName}`, diff1);
+        }
+        // check missing measure values in folder
+        const diff2 = _.difference(dimensionsFromCsv, dimensionsFromFiles);
+        if (diff2.length) {
+          console.log(`Warning! Values for dimensions described in ${dimensionsSchema.fileName} are missing: `, diff2);
+        }
+        return 0;
+      })
+      //.do(x=>console.log(x))
+      //.subscribe();
 
       // build dimension values hash map
-      dimensionValuesFiles$
-        .first()
-        .map(fileName => {
-          const rows$ = rxReadCsv(fileName);
+      // return { dimension_id: {dimension_value_id: true} }
+      const dimensionsValuesIndex = dimensionValuesFiles$
+        .mergeMap(fileName => {
+          const rows$ = rxReadCsv(path.join(folderPath, fileName));
           const rowsObj$ = rows$.first().mergeMapTo(rows$.skip(1), _.zipObject);
           const dimensions = dimensionValuesSchema.dimensions(fileName);
-          rowsObj$.reduce((memo, entry) => {
+          return rowsObj$.reduce((memo, entry) => {
             _.each(dimensions, dim => {
-              if (!entry[dim]) {
-
+              if (entry[dim]) {
+                memo[dim] = memo[dim] || {};
+                memo[dim][entry[dim]] = true;
               }
-            })
-            return
-          })
-            .do(x=>console.log(x))
-            .subscribe();
+            });
+            return memo;
+          }, {});
         })
-        .do(x=>console.log(x))
-        .subscribe();
+        .reduce((memo, entry)=> {
+          _.each(Object.keys(entry), key => {
+            memo[key] = Object.assign({}, memo[key], entry[key]);
+          });
+          return memo;
+        }, {});
+      //.do(x=>console.log(x))
+      //.subscribe();
+      measureValuesFiles$
+        .first()
+        .map(fileName => {
+          const fullFileName = path.join(folderPath, fileName);
+          const file$ = rxReadCsv(fullFileName);
+          const rows$ = file$.first().mergeMapTo(file$.skip(1), _.zipObject);
+
+        })
+      //.do(x=>console.log(x))
+      .subscribe();
     })
     .subscribe();
 }
