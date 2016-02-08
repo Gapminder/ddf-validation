@@ -48,7 +48,7 @@ ddfFolders$.count()
     logger.log(res.ddfFolders);
   }, err => console.error(err));
 
-//validateDdfFolder(ddfFolders$);
+validateDdfFolder(ddfFolders$);
 
 // validate each ddfFolder
 function validateDdfFolder(ddfFolders$) {
@@ -128,7 +128,7 @@ function validateMeasureValues(ddfFolders$) {
         .pluck(measuresSchema.gid)
         .toArray();
 
-      // read measure IDs from measure values files
+      // read measure IDs from dimension values fileNames
       const measuresFromDvFiles$ = measureValuesFiles$
         .map(fileName=> measureValuesSchema.measure(fileName))
         // todo: replace toArray.map with .distinct when implemented in rxjs
@@ -183,6 +183,7 @@ function validateMeasureValues(ddfFolders$) {
           const rows$ = rxReadCsv(path.join(folderPath, fileName));
           const rowsObj$ = rows$.first().mergeMapTo(rows$.skip(1), _.zipObject);
           const dimensions = dimensionValuesSchema.dimensions(fileName);
+          // TODO: fix geo - country issue
           return rowsObj$.reduce((memo, entry) => {
             _.each(dimensions, dim => {
               if (entry[dim]) {
@@ -207,7 +208,13 @@ function validateMeasureValues(ddfFolders$) {
           const fullFileName = path.join(folderPath, fileName);
           const file$ = rxReadCsv(fullFileName);
           const rows$ = file$.first().mergeMapTo(file$.skip(1), _.zipObject);
-
+          // todo: measure values validation
+          // 1. check dimension ids
+          // unknown dimension ids
+          // missing dimension ids
+          // 2. check data points
+          // report missing measure values data points
+          // like abkh 1983
         })
       //.do(x=>console.log(x))
       .subscribe();

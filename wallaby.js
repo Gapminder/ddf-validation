@@ -10,7 +10,7 @@ module.exports = function () {
     ],
 
     tests: [
-      'lib/*spec.js'
+      'test/*spec.js'
     ],
     testFramework: "mocha",
     delays: {

@@ -12,6 +12,7 @@ module.exports = function (filePath) {
 
   parser.on('readable', function () {
     while (record = parser.read()) {
+      // [val1, val2, ...]
       subject.next(record);
     }
   });
