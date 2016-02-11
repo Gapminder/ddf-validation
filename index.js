@@ -9,7 +9,6 @@ const _ = require('lodash');
 const fs = require('fs');
 const path = require('path');
 const rx = require('rxjs');
-require('console.table');
 
 const errorCodes = require('./lib/ddf-error-codes');
 const logger = require('./utils/logger');
@@ -17,7 +16,7 @@ const logger = require('./utils/logger');
 const normalizedPath = require('./utils/path-normilize')(folder);
 
 if (!require('./utils/path-exists-sync')(normalizedPath)) {
-  logger.log(errorCodes.err_folder_not_found.message(folder));
+  logger.error(errorCodes.err_folder_not_found.message(folder));
   return;
 }
 
@@ -48,12 +47,10 @@ ddfFolders$.count()
     logger.log(res.ddfFolders);
   }, err => console.error(err));
 
-validateDdfFolder(ddfFolders$);
-
 // validate each ddfFolder
 function validateDdfFolder(ddfFolders$) {
   ddfFolders$
-    .do(x=>console.log('Validating ddf folder', x))
+    .do(x=>logger.log(`Validating ddf folder ${x}`))
     .mergeMap(folderPath => {
       // validate dimensions file
       const dimensionsFile$ = require('./ddf-utils/rx-read-dimension')(folderPath);
@@ -72,11 +69,9 @@ function validateDdfFolder(ddfFolders$) {
           return a.concat(b).concat(c);
         });
     })
-    //.do(x=>console.log(x))
-    .subscribe(x=>console.table(x), x=>console.error(x.stack));
+    .subscribe(x=>logger.results(x), x=>console.error(x.stack));
 }
 
-validateMeasureValues(ddfFolders$);
 function validateMeasureValues(ddfFolders$) {
   // 1.
   // gather measures
@@ -98,7 +93,7 @@ function validateMeasureValues(ddfFolders$) {
   const dimensionValuesSchema = require('./ddf-schema/ddf-dimension-values.schema');
 
   ddfFolders$
-    .do(x=>console.log('Validating ddf folder', x))
+    .do(x=>logger.log(`Validating ddf folder ${x}`))
     .map(folderPath => {
       const filesInFolder$ = require('./utils/rx-read-files-in-folder')(folderPath)
         .map(fileName => path.basename(fileName));
@@ -147,12 +142,12 @@ function validateMeasureValues(ddfFolders$) {
         // check missing measure in measures.csv
         const diff1 = _.difference(measuresFromFiles, measuresFromCsv);
         if (diff1.length) {
-          console.log(`Error! Please add measures to ${measuresSchema.fileName}`, diff1);
+          logger.error(`Error! Please add measures to ${measuresSchema.fileName} ${diff1}`);
         }
         // check missing measure values in folder
         const diff2 = _.difference(measuresFromCsv, measuresFromFiles);
         if (diff2.length) {
-          console.log(`Warning! Values for measures described in ${measuresSchema.fileName} are missing: `, diff2);
+          logger.warning(`Warning! Values for measures described in ${measuresSchema.fileName} are missing: ${diff2}`);
         }
         return 0;
       })
@@ -164,12 +159,12 @@ function validateMeasureValues(ddfFolders$) {
         // check missing measure in measures.csv
         const diff1 = _.difference(dimensionsFromFiles, dimensionsFromCsv);
         if (diff1.length) {
-          console.log(`Warning! Please add dimensions to ${dimensionsSchema.fileName}`, diff1);
+          logger.warning(`Warning! Please add dimensions to ${dimensionsSchema.fileName} ${diff1}`);
         }
         // check missing measure values in folder
         const diff2 = _.difference(dimensionsFromCsv, dimensionsFromFiles);
         if (diff2.length) {
-          console.log(`Warning! Values for dimensions described in ${dimensionsSchema.fileName} are missing: `, diff2);
+          logger.warning(`Warning! Values for dimensions described in ${dimensionsSchema.fileName} are missing: ${diff2}`);
         }
         return 0;
       })
@@ -216,8 +211,11 @@ function validateMeasureValues(ddfFolders$) {
           // report missing measure values data points
           // like abkh 1983
         })
-      //.do(x=>console.log(x))
-      .subscribe();
+        //.do(x=>console.log(x))
+        .subscribe();
     })
     .subscribe();
 }
+
+validateDdfFolder(ddfFolders$);
+validateMeasureValues(ddfFolders$);
