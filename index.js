@@ -1,10 +1,6 @@
 #! /usr/bin/env node
 'use strict';
 
-// from args
-var userArgs = process.argv.slice(2);
-let folder = userArgs[0] || process.cwd();
-
 const _ = require('lodash');
 const fs = require('fs');
 const path = require('path');
@@ -12,8 +8,10 @@ const rx = require('rxjs');
 
 const errorCodes = require('./lib/ddf-error-codes');
 const logger = require('./utils/logger');
-
+const args = require('./utils/args');
+const folder = args.getDDFRootFolder();
 const normalizedPath = require('./utils/path-normilize')(folder);
+const settings = args.getSettings();
 
 if (!require('./utils/path-exists-sync')(normalizedPath)) {
   logger.error(errorCodes.err_folder_not_found.message(folder));
@@ -50,7 +48,7 @@ ddfFolders$.count()
 // validate each ddfFolder
 function validateDdfFolder(ddfFolders$) {
   ddfFolders$
-    .do(x=>logger.log(`Validating ddf folder ${x}`))
+    .do(x => logger.log(`Validating ddf folder ${x}`))
     .mergeMap(folderPath => {
       // validate dimensions file
       const dimensionsFile$ = require('./ddf-utils/rx-read-dimension')(folderPath);
@@ -69,7 +67,7 @@ function validateDdfFolder(ddfFolders$) {
           return a.concat(b).concat(c);
         });
     })
-    .subscribe(x=>logger.results(x), x=>console.error(x.stack));
+    .subscribe(x => logger.results(x), x => console.error(x.stack));
 }
 
 function validateMeasureValues(ddfFolders$) {
@@ -93,13 +91,13 @@ function validateMeasureValues(ddfFolders$) {
   const dimensionValuesSchema = require('./ddf-schema/ddf-dimension-values.schema');
 
   ddfFolders$
-    .do(x=>logger.log(`Validating ddf folder ${x}`))
+    .do(x => logger.log(`Validating measure values: folder ${x}`))
     .map(folderPath => {
       const filesInFolder$ = require('./utils/rx-read-files-in-folder')(folderPath)
         .map(fileName => path.basename(fileName));
       // filter measure values files
       const measureValuesFiles$ = filesInFolder$
-        .filter(fileName=>measureValuesSchema.fileExp.test(fileName));
+        .filter(fileName => measureValuesSchema.fileExp.test(fileName));
       // filter dimensions values files
       const dimensionValuesFiles$ = filesInFolder$
         .filter(fileName => dimensionValuesSchema.fileExp.test(fileName));
@@ -125,14 +123,14 @@ function validateMeasureValues(ddfFolders$) {
 
       // read measure IDs from dimension values fileNames
       const measuresFromDvFiles$ = measureValuesFiles$
-        .map(fileName=> measureValuesSchema.measure(fileName))
+        .map(fileName => measureValuesSchema.measure(fileName))
         // todo: replace toArray.map with .distinct when implemented in rxjs
         //.distinct() // todo: do nor remove this line
         .toArray().map(x => require('lodash').uniq(x));
 
       // read dimension IDs from measure values fileNames
       const dimensionsFromMvFiles$ = measureValuesFiles$
-        .map(fileName=> measureValuesSchema.dimensions(fileName))
+        .map(fileName => measureValuesSchema.dimensions(fileName))
         // todo: replace toArray.map with .distinct when implemented in rxjs
         //.distinct() // todo: do nor remove this line
         .toArray().mergeMap(x => require('lodash').uniq(x));
@@ -150,9 +148,7 @@ function validateMeasureValues(ddfFolders$) {
           logger.warning(`Warning! Values for measures described in ${measuresSchema.fileName} are missing: ${diff2}`);
         }
         return 0;
-      })
-      //.do(x=>console.log(x))
-      //.subscribe();
+      });
 
       // compare and validate dimension IDs
       dimensions$.combineLatest(dimensionsFromMvFiles$, (dimensionsFromCsv, dimensionsFromFiles) => {
@@ -167,52 +163,71 @@ function validateMeasureValues(ddfFolders$) {
           logger.warning(`Warning! Values for dimensions described in ${dimensionsSchema.fileName} are missing: ${diff2}`);
         }
         return 0;
-      })
-      //.do(x=>console.log(x))
-      //.subscribe();
+      });
 
       // build dimension values hash map
       // return { dimension_id: {dimension_value_id: true} }
-      const dimensionsValuesIndex = dimensionValuesFiles$
+      const dimensionsValuesIndex$ = dimensionValuesFiles$
         .mergeMap(fileName => {
           const rows$ = rxReadCsv(path.join(folderPath, fileName));
           const rowsObj$ = rows$.first().mergeMapTo(rows$.skip(1), _.zipObject);
           const dimensions = dimensionValuesSchema.dimensions(fileName);
-          // TODO: fix geo - country issue
+
           return rowsObj$.reduce((memo, entry) => {
             _.each(dimensions, dim => {
               if (entry[dim]) {
                 memo[dim] = memo[dim] || {};
-                memo[dim][entry[dim]] = true;
+                // entry.is contains information about kind of this record
+                memo[dim][entry[dim]] = entry.is;
               }
             });
             return memo;
           }, {});
         })
-        .reduce((memo, entry)=> {
+        .reduce((memo, entry) => {
           _.each(Object.keys(entry), key => {
             memo[key] = Object.assign({}, memo[key], entry[key]);
           });
           return memo;
         }, {});
-      //.do(x=>console.log(x))
-      //.subscribe();
-      measureValuesFiles$
+
+      const measuresData$ = measureValuesFiles$
         .first()
-        .map(fileName => {
+        .mergeMap(fileName => {
           const fullFileName = path.join(folderPath, fileName);
           const file$ = rxReadCsv(fullFileName);
-          const rows$ = file$.first().mergeMapTo(file$.skip(1), _.zipObject);
-          // todo: measure values validation
-          // 1. check dimension ids
-          // unknown dimension ids
-          // missing dimension ids
-          // 2. check data points
-          // report missing measure values data points
-          // like abkh 1983
-        })
-        //.do(x=>console.log(x))
-        .subscribe();
+          const rows$ = file$.first().mergeMapTo(file$, _.zipObject);
+
+          return rows$.map(data => {
+            return {
+              data, fileName, folderPath
+            };
+          });
+        });
+
+      // 1. check dimension ids
+      // unknown dimension ids
+      // missing dimension ids
+      // unexpected dimension ids
+      const measureValuesChecker = require('./lib/ddf-measure-values.validator');
+      // 2. check data points
+      // report missing measure values data points
+      // like abkh 1983
+      const dataPointsChecker = require('./lib/ddf-data-points.validator');
+
+      let options = [
+        measureValuesChecker(dimensionsValuesIndex$, measuresData$)
+      ];
+
+      // data points will be checked
+      if (settings.gapsSupportDimensions) {
+        settings.gapsSupportDimensions.forEach(dimension =>
+          options.push(dataPointsChecker(dimension, dimensionsValuesIndex$, measuresData$)));
+      }
+
+      // todo: change apply to spread operator when implemented in node
+      rx.Observable.merge.apply(null, options)
+        .subscribe(x => logger.results(x), x => console.error(x.stack));
     })
     .subscribe();
 }

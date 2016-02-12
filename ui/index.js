@@ -48,7 +48,11 @@ function getNewResults(results) {
   for (let result of results) {
     for (let descriptor of globals.ddfValidationResultDescriptors) {
       const operation = descriptor.transform || globals.doNothing;
-      ret += descriptor.template.replace('@', operation(result[descriptor.key] || ''));
+      const value = operation(result[descriptor.key] || '');
+
+      if (value) {
+        ret += descriptor.template.replace('@', value);
+      }
     }
 
     ret += '\n\n';
@@ -63,8 +67,8 @@ function addResults(results) {
 }
 
 function addMessage(message, level) {
-  const tags = globals.colorTagByLevel[level]
-  messageBox.setContent(`${messageBox.getContent()}\n${tags.start}${message}${tags.finish}`);
+  const tags = globals.colorTagByLevel[level];
+  messageBox.setContent(`${messageBox.getContent()}\n${tags.start}${message}${tags.finish}`, true);
   screen.render();
 }
 
