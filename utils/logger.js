@@ -6,7 +6,7 @@ const ui = require('../ui');
 const globals = require('../ui/globals');
 
 function log(out, level) {
-  if (typeof out !== 'string' && out.toString) {
+  if (out && typeof out !== 'string' && out.toString) {
     out = out.toString();
   }
 
