@@ -6,9 +6,8 @@ const expect = chai.expect;
 chai.use(sinonChai);
 
 const normilezePath = require('../utils/path-normilize');
-
-let ddfFolderValidation = require('../lib/ddf-root-folder.validator');
-let logger = require('../utils/logger');
+const utils = require('../utils');
+const logger = utils.getConsoleLogger();
 
 describe('ddf-folder-validation', () => {
   before(()=> sinon.stub(logger, 'log', ()=>{}));

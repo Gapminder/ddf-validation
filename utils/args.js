@@ -6,11 +6,13 @@ const argv = require('yargs')
   .demand(1)
   .example('$0 ../ddf-example -d year', 'check "ddf-example" directory with data points checking')
   .describe('d', 'Dimension for gaps checking in data points')
+  .describe('c', 'Console (non UI) output')
   .argv;
 
 exports.getDDFRootFolder = () => argv._[0] || process.cwd();
 exports.getSettings = () => {
   let settings = {};
   settings.gapsSupportDimensions = typeof argv.d === 'string' ? [argv.d] : argv.d;
+  settings.isUI = !argv.c;
   return settings;
 };

@@ -26,3 +26,7 @@ Also you can find this solution in [GIT repository](https://github.com/valor-sof
 
 In this mode application will generate warnings about gaps in DDF set of data.
 For example, geo=abkh and year=1983
+
+### -c Console (non UI) output
+
+`validate-ddf some-ddf-folder -c`

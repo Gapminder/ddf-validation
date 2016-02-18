@@ -1,30 +1,67 @@
 'use strict';
 
-//module.exports.log = console.log.bind(console);
+const util = require('util');
+let winston = require('winston');
+const GENERIC_MODE = Symbol('generic mode');
+const UI_MODE = Symbol('ui mode');
 
-const ui = require('../ui');
-const globals = require('../ui/globals');
+const profiles = {
+  [GENERIC_MODE]: class {
+    notice(level, msg, meta, callback) {
+      console.log(msg);
+      callback(null, true);
+    }
 
-function log(out, level) {
-  if (out && typeof out !== 'string' && out.toString) {
-    out = out.toString();
+    results(level, msg, meta, callback) {
+      console.log(meta);
+      callback(null, true);
+    }
+  },
+  [UI_MODE]: class {
+    constructor() {
+      this.ui = require('../ui');
+    }
+
+    notice(level, msg, meta, callback) {
+      this.ui.addMessage(msg, level);
+      callback(null, true);
+    }
+
+    results(level, msg, meta, callback) {
+      this.ui.addResults(meta);
+      callback(null, true);
+    }
   }
-
-  ui.addMessage(out, level || globals.NOTICE);
-}
-
-module.exports.log = (out) => {
-  log(out);
 };
 
-module.exports.error = (out) => {
-  log(out, globals.ERROR)
-};
+module.exports = (settings) => {
+  const expectedProfile = new profiles[settings.isUI ? UI_MODE : GENERIC_MODE]();
 
-module.exports.warning = (out) => {
-  log(out, globals.WARNING);
-};
+  let diagnosticLogger = function () {
+    this.name = 'diagnosticLogger';
+    this.level = 'notice';
+  };
+  util.inherits(diagnosticLogger, winston.Transport);
+  diagnosticLogger.prototype.log = function (level, msg, meta, callback) {
+    expectedProfile.notice(level, msg, meta, callback);
+  };
 
-module.exports.results = (data) => {
-  ui.addResults(data);
+  let resultsLogger = function () {
+    this.name = 'resultsLogger';
+    this.level = 'results';
+  };
+  util.inherits(resultsLogger, winston.Transport);
+  resultsLogger.prototype.log = function (level, msg, meta, callback) {
+    expectedProfile.results(level, msg, meta, callback);
+  };
+
+  var logger = new (winston.Logger)({
+    levels: {trace: 0, results: 1, notice: 2, warning: 3, error: 4},
+    transports: [
+      new diagnosticLogger(),
+      new resultsLogger()
+    ]
+  });
+
+  return logger;
 };
