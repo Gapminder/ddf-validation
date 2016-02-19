@@ -67,7 +67,7 @@ function addResults(results) {
 }
 
 function addMessage(message, level) {
-  const tags = globals.colorTagByLevel[level];
+  const tags = globals.colorTagByLevel[level] || globals.colorTagByLevel.notice;
   messageBox.setContent(`${messageBox.getContent()}\n${tags.start}${message}${tags.finish}`, true);
   screen.render();
 }

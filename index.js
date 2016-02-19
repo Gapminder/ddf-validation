@@ -5,13 +5,13 @@ const _ = require('lodash');
 const fs = require('fs');
 const path = require('path');
 const rx = require('rxjs');
+const utils = require('./utils');
 
+const logger = utils.getLogger();
+const folder = utils.ddfRootFolder;
+const settings = utils.settings;
 const errorCodes = require('./lib/ddf-error-codes');
-const logger = require('./utils/logger');
-const args = require('./utils/args');
-const folder = args.getDDFRootFolder();
 const normalizedPath = require('./utils/path-normilize')(folder);
-const settings = args.getSettings();
 
 if (!require('./utils/path-exists-sync')(normalizedPath)) {
   logger.error(errorCodes.err_folder_not_found.message(folder));
@@ -34,25 +34,26 @@ ddfFolders$.count()
     })
   .subscribe(res => {
     const isFolderValid = require('./lib/ddf-root-folder.validator.js')
-    (folder, res.ddfFoldersCount, res.foldersCount);
+    (res.ddfFoldersCount, res.foldersCount);
 
     if (!isFolderValid) {
       return;
     }
 
     const plural = res.ddfFoldersCount === 1 ? '' : 's';
-    logger.log(`Found ${res.ddfFoldersCount} DDF folder${plural}, processing...:`);
-    logger.log(res.ddfFolders);
-  }, err => console.error(err));
+    logger.notice(`Found ${res.ddfFoldersCount} DDF folder${plural}, processing...:`);
+    logger.notice(res.ddfFolders);
+  }, err => logger.error(err));
 
 // validate each ddfFolder
 function validateDdfFolder(ddfFolders$) {
   ddfFolders$
-    .do(x => logger.log(`Validating ddf folder ${x}`))
+    .do(x => logger.notice(`Validating ddf folder ${x}`))
     .mergeMap(folderPath => {
       // validate dimensions file
       const dimensionsFile$ = require('./ddf-utils/rx-read-dimension')(folderPath);
-      const isDimensionsValid = require('./lib/ddf-dimensions.validator')(folderPath, dimensionsFile$);
+      const isDimensionsValid = require('./lib/ddf-dimensions.validator')
+      (folderPath, dimensionsFile$);
 
       // validate measures file
       const measuresFile$ = require('./ddf-utils/rx-read-measures')(folderPath);
@@ -67,7 +68,7 @@ function validateDdfFolder(ddfFolders$) {
           return a.concat(b).concat(c);
         });
     })
-    .subscribe(x => logger.results(x), x => console.error(x.stack));
+    .subscribe(x => logger.results(x), x => logger.error(x.stack));
 }
 
 function validateMeasureValues(ddfFolders$) {
@@ -91,7 +92,7 @@ function validateMeasureValues(ddfFolders$) {
   const dimensionValuesSchema = require('./ddf-schema/ddf-dimension-values.schema');
 
   ddfFolders$
-    .do(x => logger.log(`Validating measure values: folder ${x}`))
+    .do(x => logger.notice(`Validating measure values: folder ${x}`))
     .map(folderPath => {
       const filesInFolder$ = require('./utils/rx-read-files-in-folder')(folderPath)
         .map(fileName => path.basename(fileName));
@@ -227,7 +228,7 @@ function validateMeasureValues(ddfFolders$) {
 
       // todo: change apply to spread operator when implemented in node
       rx.Observable.merge.apply(null, options)
-        .subscribe(x => logger.results(x), x => console.error(x.stack));
+        .subscribe(x => logger.results(x), x => logger.error(x.stack));
     })
     .subscribe();
 }

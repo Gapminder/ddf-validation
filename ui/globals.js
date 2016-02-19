@@ -2,20 +2,16 @@
 
 const prettyjson = require('prettyjson');
 
-exports.NOTICE = Symbol('notice');
-exports.ERROR = Symbol('error');
-exports.WARNING = Symbol('warning');
-
 exports.colorTagByLevel = {
-  [exports.NOTICE]: {
+  notice: {
     start: '{white-fg}',
     finish: '{/white-fg}'
   },
-  [exports.ERROR]: {
+  error: {
     start: '{red-fg}',
     finish: '{/red-fg}'
   },
-  [exports.WARNING]: {
+  warning: {
     start: '{yellow-fg}',
     finish: '{/yellow-fg}'
   }
