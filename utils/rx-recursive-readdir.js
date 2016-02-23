@@ -7,8 +7,8 @@ const fs = require('fs');
 const rx = require('rxjs');
 const path = require('path');
 
-function filesFilter(fileName){
-  return fileName && fileName[0] !== '.';
+function filesFilter(fileName) {
+  return fileName && fileName[0] !== '.' && fileName[0] !== '~';
 }
 
 function readDir(observer, root, counter) {
@@ -19,24 +19,36 @@ function readDir(observer, root, counter) {
       }
       return;
     }
-    files
+
+    const filteredFiles = files
       .filter(filesFilter)
-      .map(file => path.join(root, file))
-      .forEach(function (file) {
-        observer.next(file);
-        fs.stat(file, (err, stats) => {
-          if (stats && stats.isDirectory()) {
-            return readDir(observer, file, counter++);
-          }
-          if (--counter === 0) {
-            observer.complete();
-          }
-        })
+      .map(file => path.join(root, file));
+
+    if (filteredFiles.length <= 0) {
+      observer.complete();
+      return;
+    }
+
+    filteredFiles.forEach(function (file) {
+      observer.next(file);
+      fs.stat(file, (err, stats) => {
+        if (stats && stats.isDirectory()) {
+          return readDir(observer, file, counter++);
+        }
+        if (--counter === 0) {
+          observer.complete();
+        }
       });
+    });
   })
 }
 
 module.exports = folder => {
+  const stats = fs.statSync(folder);
+  if (!stats.isDirectory()) {
+    return null;
+  }
+
   return rx.Observable.create(observer => {
     observer.next(folder);
     return readDir(observer, folder, 1);
