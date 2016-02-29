@@ -10,66 +10,18 @@ const utils = require('./utils');
 const logger = utils.getLogger();
 const folder = utils.ddfRootFolder;
 const settings = utils.settings;
-const errorCodes = require('./lib/ddf-error-codes');
-const normalizedPath = require('./utils/path-normilize')(folder);
 
-if (!require('./utils/path-exists-sync')(normalizedPath)) {
-  logger.error(errorCodes.err_folder_not_found.message(folder));
+// validate list of ddf folders and get it as Observable(logger, folder)
+const DdfRootFolderValidator = require('./lib/ddf-root-folder.validator.js');
+const ddfRootFolderValidator = new DdfRootFolderValidator(logger, folder);
+
+if (!ddfRootFolderValidator.ddfFolders$) {
   return;
 }
 
-const files$ = require('./utils/rx-recursive-readdir')(normalizedPath);
-
-const folders$ = files$
-  .filter(file => fs.lstatSync(file).isDirectory());
-
-const ddfFolders$ = folders$
-  .filter(folder => require('./utils/path-is-ddf-folder-sync')(folder));
-
-// validate list of ddf folders
-ddfFolders$.count()
-  .combineLatest([ddfFolders$.toArray(), folders$.count()],
-    (ddfFoldersCount, ddfFolders, foldersCount)=> {
-      return {ddfFolders, ddfFoldersCount, foldersCount};
-    })
-  .subscribe(res => {
-    const isFolderValid = require('./lib/ddf-root-folder.validator.js')
-    (res.ddfFoldersCount, res.foldersCount);
-
-    if (!isFolderValid) {
-      return;
-    }
-
-    const plural = res.ddfFoldersCount === 1 ? '' : 's';
-    logger.notice(`Found ${res.ddfFoldersCount} DDF folder${plural}, processing...:`);
-    logger.notice(res.ddfFolders);
-  }, err => logger.error(err));
-
-// validate each ddfFolder
-function validateDdfFolder(ddfFolders$) {
-  ddfFolders$
-    .do(x => logger.notice(`Validating ddf folder ${x}`))
-    .mergeMap(folderPath => {
-      // validate dimensions file
-      const dimensionsFile$ = require('./ddf-utils/rx-read-dimension')(folderPath);
-      const isDimensionsValid = require('./lib/ddf-dimensions.validator')
-      (folderPath, dimensionsFile$);
-
-      // validate measures file
-      const measuresFile$ = require('./ddf-utils/rx-read-measures')(folderPath);
-      const isMeasuresValid = require('./lib/ddf-measures.validator')(folderPath, measuresFile$);
-
-      // validate dimensions&measures unique ids
-      const isIdUnique = require('./lib/ddf-dimensions-and-measures-unique-id.validator.js')
-      (folderPath, dimensionsFile$, measuresFile$);
-
-      return isDimensionsValid
-        .combineLatest([isMeasuresValid, isIdUnique], (a, b, c)=> {
-          return a.concat(b).concat(c);
-        });
-    })
-    .subscribe(x => logger.results(x), x => logger.error(x.stack));
-}
+ddfRootFolderValidator
+  .getValidator()
+  .subscribe(DdfRootFolderValidator.validate(ddfRootFolderValidator));
 
 function validateMeasureValues(ddfFolders$) {
   // 1.
@@ -85,11 +37,9 @@ function validateMeasureValues(ddfFolders$) {
   // check is all (dv from dv) are present in measure files
   // 4.
   // check data points consistency
-  const rxReadCsv = require('./utils/rx-read-csv-file-to-json');
   const measuresSchema = require('./ddf-schema/ddf-measures.schema');
   const measureValuesSchema = require('./ddf-schema/ddf-measure-values.schema');
   const dimensionsSchema = require('./ddf-schema/ddf-dimensions.schema');
-  const dimensionValuesSchema = require('./ddf-schema/ddf-dimension-values.schema');
 
   ddfFolders$
     .do(x => logger.notice(`Validating measure values: folder ${x}`))
@@ -99,9 +49,6 @@ function validateMeasureValues(ddfFolders$) {
       // filter measure values files
       const measureValuesFiles$ = filesInFolder$
         .filter(fileName => measureValuesSchema.fileExp.test(fileName));
-      // filter dimensions values files
-      const dimensionValuesFiles$ = filesInFolder$
-        .filter(fileName => dimensionValuesSchema.fileExp.test(fileName));
 
       // measure.csv file stream
       const measureFile$ = require('./ddf-utils/rx-read-measures')(folderPath);
@@ -111,14 +58,14 @@ function validateMeasureValues(ddfFolders$) {
       // read measure IDs from measure.csv
       const measures$ = measureFile$
         .first()
-        .mergeMapTo(measureFile$.skip(1), _.zipObject)
+        .mergeMapTo(measureFile$, _.zipObject)
         .pluck(measuresSchema.gid)
         .toArray();
 
       // read dimension IDs from dimensions.csv
       const dimensions$ = dimensionsFile$
         .first()
-        .mergeMapTo(measureFile$.skip(1), _.zipObject)
+        .mergeMapTo(measureFile$, _.zipObject)
         .pluck(measuresSchema.gid)
         .toArray();
 
@@ -168,43 +115,8 @@ function validateMeasureValues(ddfFolders$) {
 
       // build dimension values hash map
       // return { dimension_id: {dimension_value_id: true} }
-      const dimensionsValuesIndex$ = dimensionValuesFiles$
-        .mergeMap(fileName => {
-          const rows$ = rxReadCsv(path.join(folderPath, fileName));
-          const rowsObj$ = rows$.first().mergeMapTo(rows$.skip(1), _.zipObject);
-          const dimensions = dimensionValuesSchema.dimensions(fileName);
-
-          return rowsObj$.reduce((memo, entry) => {
-            _.each(dimensions, dim => {
-              if (entry[dim]) {
-                memo[dim] = memo[dim] || {};
-                // entry.is contains information about kind of this record
-                memo[dim][entry[dim]] = entry.is;
-              }
-            });
-            return memo;
-          }, {});
-        })
-        .reduce((memo, entry) => {
-          _.each(Object.keys(entry), key => {
-            memo[key] = Object.assign({}, memo[key], entry[key]);
-          });
-          return memo;
-        }, {});
-
-      const measuresData$ = measureValuesFiles$
-        .first()
-        .mergeMap(fileName => {
-          const fullFileName = path.join(folderPath, fileName);
-          const file$ = rxReadCsv(fullFileName);
-          const rows$ = file$.first().mergeMapTo(file$, _.zipObject);
-
-          return rows$.map(data => {
-            return {
-              data, fileName, folderPath
-            };
-          });
-        });
+      const dimensionsValuesIndex$ = require('./lib/ddf-dimension-values-index.data')(folderPath);
+      const measuresData$ = require('./lib/ddf-measure-values.data')(folderPath);
 
       // 1. check dimension ids
       // unknown dimension ids
@@ -233,5 +145,7 @@ function validateMeasureValues(ddfFolders$) {
     .subscribe();
 }
 
-validateDdfFolder(ddfFolders$);
-validateMeasureValues(ddfFolders$);
+require('./lib/ddf-validate-folder')(logger, ddfRootFolderValidator.ddfFolders$)
+  .subscribe(x => logger.results(x), x => logger.error(x.stack));
+
+validateMeasureValues(ddfRootFolderValidator.ddfFolders$);

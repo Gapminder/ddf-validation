@@ -35,11 +35,13 @@ const profiles = {
 };
 
 module.exports = (settings) => {
-  const expectedProfile = new profiles[settings.isUI ? UI_MODE : GENERIC_MODE]();
+  // always use console mode for tests: global.it checking
+  const mode = settings.isUI && typeof global.it !== 'function' ? UI_MODE : GENERIC_MODE;
+  const expectedProfile = new profiles[mode]();
 
   let diagnosticLogger = function () {
     this.name = 'diagnosticLogger';
-    this.level = 'notice';
+    this.level = 'error';
   };
   util.inherits(diagnosticLogger, winston.Transport);
   diagnosticLogger.prototype.log = function (level, msg, meta, callback) {
