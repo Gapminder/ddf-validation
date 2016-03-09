@@ -2,3 +2,5 @@
 node_modules
 npm-debug.log
 coverage
+_results
+_results-test

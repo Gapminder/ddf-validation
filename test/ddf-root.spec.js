@@ -5,9 +5,7 @@ const sinonChai = require('sinon-chai');
 const expect = chai.expect;
 chai.use(sinonChai);
 
-//const utils = require('../utils');
-//const logger = utils.getLogger();
-const DDFRoot = require('../lib/files/root');
+const DDFRoot = require('../lib/data/root');
 
 describe('ddf root folder validation', () => {
 

@@ -2,7 +2,7 @@
 'use strict';
 
 const utils = require('./lib/utils');
-const DDFRoot = require('./lib/files/root');
+const DDFRoot = require('./lib/data/root');
 const ddfRoot = new DDFRoot(utils.ddfRootFolder);
 ddfRoot.check(() => {
 
