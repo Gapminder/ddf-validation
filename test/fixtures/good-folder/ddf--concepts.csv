@@ -1,0 +1,9 @@
+concept,type,domain,name
+name,string,,
+lat,numeric,,Latitude
+lng,numeric,,Longitude
+geo,entity domain,,
+region,entity set,geo,Region
+country,entity set,geoCountry
+capital,entity set,geo,Capital
+pop,measure,geo,Population
