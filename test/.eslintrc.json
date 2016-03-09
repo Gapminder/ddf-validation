@@ -1,0 +1,10 @@
+{
+  "env": {
+    "mocha": true,
+    "node": true
+  },
+  "rules": {
+    "no-sync": 0,
+    "newline-per-chained-call": 0
+  }
+}

@@ -9,10 +9,10 @@ const CSV_OPTIONS = {
 
 function csvToJson(path, cb) {
   const csvStream = csv.createStream(CSV_OPTIONS);
-
-  let result = [];
-  let tmpObj = {};
+  const result = [];
   const fileStream = fs.createReadStream(path);
+
+  let tmpObj = {};
 
   fileStream.on('error', err => cb(err));
   fileStream.on('readable', () => {

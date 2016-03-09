@@ -1,15 +1,14 @@
 'use strict';
 const chai = require('chai');
-const sinon = require('sinon');
 const sinonChai = require('sinon-chai');
 const expect = chai.expect;
 const testUtils = require('./test-utils');
-chai.use(sinonChai);
-
 const Db = require('../lib/data/db');
 
+chai.use(sinonChai);
+
 describe('db storage', () => {
-  let db;
+  let db = null;
 
   before(() => {
     db = new Db('', {path: './_results-test'});
@@ -21,19 +20,20 @@ describe('db storage', () => {
     });
   });
 
-  describe(`when good data`, () => {
+  describe('when good data', () => {
     const collectionName = 'concepts';
     const path = './test/fixtures/good-folder/ddf--concepts.csv';
-    let source, target, findCollectionError, csvToJsonError;
+    let source = null;
+    let target = null;
+    let findCollectionError = null;
+    let csvToJsonError = null;
 
     beforeEach(done => {
       db.fillCollection(
         collectionName,
         path,
         err => {
-
           findCollectionError = err;
-
           testUtils.csvToJson(path, (_err, _source) => {
             csvToJsonError = _err;
             source = _source;
@@ -46,6 +46,7 @@ describe('db storage', () => {
 
     afterEach(() => {
       const coll = db.getCollection(collectionName);
+
       while (coll.data[0]) {
         coll.remove(coll.data[0]);
       }
@@ -57,18 +58,18 @@ describe('db storage', () => {
     });
 
     it('content should be properly saved', () => {
-      for (let i = 0; i < target.length; i++) {
-        for (let key of Object.keys(source[i])) {
-          expect(source[i][key]).to.equal(target[i][key]);
+      target.forEach((targetRecord, rowNumber) => {
+        for (const key of Object.keys(source[rowNumber])) {
+          expect(source[rowNumber][key]).to.equal(targetRecord[key]);
         }
-      }
+      });
     });
   });
 
-  describe(`when csv file does not exist`, () => {
+  describe('when csv file does not exist', () => {
     const collectionName = 'concepts';
     const path = './test/fixtures/good-folder/not-exists.csv';
-    let findCollectionError;
+    let findCollectionError = null;
 
     beforeEach(done => {
       db.fillCollection(
@@ -80,7 +81,7 @@ describe('db storage', () => {
         });
     });
 
-    it(`error with code 'ENOENT' should be raised`, () => {
+    it('error with code `ENOENT` should be raised', () => {
       expect(!!findCollectionError).to.equal(true);
       expect(findCollectionError.code).to.equal('ENOENT');
     });
