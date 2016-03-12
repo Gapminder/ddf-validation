@@ -2,5 +2,25 @@
   "extends": "./node_modules/eslint-config-valorsoft/.eslintrc",
   "env": {
     "node": true
+  },
+  "rules": {
+    "id-length": [
+      "error",
+      {
+        "exceptions": [
+          "_"
+        ]
+      }
+    ],
+    "no-magic-numbers": [
+      2,
+      {
+        "ignore": [
+          -1,
+          0,
+          1
+        ]
+      }
+    ]
   }
 }

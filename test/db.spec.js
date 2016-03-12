@@ -20,7 +20,7 @@ describe('db storage', () => {
     });
   });
 
-  describe('when good data', () => {
+  describe('when correct DDF file', () => {
     const collectionName = 'concepts';
     const path = './test/fixtures/good-folder/ddf--concepts.csv';
     let source = null;
@@ -50,7 +50,7 @@ describe('db storage', () => {
       coll.removeWhere({});
     });
 
-    it('any error should be null or undefined', () => {
+    it('errors should be detected', () => {
       expect(!!findCollectionError).to.be.false;
       expect(!!csvToJsonError).to.be.false;
     });

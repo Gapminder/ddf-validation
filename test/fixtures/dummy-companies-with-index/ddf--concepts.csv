@@ -1,0 +1,13 @@
+concept,concept_type,domain
+company,entity_domain,
+english_speaking_company,entity_set,company
+foundation,entity_set,company
+name,string,
+anno,time,year
+lines_of_code,measure,
+region,entity_domain,
+country,string,
+company_size,entity_domain,
+num_users,measure,
+latitude,measure,
+longitude,measure,
