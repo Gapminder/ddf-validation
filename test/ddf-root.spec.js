@@ -9,7 +9,7 @@ const AT_LEAST_ONE_FOLDER_SHOULD_EXIST = 1;
 chai.use(sinonChai);
 
 describe('ddf root folder validation', () => {
-  describe('when bad folder', () => {
+  describe('when non DDF folder', () => {
     const ddfRoot = new DDFRoot('./test/fixtures/bad-folder');
 
     it('ddf folders should not be defined', done => {
@@ -29,7 +29,7 @@ describe('ddf root folder validation', () => {
     });
   });
 
-  describe('when good folder', () => {
+  describe('when DDF folder (fixtures/good-folder)', () => {
     it('count of ddf folders should be 1', done => {
       const ddfRoot = new DDFRoot('./test/fixtures/good-folder');
 
@@ -41,7 +41,7 @@ describe('ddf root folder validation', () => {
     });
   });
 
-  describe('when good folder with sub-folders', () => {
+  describe('when good folder with sub-folders (fixtures/good-folder-with-subfolders)', () => {
     it('count of ddf folders should be greater than 1', done => {
       const ddfRoot = new DDFRoot('./test/fixtures/good-folder-with-subfolders');
 

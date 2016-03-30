@@ -5,3 +5,5 @@ region,entity set,geo,Region
 country,entity set,geoCountry
 capital,entity set,geo,Capital
 pop,measure,geo,Population
+lat,measure,,Latitude
+lng,measure,,Longitude
