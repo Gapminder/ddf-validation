@@ -2,12 +2,14 @@
 'use strict';
 
 const path = require('path');
-const lodash = require('lodash');
+const async = require('async');
+const _ = require('lodash');
 const utils = require('./lib/utils');
 const fileUtils = require('./lib/utils/file');
 const DdfIndexGenerator = require('./lib/ddf-definitions/ddf-index-generator');
 const DdfData = require('./lib/ddf-definitions/ddf-data');
 const ddfRules = require('./lib/ddf-rules');
+const ddfDataPointRules = require('./lib/ddf-rules/data-point-rules');
 const logger = utils.logger;
 
 if (utils.settings.isIndexGenerationMode === true) {
@@ -35,18 +37,19 @@ if (utils.settings.isIndexGenerationMode === true) {
 
 if (utils.settings.isIndexGenerationMode === false) {
   const ddfData = new DdfData(utils.ddfRootFolder);
-  const out = [];
+
+  let out = [];
 
   ddfData.load(() => {
     ddfRules.forEach(ruleSet => {
       Object.getOwnPropertySymbols(ruleSet).forEach(key => {
         const result = ruleSet[key](ddfData);
 
-        if (!lodash.isArray(result) && !lodash.isEmpty(result)) {
+        if (!_.isArray(result) && !_.isEmpty(result)) {
           out.push(result.view());
         }
 
-        if (lodash.isArray(result) && !lodash.isEmpty(result)) {
+        if (_.isArray(result) && !_.isEmpty(result)) {
           result.forEach(resultRecord => {
             out.push(resultRecord.view());
           });
@@ -54,8 +57,37 @@ if (utils.settings.isIndexGenerationMode === false) {
       });
     });
 
-    logger.notice(JSON.stringify(out));
+    function prepareDataPointProcessor(detail) {
+      return cb => {
+        ddfData.getDataPoint().loadDetail(detail, () => {
+          Object.getOwnPropertySymbols(ddfDataPointRules).forEach(key => {
+            const result = ddfDataPointRules[key](ddfData, detail);
 
-    ddfData.dismiss();
+            if (!_.isEmpty(result)) {
+              out = out.concat(result);
+            }
+          });
+
+          ddfData.getDataPoint().removeAllData();
+          cb();
+        });
+      };
+    }
+
+    const dataPointActions = [];
+
+    ddfData.getDataPoint().details.forEach(detail => {
+      dataPointActions.push(prepareDataPointProcessor(detail));
+    });
+
+    async.waterfall(dataPointActions, err => {
+      if (err) {
+        throw err;
+      }
+
+      logger.notice(JSON.stringify(out));
+
+      ddfData.dismiss();
+    });
   });
 }
