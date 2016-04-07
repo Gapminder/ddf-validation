@@ -1,11 +1,9 @@
 #! /usr/bin/env node
 'use strict';
 
-const path = require('path');
 const async = require('async');
 const _ = require('lodash');
 const utils = require('./lib/utils');
-const fileUtils = require('./lib/utils/file');
 const DdfIndexGenerator = require('./lib/ddf-definitions/ddf-index-generator');
 const DdfData = require('./lib/ddf-definitions/ddf-data');
 const ddfRules = require('./lib/ddf-rules');
@@ -13,26 +11,7 @@ const ddfDataPointRules = require('./lib/ddf-rules/data-point-rules');
 const logger = utils.logger;
 
 if (utils.settings.isIndexGenerationMode === true) {
-  const ddfIndexGenerator = new DdfIndexGenerator(utils.ddfRootFolder);
-
-  /*eslint no-console: [2, { allow: ["log"] }] */
-  ddfIndexGenerator.getCsv((err, csvContent) => {
-    if (err) {
-      console.log(err);
-      return;
-    }
-
-    const file = path.resolve(utils.ddfRootFolder, 'ddf--index.csv');
-
-    fileUtils.writeFile(file, csvContent, fileErr => {
-      if (fileErr) {
-        console.log(fileErr);
-        return;
-      }
-
-      console.log(`${file} was created.`);
-    });
-  });
+  new DdfIndexGenerator(utils.ddfRootFolder).writeIndex();
 }
 
 if (utils.settings.isIndexGenerationMode === false) {
