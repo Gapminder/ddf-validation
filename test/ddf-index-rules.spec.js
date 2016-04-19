@@ -104,11 +104,11 @@ describe('rules for index', () => {
       });
     });
 
-    it('error\'s data should contain an input ddf path', done => {
+    it('data from issue should contain an input ddf path', done => {
       ddfData.load(() => {
         const result = indexRules[rulesRegistry.INDEX_IS_NOT_FOUND](ddfData);
 
-        expect(result[0].data).to.equal('./test/fixtures/dummy-companies');
+        expect(result[0].path).to.equal('./test/fixtures/dummy-companies');
 
         done();
       });

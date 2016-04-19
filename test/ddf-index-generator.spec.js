@@ -8,11 +8,11 @@ chai.use(sinonChai);
 
 describe('ddf index generator', () => {
   describe('when dummy companies data set is correct', () => {
+    const EXPECTED_INDEX_RECORDS_COUNT = 15;
     const dummyCompaniesPath = './test/fixtures/dummy-companies';
 
-    it('json content length should be expected (16)', done => {
+    it(`json content length should be expected (${EXPECTED_INDEX_RECORDS_COUNT})`, done => {
       const ddfIndexGenerator = new DdfIndexGenerator(dummyCompaniesPath);
-      const EXPECTED_INDEX_RECORDS_COUNT = 16;
 
       ddfIndexGenerator.getJson(jsonContent => {
         expect(jsonContent).to.be.not.null;
