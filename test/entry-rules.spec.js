@@ -1,7 +1,7 @@
 'use strict';
 const chai = require('chai');
 const sinonChai = require('sinon-chai');
-const DdfData = require('../lib/ddf-definitions/ddf-data');
+const DdfDataSet = require('../lib/ddf-definitions/ddf-data-set');
 const rulesRegistry = require('../lib/ddf-rules/registry');
 const entryRules = require('../lib/ddf-rules/entity-rules');
 const expect = chai.expect;
@@ -9,19 +9,19 @@ const expect = chai.expect;
 chai.use(sinonChai);
 
 describe('rules for entry', () => {
-  let ddfData = null;
+  let ddfDataSet = null;
 
   describe('when "ENTITY_HEADER_IS_NOT_CONCEPT" rule', () => {
     afterEach(done => {
-      ddfData.dismiss(() => {
+      ddfDataSet.dismiss(() => {
         done();
       });
     });
 
     it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
-      ddfData = new DdfData('./test/fixtures/good-folder');
-      ddfData.load(() => {
-        expect(entryRules[rulesRegistry.ENTITY_HEADER_IS_NOT_CONCEPT](ddfData).length).to.equal(0);
+      ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
+      ddfDataSet.load(() => {
+        expect(entryRules[rulesRegistry.ENTITY_HEADER_IS_NOT_CONCEPT](ddfDataSet).length).to.equal(0);
 
         done();
       });
@@ -29,9 +29,9 @@ describe('rules for entry', () => {
 
     it(`issues should be found for folder with the problem
     (fixtures/rules-cases/entity-header-is-no-concept)`, done => {
-      ddfData = new DdfData('./test/fixtures/rules-cases/entity-header-is-no-concept');
-      ddfData.load(() => {
-        const result = entryRules[rulesRegistry.ENTITY_HEADER_IS_NOT_CONCEPT](ddfData);
+      ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/entity-header-is-no-concept');
+      ddfDataSet.load(() => {
+        const result = entryRules[rulesRegistry.ENTITY_HEADER_IS_NOT_CONCEPT](ddfDataSet);
         const EXPECTED_ERROR_COUNT = 2;
 
         expect(result.length).to.equal(EXPECTED_ERROR_COUNT);

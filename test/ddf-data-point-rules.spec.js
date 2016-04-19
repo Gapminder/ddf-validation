@@ -2,25 +2,25 @@
 const _ = require('lodash');
 const chai = require('chai');
 const sinonChai = require('sinon-chai');
-const DdfData = require('../lib/ddf-definitions/ddf-data');
+const DdfDataSet = require('../lib/ddf-definitions/ddf-data-set');
 const rulesRegistry = require('../lib/ddf-rules/registry');
 const dataPointsRules = require('../lib/ddf-rules/data-point-rules');
 const expect = chai.expect;
 
 chai.use(sinonChai);
 describe('rules for data points', () => {
-  let ddfData = null;
+  let ddfDataSet = null;
 
   describe('when data set is correct (\'fixtures/good-folder\')', () => {
-    ddfData = new DdfData('./test/fixtures/good-folder');
+    ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
 
     Object.getOwnPropertySymbols(dataPointsRules).forEach(dataPointRuleKey => {
       it(`any issue should NOT be found for rule ${Symbol.keyFor(dataPointRuleKey)}`, done => {
-        ddfData.load(() => {
-          const expectedDataPointDetail = ddfData.getDataPoint().details[0];
+        ddfDataSet.load(() => {
+          const expectedDataPointDetail = ddfDataSet.getDataPoint().details[0];
 
-          ddfData.getDataPoint().loadDetail(expectedDataPointDetail, () => {
-            expect(dataPointsRules[dataPointRuleKey](ddfData, expectedDataPointDetail).length).to.equal(0);
+          ddfDataSet.getDataPoint().loadDetail(expectedDataPointDetail, () => {
+            expect(dataPointsRules[dataPointRuleKey](ddfDataSet, expectedDataPointDetail).length).to.equal(0);
 
             done();
           });
@@ -31,24 +31,24 @@ describe('rules for data points', () => {
 
   describe('when data set is NOT correct', () => {
     afterEach(done => {
-      ddfData.dismiss(() => {
+      ddfDataSet.dismiss(() => {
         done();
       });
     });
 
     it(`an issue should be found for rule 'DATA_POINT_VALUE_NOT_NUMERIC'
    (fixtures/rules-cases/data-point-value-not-num)`, done => {
-      ddfData = new DdfData('./test/fixtures/rules-cases/data-point-value-not-num');
-      ddfData.load(() => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-value-not-num');
+      ddfDataSet.load(() => {
         const dataPointValueNotNumRule = dataPointsRules[rulesRegistry.DATA_POINT_VALUE_NOT_NUMERIC];
-        const expectedDataPointDetail = ddfData.getDataPoint().details[0];
+        const expectedDataPointDetail = ddfDataSet.getDataPoint().details[0];
         const expectedFileName = 'ddf--datapoints--pop--by--country--year.csv';
         const expectedMeasure = 'pop';
         const expectedLine = 2;
         const expectedValue = 'huge';
 
-        ddfData.getDataPoint().loadDetail(expectedDataPointDetail, () => {
-          const issues = dataPointValueNotNumRule(ddfData, expectedDataPointDetail);
+        ddfDataSet.getDataPoint().loadDetail(expectedDataPointDetail, () => {
+          const issues = dataPointValueNotNumRule(ddfDataSet, expectedDataPointDetail);
           const issue = _.head(issues);
 
           expect(issues.length).to.equal(1);
@@ -66,18 +66,18 @@ describe('rules for data points', () => {
 
     it(`an issue should be found for rule 'DATA_POINT_UNEXPECTED_ENTITY_VALUE'
    (fixtures/rules-cases/data-point-unexpected-entity-value)`, done => {
-      ddfData = new DdfData('./test/fixtures/rules-cases/data-point-unexpected-entity-value');
-      ddfData.load(() => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-unexpected-entity-value');
+      ddfDataSet.load(() => {
         const dataPointUnexpectedConceptRule =
           dataPointsRules[rulesRegistry.DATA_POINT_UNEXPECTED_ENTITY_VALUE];
-        const expectedDataPointDetail = ddfData.getDataPoint().details[0];
+        const expectedDataPointDetail = ddfDataSet.getDataPoint().details[0];
         const expectedFileName = 'ddf--datapoints--pop--by--country--year.csv';
         const expectedConcept = 'country';
         const expectedLine = 2;
         const expectedValue = 'non-usa';
 
-        ddfData.getDataPoint().loadDetail(expectedDataPointDetail, () => {
-          const issues = dataPointUnexpectedConceptRule(ddfData, expectedDataPointDetail);
+        ddfDataSet.getDataPoint().loadDetail(expectedDataPointDetail, () => {
+          const issues = dataPointUnexpectedConceptRule(ddfDataSet, expectedDataPointDetail);
           const issue = _.head(issues);
 
           expect(issues.length).to.equal(1);
@@ -95,18 +95,18 @@ describe('rules for data points', () => {
 
     it(`an issue should be found for rule 'DATA_POINT_UNEXPECTED_TIME_VALUE'
    (fixtures/rules-cases/data-point-unexpected-time-value)`, done => {
-      ddfData = new DdfData('./test/fixtures/rules-cases/data-point-unexpected-time-value');
-      ddfData.load(() => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-unexpected-time-value');
+      ddfDataSet.load(() => {
         const dataPointUnexpectedTimeRule =
           dataPointsRules[rulesRegistry.DATA_POINT_UNEXPECTED_TIME_VALUE];
-        const expectedDataPointDetail = ddfData.getDataPoint().details[0];
+        const expectedDataPointDetail = ddfDataSet.getDataPoint().details[0];
         const expectedFileName = 'ddf--datapoints--pop--by--country--year.csv';
         const expectedConcept = 'year';
         const expectedLine = 2;
         const expectedValue = '1960wfoo';
 
-        ddfData.getDataPoint().loadDetail(expectedDataPointDetail, () => {
-          const issues = dataPointUnexpectedTimeRule(ddfData, expectedDataPointDetail);
+        ddfDataSet.getDataPoint().loadDetail(expectedDataPointDetail, () => {
+          const issues = dataPointUnexpectedTimeRule(ddfDataSet, expectedDataPointDetail);
           const issue = _.head(issues);
 
           expect(issues.length).to.equal(1);
