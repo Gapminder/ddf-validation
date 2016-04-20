@@ -5,7 +5,7 @@ const async = require('async');
 const _ = require('lodash');
 const utils = require('./lib/utils');
 const DdfIndexGenerator = require('./lib/ddf-definitions/ddf-index-generator');
-const DdfData = require('./lib/ddf-definitions/ddf-data');
+const DdfDataSet = require('./lib/ddf-definitions/ddf-data-set');
 const ddfRules = require('./lib/ddf-rules');
 const ddfDataPointRules = require('./lib/ddf-rules/data-point-rules');
 const logger = utils.logger;
@@ -15,14 +15,14 @@ if (utils.settings.isIndexGenerationMode === true) {
 }
 
 if (utils.settings.isIndexGenerationMode === false) {
-  const ddfData = new DdfData(utils.ddfRootFolder);
+  const ddfDataSet = new DdfDataSet(utils.ddfRootFolder);
 
   let out = [];
 
-  ddfData.load(() => {
+  ddfDataSet.load(() => {
     ddfRules.forEach(ruleSet => {
       Object.getOwnPropertySymbols(ruleSet).forEach(key => {
-        const result = ruleSet[key](ddfData);
+        const result = ruleSet[key](ddfDataSet);
 
         if (!_.isArray(result) && !_.isEmpty(result)) {
           out.push(result.view());
@@ -38,16 +38,16 @@ if (utils.settings.isIndexGenerationMode === false) {
 
     function prepareDataPointProcessor(detail) {
       return cb => {
-        ddfData.getDataPoint().loadDetail(detail, () => {
+        ddfDataSet.getDataPoint().loadDetail(detail, () => {
           Object.getOwnPropertySymbols(ddfDataPointRules).forEach(key => {
-            const result = ddfDataPointRules[key](ddfData, detail);
+            const result = ddfDataPointRules[key](ddfDataSet, detail);
 
             if (!_.isEmpty(result)) {
               out = out.concat(result.map(issue => issue.view()));
             }
           });
 
-          ddfData.getDataPoint().removeAllData();
+          ddfDataSet.getDataPoint().removeAllData();
           cb();
         });
       };
@@ -55,7 +55,7 @@ if (utils.settings.isIndexGenerationMode === false) {
 
     const dataPointActions = [];
 
-    ddfData.getDataPoint().details.forEach(detail => {
+    ddfDataSet.getDataPoint().details.forEach(detail => {
       dataPointActions.push(prepareDataPointProcessor(detail));
     });
 
@@ -66,7 +66,7 @@ if (utils.settings.isIndexGenerationMode === false) {
 
       logger.notice(JSON.stringify(out));
 
-      ddfData.dismiss();
+      ddfDataSet.dismiss();
     });
   });
 }

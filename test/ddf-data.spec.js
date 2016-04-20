@@ -2,29 +2,29 @@
 const chai = require('chai');
 const sinonChai = require('sinon-chai');
 const expect = chai.expect;
-const DdfData = require('../lib/ddf-definitions/ddf-data');
+const DdfDataSet = require('../lib/ddf-definitions/ddf-data-set');
 
 chai.use(sinonChai);
 
 describe('DDF data', () => {
   describe('when data is correct', () => {
-    let ddfData = null;
+    let ddfDataSet = null;
 
     beforeEach(done => {
-      ddfData = new DdfData('./test/fixtures/good-folder');
-      ddfData.load(() => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
+      ddfDataSet.load(() => {
         done();
       });
     });
 
     afterEach(done => {
-      ddfData.dismiss(() => {
+      ddfDataSet.dismiss(() => {
         done();
       });
     });
 
     it('non-DDF directory descriptors should NOT be present', () => {
-      expect(ddfData.ddfRoot.getNonDdfDirectoriesDescriptors().length).to.equal(0);
+      expect(ddfDataSet.ddfRoot.getNonDdfDirectoriesDescriptors().length).to.equal(0);
     });
   });
 
@@ -32,7 +32,7 @@ describe('DDF data', () => {
     let ddfData = null;
 
     beforeEach(done => {
-      ddfData = new DdfData('./test/fixtures/bad-folder');
+      ddfData = new DdfDataSet('./test/fixtures/bad-folder');
       ddfData.load(() => {
         done();
       });
