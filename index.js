@@ -1,52 +1,34 @@
 #! /usr/bin/env node
 'use strict';
 
-const path = require('path');
-const lodash = require('lodash');
+const async = require('async');
+const _ = require('lodash');
 const utils = require('./lib/utils');
-const fileUtils = require('./lib/utils/file');
 const DdfIndexGenerator = require('./lib/ddf-definitions/ddf-index-generator');
-const DdfData = require('./lib/ddf-definitions/ddf-data');
+const DdfDataSet = require('./lib/ddf-definitions/ddf-data-set');
 const ddfRules = require('./lib/ddf-rules');
+const ddfDataPointRules = require('./lib/ddf-rules/data-point-rules');
 const logger = utils.logger;
 
 if (utils.settings.isIndexGenerationMode === true) {
-  const ddfIndexGenerator = new DdfIndexGenerator(utils.ddfRootFolder);
-
-  /*eslint no-console: [2, { allow: ["log"] }] */
-  ddfIndexGenerator.getCsv((err, csvContent) => {
-    if (err) {
-      console.log(err);
-      return;
-    }
-
-    const file = path.resolve(utils.ddfRootFolder, 'ddf--index.csv');
-
-    fileUtils.writeFile(file, csvContent, fileErr => {
-      if (fileErr) {
-        console.log(fileErr);
-        return;
-      }
-
-      console.log(`${file} was created.`);
-    });
-  });
+  new DdfIndexGenerator(utils.ddfRootFolder).writeIndex();
 }
 
 if (utils.settings.isIndexGenerationMode === false) {
-  const ddfData = new DdfData(utils.ddfRootFolder);
-  const out = [];
+  const ddfDataSet = new DdfDataSet(utils.ddfRootFolder);
 
-  ddfData.load(() => {
+  let out = [];
+
+  ddfDataSet.load(() => {
     ddfRules.forEach(ruleSet => {
       Object.getOwnPropertySymbols(ruleSet).forEach(key => {
-        const result = ruleSet[key](ddfData);
+        const result = ruleSet[key](ddfDataSet);
 
-        if (!lodash.isArray(result) && !lodash.isEmpty(result)) {
+        if (!_.isArray(result) && !_.isEmpty(result)) {
           out.push(result.view());
         }
 
-        if (lodash.isArray(result) && !lodash.isEmpty(result)) {
+        if (_.isArray(result) && !_.isEmpty(result)) {
           result.forEach(resultRecord => {
             out.push(resultRecord.view());
           });
@@ -54,8 +36,37 @@ if (utils.settings.isIndexGenerationMode === false) {
       });
     });
 
-    logger.notice(JSON.stringify(out));
+    function prepareDataPointProcessor(detail) {
+      return cb => {
+        ddfDataSet.getDataPoint().loadDetail(detail, () => {
+          Object.getOwnPropertySymbols(ddfDataPointRules).forEach(key => {
+            const result = ddfDataPointRules[key](ddfDataSet, detail);
 
-    ddfData.dismiss();
+            if (!_.isEmpty(result)) {
+              out = out.concat(result.map(issue => issue.view()));
+            }
+          });
+
+          ddfDataSet.getDataPoint().removeAllData();
+          cb();
+        });
+      };
+    }
+
+    const dataPointActions = [];
+
+    ddfDataSet.getDataPoint().details.forEach(detail => {
+      dataPointActions.push(prepareDataPointProcessor(detail));
+    });
+
+    async.waterfall(dataPointActions, err => {
+      if (err) {
+        throw err;
+      }
+
+      logger.notice(JSON.stringify(out));
+
+      ddfDataSet.dismiss();
+    });
   });
 }
