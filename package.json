@@ -1,6 +1,6 @@
 {
   "name": "ddf-validation",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "DDF validion tool",
   "main": "index.js",
   "bin": {
@@ -11,7 +11,7 @@
     "n-test": "./node_modules/.bin/mocha \"test/**/*.spec.js\"",
     "test-travis": "npm run eslint && ./node_modules/.bin/istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec test/**/*.spec.js && ./node_modules/.bin/codecov",
     "eslint": "./node_modules/.bin/eslint --ignore-path .gitignore  --ext js --fix . .config",
-    "changelog": "./node_modules/.bin/conventional-changelog-writer -i CHANGELOG.md -s -p angular",
+    "changelog": "./node_modules/.bin/conventional-changelog -i CHANGELOG.md -s -p angular",
     "github-release": "./node_modules/.bin/conventional-github-releaser -p angular",
     "preversion": "npm test",
     "version": "npm run changelog && git add CHANGELOG.md",
@@ -46,6 +46,7 @@
     "codecov": "1.0.1",
     "compare-version": "0.1.2",
     "conventional-changelog": "1.1.0",
+    "conventional-changelog-cli": "1.1.1",
     "conventional-github-releaser": "1.1.2",
     "eslint": "2.8.0",
     "eslint-config-valorsoft": "0.0.10",
