@@ -1,4 +1,4 @@
-* **Rule name:** Should be filled if this issue depends on particular rule especially during new rule providing. This name should be a valid JS variable name and should be used for connecting with code.
+* **Rule name:** Should be filled if this issue depends on particular rule especially during new rule creation. This name should be a valid JS variable name and should be used for connecting with code.
 
 
 
