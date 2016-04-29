@@ -1,0 +1,3 @@
+concept,name,concept_type,domain,indicator_url,color,scales,drill_up,unit,interpolation,description
+geographic_regions,Geographic regions,entity_set,geo,http://spreadsheets.google.com/pub?key=phT4mwjvEuGBtdf1ZeO7_PQ,"{'selectable': False, 'palette': {'sub_saharan_africa': '#4e7af0', 'east_asia_pacific': '#f03838', 'america': '#ebcc21', 'south_asia': '#35d1d1', 'middle_east_north_africa': '#5be56b', 'europe_central_asia': '#f49d37'}}",['ordinal'],,,,
+sg_gdp_p_cap_const_ppp2011_dollar,sg_gdp_p_cap_const_ppp2011_dollar,measure,,http://www.gapminder.org/news/data-sources-dont-panic-end-poverty,"{'palette': {'0': '#62CCE3', '1': '#B4DE79', '2': '#E1CE00', '3': '#F77481'}}","some text['log', 'linear']",,,exp,
