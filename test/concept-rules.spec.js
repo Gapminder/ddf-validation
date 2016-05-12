@@ -1,4 +1,5 @@
 'use strict';
+const _ = require('lodash');
 const chai = require('chai');
 const sinonChai = require('sinon-chai');
 const expect = chai.expect;
@@ -37,6 +38,52 @@ describe('rules for concept', () => {
         expect(result.type).to.equal(rulesRegistry.CONCEPT_ID_IS_NOT_UNIQUE);
         expect(result.data.indexOf('geo')).to.be.greaterThan(-1);
         expect(result.data.indexOf('country')).to.be.greaterThan(-1);
+
+        done();
+      });
+    });
+  });
+
+  describe('when "NON_CONCEPT_HEADER" rule', () => {
+    afterEach(done => {
+      ddfDataSet.dismiss(() => {
+        done();
+      });
+    });
+
+    it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
+      ddfDataSet.load(() => {
+        expect(conceptRules[rulesRegistry.NON_CONCEPT_HEADER](ddfDataSet).length).to.equal(0);
+
+        done();
+      });
+    });
+
+    it(`issues should be found for folder with the problem
+    (fixtures/rules-cases/non-concept-header)`, done => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/non-concept-header');
+      ddfDataSet.load(() => {
+        const result = conceptRules[rulesRegistry.NON_CONCEPT_HEADER](ddfDataSet);
+        const issuesData = [
+          {
+            wrongHeaderDetail: 'wrong-header-1',
+            suggestions: []
+          },
+          {
+            wrongHeaderDetail: 'xgeo',
+            suggestions: ['geo']
+          }
+        ];
+
+        expect(result).to.be.not.null;
+
+        issuesData.forEach((issueData, index) => {
+          expect(result[index].type).to.equal(rulesRegistry.NON_CONCEPT_HEADER);
+          expect(!!result[index].data).to.be.true;
+          expect(result[index].data).to.equal(issueData.wrongHeaderDetail);
+          expect(_.head(result[index].suggestions)).to.equal(_.head(issueData.suggestions));
+        });
 
         done();
       });
