@@ -1,0 +1,4 @@
+concept,concept_type,domain,name
+name,string,,
+geo,entity_domain,,
+country,entity_set,geo,Country
