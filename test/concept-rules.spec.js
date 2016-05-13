@@ -44,6 +44,40 @@ describe('rules for concept', () => {
     });
   });
 
+  describe('when "EMPTY_CONCEPT_ID" rule', () => {
+    afterEach(done => {
+      ddfDataSet.dismiss(() => {
+        done();
+      });
+    });
+
+    it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
+      ddfDataSet.load(() => {
+        expect(conceptRules[rulesRegistry.EMPTY_CONCEPT_ID](ddfDataSet).length).to.equal(0);
+
+        done();
+      });
+    });
+
+    it(`issues should be found for folder with the problem
+    (fixtures/rules-cases/empty-concept-id)`, done => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/empty-concept-id');
+      ddfDataSet.load(() => {
+        const EXPECTED_CSV_LINE = 2;
+        const results = conceptRules[rulesRegistry.EMPTY_CONCEPT_ID](ddfDataSet);
+        const result = _.head(results);
+
+        expect(results).to.be.not.null;
+        expect(results.length).to.equal(1);
+        expect(result.type).to.equal(rulesRegistry.EMPTY_CONCEPT_ID);
+        expect(result.data.line).to.equal(EXPECTED_CSV_LINE);
+
+        done();
+      });
+    });
+  });
+
   describe('when "NON_CONCEPT_HEADER" rule', () => {
     afterEach(done => {
       ddfDataSet.dismiss(() => {
