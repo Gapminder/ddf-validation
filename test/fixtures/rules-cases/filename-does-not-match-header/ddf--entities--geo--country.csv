@@ -1,0 +1,9 @@
+region,name,lat,lng,is--region,is--country,is--capital
+and,Andorra,,,0,1,0
+afg,Afghanistan,,,0,1,0
+dza,Algeria,,,0,1,0
+africa,Africa,,,1,0,0
+europe,Europe,,,1,0,0
+americas,Americas,,,1,0,0
+asia,Asia,,,1,0,0
+vat,Vatican,,,0,1,1
