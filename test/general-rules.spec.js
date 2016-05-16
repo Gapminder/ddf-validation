@@ -42,6 +42,16 @@ describe('general rules', () => {
         done();
       });
     });
+
+    /*it('there should be no issues for "FILENAME_DOES_NOT_MATCH_HEADER" rule', done => {
+     ddfDataSet.load(() => {
+     const result = generalRules[rulesRegistry.FILENAME_DOES_NOT_MATCH_HEADER](ddfDataSet);
+
+     expect(result.length).to.equal(0);
+
+     done();
+     });
+     });*/
   });
 
   describe('when DDF folder is NOT correct (fixtures/bad-folder)', () => {
@@ -152,6 +162,40 @@ describe('general rules', () => {
         const lastIssue = _.tail(result);
 
         expect(!!lastIssue.isWarning).to.equal(false);
+
+        done();
+      });
+    });
+  });
+
+  describe(`when filename does not match to header 
+  (fixtures/rules-cases/filename-does-not-match-header)`, () => {
+    const folder = './test/fixtures/rules-cases/filename-does-not-match-header';
+    const ddfDataSet = new DdfDataSet(folder);
+
+    it('2 issues should be found and they should be expected', done => {
+      const EXPECTED_ISSUES_QUANTITY = 2;
+      const issuesData = [
+        {
+          file: 'ddf--datapoints--pop--by--country--year.csv',
+          data: ['country']
+        },
+        {
+          file: 'ddf--entities--geo--country.csv',
+          data: ['geo', 'country']
+        }
+      ];
+
+      ddfDataSet.load(() => {
+        const results = generalRules[rulesRegistry.FILENAME_DOES_NOT_MATCH_HEADER](ddfDataSet);
+
+        expect(results.length).to.equal(EXPECTED_ISSUES_QUANTITY);
+
+        issuesData.forEach((issueData, index) => {
+          expect(results[index].type).to.equal(rulesRegistry.FILENAME_DOES_NOT_MATCH_HEADER);
+          expect(_.endsWith(results[index].path, issueData.file)).to.be.true;
+          expect(_.isEqual(results[index].data, issueData.data)).to.be.true;
+        });
 
         done();
       });
