@@ -49,7 +49,7 @@
     "conventional-changelog": "1.1.0",
     "conventional-changelog-cli": "1.2.0",
     "conventional-github-releaser": "1.1.2",
-    "eslint": "2.9.0",
+    "eslint": "2.10.1",
     "eslint-config-valorsoft": "0.0.11",
     "istanbul": "0.4.3",
     "mocha": "2.4.5",
