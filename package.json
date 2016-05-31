@@ -50,7 +50,7 @@
     "conventional-github-releaser": "1.1.2",
     "eslint-config-valorsoft": "0.0.15",
     "istanbul": "0.4.3",
-    "mocha": "2.4.5",
+    "mocha": "2.5.3",
     "shelljs": "0.7.0",
     "sinon": "1.17.4",
     "sinon-chai": "2.8.0"
