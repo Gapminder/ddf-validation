@@ -179,4 +179,36 @@ describe('rules for concept', () => {
       });
     });
   });
+
+  describe('when "CONCEPTS_NOT_FOUND" rule', () => {
+    afterEach(done => {
+      ddfDataSet.dismiss(() => {
+        done();
+      });
+    });
+
+    it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
+      ddfDataSet.load(() => {
+        const result = conceptRules[rulesRegistry.CONCEPTS_NOT_FOUND](ddfDataSet);
+
+        expect(result).to.be.null;
+
+        done();
+      });
+    });
+
+    it(`issues should be found for folder with the problem
+    (fixtures/rules-cases/concepts-not-found)`, done => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/concepts-not-found');
+      ddfDataSet.load(() => {
+        const result = conceptRules[rulesRegistry.CONCEPTS_NOT_FOUND](ddfDataSet);
+
+        expect(result).to.be.not.null;
+        expect(result.type).to.equal(rulesRegistry.CONCEPTS_NOT_FOUND);
+
+        done();
+      });
+    });
+  });
 });
