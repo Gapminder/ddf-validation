@@ -107,6 +107,14 @@ describe('rules for concept', () => {
           {
             wrongHeaderDetail: 'xgeo',
             suggestions: ['geo']
+          },
+          {
+            wrongHeaderDetail: 'domain',
+            suggestions: []
+          },
+          {
+            wrongHeaderDetail: 'domain',
+            suggestions: []
           }
         ];
 

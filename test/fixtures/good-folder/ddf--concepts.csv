@@ -1,6 +1,7 @@
 concept,concept_type,domain,name
 name,string,,
 geo,entity_domain,,
+domain,string,,Domain
 region,entity_set,geo,Region
 country,entity_set,geo,Country
 capital,entity_set,geo,Capital
