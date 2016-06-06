@@ -12,6 +12,7 @@ Each part of any header should be concept (is-- fields are excluded in this case
 ddf--concepts.csv
 ```
 concept,concept_type,domain,name
+domain,string,,Domain
 name,string,,
 geo,entity_domain,,
 country,entity_set,geo,Country
@@ -48,3 +49,5 @@ vat,1960,100000
 Should be included next information:
 
 incorrect header value
+
+### Also needed extra functionality. We also need to check headers in concept file (excludes: `concept` and `concept_type`)
