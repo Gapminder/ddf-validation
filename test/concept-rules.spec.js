@@ -101,19 +101,19 @@ describe('rules for concept', () => {
         const result = conceptRules[rulesRegistry.NON_CONCEPT_HEADER](ddfDataSet);
         const issuesData = [
           {
-            wrongHeaderDetail: 'wrong-header-1',
+            wrongHeaderDetails: 'wrong-header-1',
             suggestions: []
           },
           {
-            wrongHeaderDetail: 'xgeo',
+            wrongHeaderDetails: 'xgeo',
             suggestions: ['geo']
           },
           {
-            wrongHeaderDetail: 'domain',
+            wrongHeaderDetails: 'domain',
             suggestions: []
           },
           {
-            wrongHeaderDetail: 'domain',
+            wrongHeaderDetails: 'domain',
             suggestions: []
           }
         ];
@@ -123,7 +123,7 @@ describe('rules for concept', () => {
         issuesData.forEach((issueData, index) => {
           expect(result[index].type).to.equal(rulesRegistry.NON_CONCEPT_HEADER);
           expect(!!result[index].data).to.be.true;
-          expect(result[index].data).to.equal(issueData.wrongHeaderDetail);
+          expect(result[index].data).to.equal(issueData.wrongHeaderDetails);
           expect(_.head(result[index].suggestions)).to.equal(_.head(issueData.suggestions));
         });
 
