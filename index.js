@@ -54,20 +54,21 @@ ddfDataSet.load(() => {
     });
   });
 
-  function prepareDataPointProcessor(detail) {
+  function prepareDataPointProcessor(dataPointDetail) {
     return cb => {
-      ddfDataSet.getDataPoint().loadDetail(detail, () => {
-        Object.getOwnPropertySymbols(ddfDataPointRules).forEach(key => {
-          const result = ddfDataPointRules[key](ddfDataSet, detail);
+      ddfDataSet.getDataPoint().loadDetail(
+        dataPointDetail,
+        (dataPointRecord, line) => {
+          Object.getOwnPropertySymbols(ddfDataPointRules).forEach(key => {
+            const result = ddfDataPointRules[key]({ddfDataSet, dataPointDetail, dataPointRecord, line});
 
-          if (!_.isEmpty(result)) {
-            out = out.concat(result.map(issue => issue.view()));
-          }
-        });
-
-        ddfDataSet.getDataPoint().removeAllData();
-        cb();
-      });
+            if (!_.isEmpty(result)) {
+              out = out.concat(result.map(issue => issue.view()));
+            }
+          });
+        },
+        err => cb(err)
+      );
     };
   }
 
