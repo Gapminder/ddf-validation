@@ -1,0 +1,4 @@
+geo,name,lat,lng,is--region,is--country,is--capital
+and,Andorra,,,0,TRUE,0
+afg,Afghanistan,,,0,foo,0
+dza,Algeria,,,0,TRUE,bar

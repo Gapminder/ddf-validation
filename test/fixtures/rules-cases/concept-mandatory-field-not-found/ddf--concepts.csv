@@ -1,9 +1,8 @@
 concept,concept_type,domain,name
-name,string,,
+name,,,
 geo,entity_domain,,
-domain,string,,Domain
-region,entity_set,geo,Region
-country,entity_set,geo,Country
+region,entity_set,name,Region
+country,entity_set,,Country
 capital,entity_set,geo,Capital
 pop,measure,geo,Population
 year,time,,year
