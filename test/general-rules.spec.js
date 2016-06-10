@@ -42,16 +42,6 @@ describe('general rules', () => {
         done();
       });
     });
-
-    /*it('there should be no issues for "FILENAME_DOES_NOT_MATCH_HEADER" rule', done => {
-     ddfDataSet.load(() => {
-     const result = generalRules[rulesRegistry.FILENAME_DOES_NOT_MATCH_HEADER](ddfDataSet);
-
-     expect(result.length).to.equal(0);
-
-     done();
-     });
-     });*/
   });
 
   describe('when DDF folder is NOT correct (fixtures/bad-folder)', () => {
@@ -140,28 +130,6 @@ describe('general rules', () => {
 
           expect(suggestion).to.equal(expectedSuggestions[count]);
         }
-
-        done();
-      });
-    });
-
-    it('3 first issues should be warnings', done => {
-      ddfDataSet.load(() => {
-        const LAST_WARNING_INDEX = 2;
-        const result = generalRules[rulesRegistry.INCORRECT_JSON_FIELD](ddfDataSet);
-
-        expect(_.every(result.slice(0, LAST_WARNING_INDEX + 1), val => val.isWarning)).to.equal(true);
-
-        done();
-      });
-    });
-
-    it('last issue should be an error', done => {
-      ddfDataSet.load(() => {
-        const result = generalRules[rulesRegistry.INCORRECT_JSON_FIELD](ddfDataSet);
-        const lastIssue = _.tail(result);
-
-        expect(!!lastIssue.isWarning).to.equal(false);
 
         done();
       });
