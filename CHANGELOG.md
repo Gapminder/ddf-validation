@@ -1,3 +1,17 @@
+<a name="0.12.0"></a>
+# [0.12.0](https://github.com/Gapminder/ddf-validation/compare/v0.10.0...v0.12.0) (2016-06-09)
+
+
+### Features
+
+* **rule:** CONCEPT_MANDATORY_FIELD_NOT_FOUND rule providing ([ea9434e](https://github.com/Gapminder/ddf-validation/commit/ea9434e)), closes [#57](https://github.com/Gapminder/ddf-validation/issues/57)
+* **rule:** CONCEPTS_NOT_FOUND rule providing ([5557ca9](https://github.com/Gapminder/ddf-validation/commit/5557ca9)), closes [#73](https://github.com/Gapminder/ddf-validation/issues/73)
+* **rule:** EMPTY_CONCEPT_ID ([c826cfb](https://github.com/Gapminder/ddf-validation/commit/c826cfb)), closes [#79](https://github.com/Gapminder/ddf-validation/issues/79)
+* **rule:** FILENAME_DOES_NOT_MATCH_HEADER rule implementation ([c39dee4](https://github.com/Gapminder/ddf-validation/commit/c39dee4)), closes [#64](https://github.com/Gapminder/ddf-validation/issues/64)
+* **rules:** WRONG_ENTITY_IS_HEADER, NON_CONCEPT_HEADER and WRONG_ENTITY_IS_VALUE rules ([d2a6924](https://github.com/Gapminder/ddf-validation/commit/d2a6924)), closes [#81](https://github.com/Gapminder/ddf-validation/issues/81) [#82](https://github.com/Gapminder/ddf-validation/issues/82) [#83](https://github.com/Gapminder/ddf-validation/issues/83) [#56](https://github.com/Gapminder/ddf-validation/issues/56)
+
+
+
 <a name="0.10.0"></a>
 # [0.10.0](https://github.com/Gapminder/ddf-validation/compare/v0.1.1...v0.10.0) (2016-04-29)
 
