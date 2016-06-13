@@ -43,6 +43,35 @@ describe('rules for data points', () => {
       });
     });
 
+    it(`an issue should be found for rule 'DATA_POINT_VALUE_NOT_NUMERIC'
+   (fixtures/rules-cases/data-point-value-not-num)`, done => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-value-not-num');
+      ddfDataSet.load(() => {
+        const dataPointValueNotNumRule = dataPointsRules[rulesRegistry.MEASURE_VALUE_NOT_NUMERIC];
+        const dataPointDetail = ddfDataSet.getDataPoint().details[0];
+        const expectedFileName = 'ddf--datapoints--pop--by--country--year.csv';
+        const expectedMeasure = 'pop';
+        const expectedLine = 2;
+        const expectedValue = 'huge';
+
+        ddfDataSet.getDataPoint().loadDetail(dataPointDetail,
+          (dataPointRecord, line) => {
+            const issues = dataPointValueNotNumRule({ddfDataSet, dataPointDetail, dataPointRecord, line});
+            const issue = _.head(issues);
+
+            expect(issues.length).to.equal(1);
+            expect(issue.type).to.equal(rulesRegistry.MEASURE_VALUE_NOT_NUMERIC);
+            expect(issue.path.endsWith(expectedFileName)).to.be.true;
+            expect(!!issue.data).to.be.true;
+            expect(issue.data.measure).to.equal(expectedMeasure);
+            expect(issue.data.line).to.equal(expectedLine);
+            expect(issue.data.value).to.equal(expectedValue);
+          },
+          () => done()
+        );
+      });
+    });
+
     it(`an issue should be found for rule 'DATA_POINT_UNEXPECTED_ENTITY_VALUE'
    (fixtures/rules-cases/data-point-unexpected-entity-value)`, done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-unexpected-entity-value');
