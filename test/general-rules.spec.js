@@ -42,6 +42,16 @@ describe('general rules', () => {
         done();
       });
     });
+
+    it('there should be no issues for "INCORRECT_IDENTIFIER" rule', done => {
+      ddfDataSet.load(() => {
+        const result = generalRules[rulesRegistry.INCORRECT_IDENTIFIER](ddfDataSet);
+
+        expect(result.length).to.equal(0);
+
+        done();
+      });
+    });
   });
 
   describe('when DDF folder is NOT correct (fixtures/bad-folder)', () => {
@@ -161,6 +171,40 @@ describe('general rules', () => {
 
         issuesData.forEach((issueData, index) => {
           expect(results[index].type).to.equal(rulesRegistry.FILENAME_DOES_NOT_MATCH_HEADER);
+          expect(_.endsWith(results[index].path, issueData.file)).to.be.true;
+          expect(_.isEqual(results[index].data, issueData.data)).to.be.true;
+        });
+
+        done();
+      });
+    });
+  });
+
+  describe(`when some concepts and entity values have incorrect identifiers 
+  (fixtures/rules-cases/incorrect-identifier)`, () => {
+    const folder = './test/fixtures/rules-cases/incorrect-identifier';
+    const ddfDataSet = new DdfDataSet(folder);
+
+    it('2 issues should be found and they should be expected', done => {
+      const EXPECTED_ISSUES_QUANTITY = 2;
+      const issuesData = [
+        {
+          file: 'ddf--entities--geo--country.csv',
+          data: [{conceptName: 'geo', conceptValue: 'a#f$g', line: 2}]
+        },
+        {
+          file: 'ddf--concepts.csv',
+          data: [{conceptValue: 'do-main', line: 4}]
+        }
+      ];
+
+      ddfDataSet.load(() => {
+        const results = generalRules[rulesRegistry.INCORRECT_IDENTIFIER](ddfDataSet);
+
+        expect(results.length).to.equal(EXPECTED_ISSUES_QUANTITY);
+
+        issuesData.forEach((issueData, index) => {
+          expect(results[index].type).to.equal(rulesRegistry.INCORRECT_IDENTIFIER);
           expect(_.endsWith(results[index].path, issueData.file)).to.be.true;
           expect(_.isEqual(results[index].data, issueData.data)).to.be.true;
         });
