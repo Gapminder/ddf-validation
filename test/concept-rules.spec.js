@@ -219,4 +219,57 @@ describe('rules for concept', () => {
       });
     });
   });
+
+  describe('when "INVALID_DRILL_UP" rule', () => {
+    afterEach(done => {
+      ddfDataSet.dismiss(() => {
+        done();
+      });
+    });
+
+    it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
+      ddfDataSet.load(() => {
+        const result = conceptRules[rulesRegistry.INVALID_DRILL_UP](ddfDataSet);
+
+        expect(_.isEmpty(result)).to.be.true;
+
+        done();
+      });
+    });
+
+    it(`issues should be found for folder with the problem
+     (fixtures/rules-cases/invalid-drill-up)`, done => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/invalid-drill-up');
+      ddfDataSet.load(() => {
+        const results = conceptRules[rulesRegistry.INVALID_DRILL_UP](ddfDataSet);
+        const expectedReasons = [
+          {
+            myDomain: 'geo',
+            drillUpDomain: 'geo2',
+            reason: 'wrong entity domain'
+          },
+          {
+            drillUpName: 'foo',
+            reason: 'concept for drill up is not found'
+          },
+          {
+            myDomain: 'geo',
+            drillUpDomain: '',
+            reason: 'wrong entity domain'
+          }
+        ];
+
+        expect(_.isEmpty(results)).to.be.false;
+        expect(results.length).to.equal(1);
+
+        const result = _.head(results);
+
+        expect(result.type).to.equal(rulesRegistry.INVALID_DRILL_UP);
+        expect(_.isEqual(result.data.reasons, expectedReasons)).to.be.true;
+
+        done();
+      });
+    });
+  });
 });

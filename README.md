@@ -12,9 +12,29 @@
 
 ## Usage
 
-### DDF directory validation
+`validate-ddf <root> [options]`
 
-`validate-ddf <folder>`
+```
+Commands:
+  root  DDF Root directory
+
+Options:
+  -i               Generate index file
+  -j               Fix wrong JSONs
+  --rules          print information regarding supported rules
+  --include-tags   Process only issues by selected tags
+  --exclude-tags   Process all tags except selected
+  --include-rules  Process only issues by selected rules
+  --exclude-rules  Process all rules except selected
+
+Examples:
+  validate-ddf ../ddf-example                                        validate DDF datasets for the root
+  validate-ddf ../ddf-example -i                                     generate ddf--index file
+  validate-ddf ../ddf-example -j                                     fix JSONs for this DDF dataset
+  validate-ddf ../ddf-example --rules                                print information regarding supported rules
+  validate-ddf ../ddf-example --include-rules "INCORRECT_JSON_FIELD" Validate only by  INCORRECT_JSON_FIELD rule
+  validate-ddf ../ddf-example --exclude-tags "WARNING_TAG"           Get all kinds of issues except warnings
+```
 
 ### index file creation
 
