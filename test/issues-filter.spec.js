@@ -11,7 +11,7 @@ chai.use(sinonChai);
 
 describe('issues filter', () => {
   describe('when issues filter was constructed with "include-tags" and "exclude-tags"', () => {
-    it('WRONG_TAGS_COMBINATION_ERROR should be raised', done => {
+    it('should WRONG_TAGS_COMBINATION_ERROR', done => {
       expect(() => new IssuesFilter({
         includeTags: 'some-tags',
         excludeTags: 'some-tags'
@@ -22,7 +22,7 @@ describe('issues filter', () => {
   });
 
   describe('when issues filter was constructed with "include-rules" and "exclude-rules"', () => {
-    it('WRONG_RULES_COMBINATION_ERROR should be raised', done => {
+    it('should WRONG_RULES_COMBINATION_ERROR', done => {
       expect(() => new IssuesFilter({
         includeRules: 'some-rules',
         excludeRules: 'some-rules'
@@ -33,7 +33,7 @@ describe('issues filter', () => {
   });
 
   describe('when filter by rules with "include" mode', () => {
-    it('issue with correct criteria (NON_DDF_DATA_SET) should be allowed', done => {
+    it('should be allowed an issue with correct criteria (NON_DDF_DATA_SET)', done => {
       const issue = new Issue(rulesRegistry.NON_DDF_DATA_SET);
       const filter = new IssuesFilter({
         includeRules: 'NON_DDF_DATA_SET'
@@ -44,7 +44,7 @@ describe('issues filter', () => {
       done();
     });
 
-    it('issue with incorrect existing criteria (NON_DDF_FOLDER) should NOT be allowed', done => {
+    it('should NOT be allowed an issue with incorrect criteria (NON_DDF_FOLDER)', done => {
       const issue = new Issue(rulesRegistry.NON_DDF_FOLDER);
       const filter = new IssuesFilter({
         includeRules: 'NON_DDF_DATA_SET'
@@ -55,7 +55,7 @@ describe('issues filter', () => {
       done();
     });
 
-    it('issue with non existing rule should NOT be allowed', done => {
+    it('should NOT be allowed an issue with non existing rule', done => {
       const issue = new Issue(rulesRegistry.NON_DDF_FOLDER);
       const filter = new IssuesFilter({
         includeRules: 'something-wrong'
@@ -68,7 +68,7 @@ describe('issues filter', () => {
   });
 
   describe('when filter by rules with "exclude" mode', () => {
-    it('issue with correct criteria (NON_DDF_DATA_SET) should NOT be allowed', done => {
+    it('should NOT be allowed an issue with correct criteria (NON_DDF_DATA_SET)', done => {
       const issue = new Issue(rulesRegistry.NON_DDF_DATA_SET);
       const filter = new IssuesFilter({
         excludeRules: 'NON_DDF_DATA_SET'
@@ -79,7 +79,7 @@ describe('issues filter', () => {
       done();
     });
 
-    it('issue with incorrect existing criteria (NON_DDF_FOLDER) should be allowed', done => {
+    it('should be allowed an issue with incorrect criteria (NON_DDF_FOLDER)', done => {
       const issue = new Issue(rulesRegistry.NON_DDF_FOLDER);
       const filter = new IssuesFilter({
         excludeRules: 'NON_DDF_DATA_SET'
@@ -90,7 +90,7 @@ describe('issues filter', () => {
       done();
     });
 
-    it('issue with non existing rule should be allowed', done => {
+    it('should be allowed an issue with non existing rule', done => {
       const issue = new Issue(rulesRegistry.NON_DDF_FOLDER);
       const filter = new IssuesFilter({
         excludeRules: 'something-wrong'
@@ -103,7 +103,7 @@ describe('issues filter', () => {
   });
 
   describe('when filter by tags with "include" mode', () => {
-    it('issue with correct criteria (NON_DDF_DATA_SET & FILE_SYSTEM tag) should be allowed', done => {
+    it('should be allowed an issue with correct criteria (NON_DDF_DATA_SET & FILE_SYSTEM tag)', done => {
       const issue = new Issue(rulesRegistry.NON_DDF_DATA_SET);
       const filter = new IssuesFilter({
         includeTags: 'FILE_SYSTEM'
@@ -114,8 +114,8 @@ describe('issues filter', () => {
       done();
     });
 
-    it(`issue with incorrect existing criteria 
-    (CONCEPT_ID_IS_NOT_UNIQUE & FILE_SYSTEM tag) should NOT be allowed`, done => {
+    it(`should NOT be allowed an issue with incorrect criteria 
+    (CONCEPT_ID_IS_NOT_UNIQUE & FILE_SYSTEM tag) `, done => {
       const issue = new Issue(rulesRegistry.CONCEPT_ID_IS_NOT_UNIQUE);
       const filter = new IssuesFilter({
         includeTags: 'FILE_SYSTEM'
@@ -126,7 +126,7 @@ describe('issues filter', () => {
       done();
     });
 
-    it('issue with non existing tag should NOT be allowed', done => {
+    it('should NOT be allowed an issue with non existing tag', done => {
       const issue = new Issue(rulesRegistry.NON_DDF_DATA_SET);
       const filter = new IssuesFilter({
         includeTags: 'something-wrong'
@@ -139,7 +139,7 @@ describe('issues filter', () => {
   });
 
   describe('when filter by tags with "exclude" mode', () => {
-    it('issue with correct criteria (NON_DDF_DATA_SET & FILE_SYSTEM tag) should NOT be allowed', done => {
+    it('should NOT be allowed an issue with correct criteria (NON_DDF_DATA_SET & FILE_SYSTEM tag)', done => {
       const issue = new Issue(rulesRegistry.NON_DDF_DATA_SET);
       const filter = new IssuesFilter({
         excludeTags: 'FILE_SYSTEM'
@@ -150,7 +150,7 @@ describe('issues filter', () => {
       done();
     });
 
-    it('issue with incorrect existing criteria (NON_DDF_FOLDER & FILE_SYSTEM tag) should be allowed', done => {
+    it('should be allowed an issue with incorrect existing criteria (NON_DDF_FOLDER & FILE_SYSTEM tag)', done => {
       const issue = new Issue(rulesRegistry.CONCEPT_ID_IS_NOT_UNIQUE);
       const filter = new IssuesFilter({
         excludeTags: 'FILE_SYSTEM'
@@ -161,7 +161,7 @@ describe('issues filter', () => {
       done();
     });
 
-    it('issue with non existing rule should be allowed', done => {
+    it('should be allowed an issue with non existing rule', done => {
       const issue = new Issue(rulesRegistry.NON_DDF_FOLDER);
       const filter = new IssuesFilter({
         excludeTags: 'something-wrong'

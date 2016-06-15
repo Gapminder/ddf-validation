@@ -49,15 +49,15 @@ ddfDataSet.load(() => {
   ddfRules.forEach(ruleSet => {
     Object.getOwnPropertySymbols(ruleSet)
       .filter(key => issuesFilter.isAllowed(key))
-      .forEach(key => {
-        const result = ruleSet[key](ddfDataSet);
-
-        if (!_.isArray(result) && !_.isEmpty(result)) {
-          out.push(result.view());
+      .map(key => ruleSet[key](ddfDataSet))
+      .filter(issues => !_.isEmpty(issues))
+      .forEach(issue => {
+        if (!_.isArray(issue)) {
+          out.push(issue.view());
         }
 
-        if (_.isArray(result) && !_.isEmpty(result)) {
-          result.forEach(resultRecord => {
+        if (_.isArray(issue)) {
+          issue.forEach(resultRecord => {
             out.push(resultRecord.view());
           });
         }

@@ -49,8 +49,8 @@ reasons
 
 reasons should be next:
 
- * wrong entity domain for drill up
+ * not an entity set
  * concept for drill up is not found
- * wrong entity domain for current drill up
+ * wrong entity domain
 
 ### Entity set in particular drill up should be related to its entity set.
