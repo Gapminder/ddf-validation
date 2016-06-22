@@ -1,4 +1,5 @@
 'use strict';
+const _ = require('lodash');
 const chai = require('chai');
 const sinonChai = require('sinon-chai');
 const DdfDataSet = require('../lib/ddf-definitions/ddf-data-set');
@@ -111,6 +112,81 @@ describe('rules for index', () => {
         expect(result[0].path).to.equal('./test/fixtures/dummy-companies');
 
         done();
+      });
+    });
+  });
+
+  describe('when index based rules checking', () => {
+    afterEach(done => {
+      ddfDataSet.dismiss(() => {
+        done();
+      });
+    });
+
+    describe('and WRONG_INDEX_KEY rule', () => {
+      it('any issue should NOT be found for good folder', done => {
+        ddfDataSet = new DdfDataSet('./test/fixtures/good-folder-indexed');
+
+        ddfDataSet.load(() => {
+          const results = indexRules[rulesRegistry.WRONG_INDEX_KEY](ddfDataSet);
+
+          expect(_.isEmpty(results)).to.be.true;
+
+          done();
+        });
+      });
+
+      it(`expected issue should be found for folder with the problem
+    (fixtures/rules-cases/wrong-index-key)`, done => {
+        ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/wrong-index-key');
+
+        ddfDataSet.load(() => {
+          const results = indexRules[rulesRegistry.WRONG_INDEX_KEY](ddfDataSet);
+
+          expect(results.length).to.equal(1);
+
+          const result = _.head(results);
+          const expectedIssueData = ['foo', 'bar'];
+
+          expect(result.type).to.equal(rulesRegistry.WRONG_INDEX_KEY);
+          expect(_.isEqual(result.data, expectedIssueData)).to.be.true;
+
+          done();
+        });
+      });
+    });
+
+    describe('and WRONG_INDEX_VALUE rule', () => {
+      it('any issue should NOT be found for good folder', done => {
+        ddfDataSet = new DdfDataSet('./test/fixtures/good-folder-indexed');
+
+        ddfDataSet.load(() => {
+          const results = indexRules[rulesRegistry.WRONG_INDEX_VALUE](ddfDataSet);
+
+          expect(_.isEmpty(results)).to.be.true;
+
+          done();
+        });
+      });
+
+      it(`expected issue should be found for folder with the problem
+    (fixtures/rules-cases/wrong-index-value)`, done => {
+        ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/wrong-index-value');
+
+        ddfDataSet.load(() => {
+          const results = indexRules[rulesRegistry.WRONG_INDEX_VALUE](ddfDataSet);
+
+          expect(results.length).to.equal(1);
+
+          const result = _.head(results);
+
+          const expectedIssueData = ['foo', 'geo_name'];
+
+          expect(result.type).to.equal(rulesRegistry.WRONG_INDEX_VALUE);
+          expect(_.isEqual(result.data, expectedIssueData)).to.be.true;
+
+          done();
+        });
       });
     });
   });

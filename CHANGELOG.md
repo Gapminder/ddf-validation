@@ -1,3 +1,16 @@
+<a name="0.12.1"></a>
+## [0.12.1](https://github.com/Gapminder/ddf-validation/compare/v0.12.0...v0.12.1) (2016-06-15)
+
+
+### Features
+
+* **filters & groups:** grouping and filtering for rules & rules list output ([bd18a8e](https://github.com/Gapminder/ddf-validation/commit/bd18a8e)), closes [#124](https://github.com/Gapminder/ddf-validation/issues/124)
+* **rule:** INCORRECT_IDENTIFIER rule providing ([1c2701b](https://github.com/Gapminder/ddf-validation/commit/1c2701b)), closes [#129](https://github.com/Gapminder/ddf-validation/issues/129)
+* **rule:** INVALID_DRILL_UP rule providing ([ed5e0e6](https://github.com/Gapminder/ddf-validation/commit/ed5e0e6)), closes [#77](https://github.com/Gapminder/ddf-validation/issues/77)
+* **rule:** MEASURE_VALUE_NOT_NUMERIC rule providing ([07772eb](https://github.com/Gapminder/ddf-validation/commit/07772eb)), closes [#86](https://github.com/Gapminder/ddf-validation/issues/86)
+
+
+
 <a name="0.12.0"></a>
 # [0.12.0](https://github.com/Gapminder/ddf-validation/compare/v0.10.0...v0.12.0) (2016-06-09)
 

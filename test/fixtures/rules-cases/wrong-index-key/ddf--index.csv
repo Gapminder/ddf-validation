@@ -1,0 +1,5 @@
+key,value,file
+concept,concept_type,ddf--concepts.csv
+concept,name,ddf--concepts.csv
+"geo,foo",gas_production_bcf,ddf--datapoints--gas_production_bcf--by--geo--year.csv
+bar,geo_name,ddf--entities--geo.csv
