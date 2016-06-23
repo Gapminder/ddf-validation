@@ -10,7 +10,7 @@
 
 `npm test` or `npm run n-test` without eslint
 
-## Usage
+## Console utility usage
 
 `validate-ddf <root> [options]`
 
@@ -36,13 +36,108 @@ Examples:
   validate-ddf ../ddf-example --exclude-tags "WARNING_TAG"           Get all kinds of issues except warnings
 ```
 
-### index file creation
+## API usage
+
+First of all you should install this package: `npm i ddf-validation`
+
+API for `ddf-validation` has one method that expects particular type of validator and 3 types of validator:
+
+ * JSON based validator (`JSONValidator`)
+ * stream based validator (`StreamValidator`)
+ * validator that returns only kind of current DDF dataset: `correct/true` or `incorrect/false`
+ 
+Some examples of API using:
+
+### JSONValidator
+
+Simple example
+
+```
+const api = require('ddf-validation');
+const jsonValidator = new JSONValidator('path to ddf dataset');
+
+jsonValidator.on('finish', (err, jsonIssuesContent) => {
+  console.log(err, jsonIssuesContent);
+});
+
+api.validate(jsonValidator);
+```
+
+This validator's type returns all issues as JSON object. 
+And for this reason it not will be good for huge DDF datasets.
+
+### StreamValidator
+
+```
+const api = require('ddf-validation');
+const streamValidator = new StreamValidator('path to ddf dataset');
+
+streamValidator.on('issue', () => {
+  // catch new issue here
+});
+
+streamValidator.on('finish', err => {
+  // validation is finished
+});
+
+api.validate(streamValidator);
+```
+
+This validator's type returns each issue separately one by one.
+And for this reason it will be good for huge DDF datasets.
+By the way `StreamValidator` is used in console utility (`validate-ddf`) of this package.
+
+### FundamentalValidator
+
+This validator's type returns only `true` or `false` in accordance with kind of DDF dataset.
+This way of validation is fastest.
+
+```
+const api = require('ddf-validation');
+const fundamentalValidator = new FundamentalValidator('./test/fixtures/good-folder-indexed');
+
+fundamentalValidator.on('finish', (err, isDataSetCorrect) => {
+  // isDataSetCorrect === true if DDF dataset is correct
+  // isDataSetCorrect === true if DDF dataset is incorrect
+});
+
+api.validate(fundamentalValidator);
+```
+
+### Custom rules
+
+Also all validators supports validation parameters that corresponds with command line:
+
+ * includeTags   Process only issues by selected tags
+ * excludeTags   Process all tags except selected
+ * includeRules  Process only issues by selected rules
+ * excludeRules  Process all rules except selected
+ 
+Here is an example:
+
+```
+const api = require('ddf-validation');
+const expectedRule = 'INCORRECT_FILE';
+const streamValidator = new StreamValidator(path, {includeRules: expectedRule});
+
+streamValidator.on('issue', issue => {
+  // only one type of issue (INCORRECT_FILE) should be catched
+});
+
+streamValidator.on('finish', err => {
+  console.log('finished');
+});
+
+api.validate(streamValidator);
+```
+
+## index file creation
 
 `validate-ddf <folder with DDF data set> -i`
 
 Attention: existing `ddf--index.csv` file will be overwritten!
 
-### Developer guide
+## Developer guide
 
 [you can see it here](doc/developer-guide.md)
 
