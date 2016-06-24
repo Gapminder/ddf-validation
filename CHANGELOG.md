@@ -1,3 +1,14 @@
+<a name="0.12.2"></a>
+## [0.12.2](https://github.com/Gapminder/ddf-validation/compare/v0.12.1...v0.12.2) (2016-06-24)
+
+
+### Features
+
+* **api:** external validation API was provided ([66f2182](https://github.com/Gapminder/ddf-validation/commit/66f2182)), closes [#140](https://github.com/Gapminder/ddf-validation/issues/140)
+* **rules:** WRONG_INDEX_VALUE and WRONG_INDEX_KEY implementation ([4cf9fd7](https://github.com/Gapminder/ddf-validation/commit/4cf9fd7)), closes [#70](https://github.com/Gapminder/ddf-validation/issues/70) [#71](https://github.com/Gapminder/ddf-validation/issues/71)
+
+
+
 <a name="0.12.1"></a>
 ## [0.12.1](https://github.com/Gapminder/ddf-validation/compare/v0.12.0...v0.12.1) (2016-06-15)
 
