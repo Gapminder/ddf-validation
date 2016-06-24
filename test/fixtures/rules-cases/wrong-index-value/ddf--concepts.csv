@@ -1,0 +1,5 @@
+concept,concept_type,name
+geo,entity_domain,Geo
+gas_production_bcf,measure,Gas Production – Bcf
+name,string,Name
+year,time,Year

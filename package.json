@@ -4,7 +4,7 @@
   "description": "DDF validion tool",
   "main": "index.js",
   "bin": {
-    "validate-ddf": "index.js"
+    "validate-ddf": "cli.js"
   },
   "scripts": {
     "test": "npm run eslint && ./node_modules/.bin/mocha \"test/**/*.spec.js\"",
