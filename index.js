@@ -8,11 +8,21 @@ const ddfRules = require('./lib/ddf-rules');
 const ddfDataPointRules = require('./lib/ddf-rules/data-point-rules');
 const IssuesFilter = require('./lib/utils/issues-filter');
 
+function walkNonDataPointIssue(context, onIssue) {
+  ddfRules.forEach(ruleSet => {
+    Object.getOwnPropertySymbols(ruleSet)
+      .filter(key => context.issuesFilter.isAllowed(key))
+      .map(key => ruleSet[key](context.ddfDataSet))
+      .filter(issues => !_.isEmpty(issues))
+      .forEach(issue => onIssue(issue));
+  });
+}
+
 class JSONValidator {
   constructor(rootPath, settings) {
     this.rootPath = rootPath;
     this.settings = settings || {};
-    this.myEmitter = new EventEmitter();
+    this.issueEmitter = new EventEmitter();
   }
 
   prepareDataPointProcessor(dataPointDetail) {
@@ -38,7 +48,7 @@ class JSONValidator {
   }
 
   on(type, data) {
-    return this.myEmitter.on(type, data);
+    return this.issueEmitter.on(type, data);
   }
 
   validate() {
@@ -47,22 +57,16 @@ class JSONValidator {
     this.out = [];
 
     this.ddfDataSet.load(() => {
-      ddfRules.forEach(ruleSet => {
-        Object.getOwnPropertySymbols(ruleSet)
-          .filter(key => this.issuesFilter.isAllowed(key))
-          .map(key => ruleSet[key](this.ddfDataSet))
-          .filter(issues => !_.isEmpty(issues))
-          .forEach(issue => {
-            if (!_.isArray(issue)) {
-              this.out.push(issue.view());
-            }
+      walkNonDataPointIssue(this, issue => {
+        if (!_.isArray(issue)) {
+          this.out.push(issue.view());
+        }
 
-            if (_.isArray(issue)) {
-              issue.forEach(resultRecord => {
-                this.out.push(resultRecord.view());
-              });
-            }
+        if (_.isArray(issue)) {
+          issue.forEach(resultRecord => {
+            this.out.push(resultRecord.view());
           });
+        }
       });
 
       const dataPointActions = [];
@@ -72,7 +76,7 @@ class JSONValidator {
       });
 
       async.waterfall(dataPointActions, err => {
-        this.myEmitter.emit('finish', err, this.out);
+        this.issueEmitter.emit('finish', err, this.out);
         this.ddfDataSet.dismiss();
       });
     });
@@ -83,7 +87,7 @@ class StreamValidator {
   constructor(rootPath, settings) {
     this.rootPath = rootPath;
     this.settings = settings || {};
-    this.myEmitter = new EventEmitter();
+    this.issueEmitter = new EventEmitter();
   }
 
   prepareDataPointProcessor(dataPointDetail) {
@@ -99,7 +103,7 @@ class StreamValidator {
               const result = ddfDataPointRules[key]({ddfDataSet, dataPointDetail, dataPointRecord, line});
 
               if (!_.isEmpty(result)) {
-                result.map(issue => this.myEmitter.emit('issue', issue.view()));
+                result.map(issue => this.issueEmitter.emit('issue', issue.view()));
               }
             });
         },
@@ -109,7 +113,7 @@ class StreamValidator {
   }
 
   on(type, data) {
-    return this.myEmitter.on(type, data);
+    return this.issueEmitter.on(type, data);
   }
 
   validate() {
@@ -117,22 +121,16 @@ class StreamValidator {
     this.ddfDataSet = new DdfDataSet(this.rootPath);
 
     this.ddfDataSet.load(() => {
-      ddfRules.forEach(ruleSet => {
-        Object.getOwnPropertySymbols(ruleSet)
-          .filter(key => this.issuesFilter.isAllowed(key))
-          .map(key => ruleSet[key](this.ddfDataSet))
-          .filter(issues => !_.isEmpty(issues))
-          .forEach(issue => {
-            if (!_.isArray(issue)) {
-              this.myEmitter.emit('issue', issue.view());
-            }
+      walkNonDataPointIssue(this, issue => {
+        if (!_.isArray(issue)) {
+          this.issueEmitter.emit('issue', issue.view());
+        }
 
-            if (_.isArray(issue)) {
-              issue.forEach(resultRecord => {
-                this.myEmitter.emit('issue', resultRecord.view());
-              });
-            }
+        if (_.isArray(issue)) {
+          issue.forEach(resultRecord => {
+            this.issueEmitter.emit('issue', resultRecord.view());
           });
+        }
       });
 
       const dataPointActions = [];
@@ -142,18 +140,18 @@ class StreamValidator {
       });
 
       async.waterfall(dataPointActions, err => {
-        this.myEmitter.emit('finish', err);
+        this.issueEmitter.emit('finish', err);
         this.ddfDataSet.dismiss();
       });
     });
   }
 }
 
-class FundamentalValidator {
+class SimpleValidator {
   constructor(rootPath, settings) {
     this.rootPath = rootPath;
     this.settings = settings || {};
-    this.myEmitter = new EventEmitter();
+    this.issueEmitter = new EventEmitter();
     this.isDataSetCorrect = true;
   }
 
@@ -185,7 +183,7 @@ class FundamentalValidator {
   }
 
   on(type, data) {
-    return this.myEmitter.on(type, data);
+    return this.issueEmitter.on(type, data);
   }
 
   validate() {
@@ -212,12 +210,12 @@ class FundamentalValidator {
       validateNonDataPoints();
 
       if (!this.isDataSetCorrect) {
-        this.myEmitter.emit('finish', null, this.isDataSetCorrect);
+        this.issueEmitter.emit('finish', null, this.isDataSetCorrect);
         return;
       }
 
       async.waterfall(getDataPointsActions(), err => {
-        this.myEmitter.emit('finish', err, this.isDataSetCorrect);
+        this.issueEmitter.emit('finish', err, this.isDataSetCorrect);
         this.ddfDataSet.dismiss();
       });
     });
@@ -226,5 +224,5 @@ class FundamentalValidator {
 
 exports.JSONValidator = JSONValidator;
 exports.StreamValidator = StreamValidator;
-exports.FundamentalValidator = FundamentalValidator;
+exports.SimpleValidator = SimpleValidator;
 exports.validate = validator => validator.validate();

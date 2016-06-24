@@ -6,14 +6,14 @@ const expect = chai.expect;
 const api = require('../index');
 const JSONValidator = api.JSONValidator;
 const StreamValidator = api.StreamValidator;
-const FundamentalValidator = api.FundamentalValidator;
+const SimpleValidator = api.SimpleValidator;
 
 chai.use(sinonChai);
 
 describe('api', () => {
   describe('when JSONValidator', () => {
     describe('and DDF dataset is correct', () => {
-      it('should NOT be an error', done => {
+      it('should NOT emit error', done => {
         const jsonValidator = new JSONValidator('./test/fixtures/good-folder-indexed');
 
         jsonValidator.on('finish', err => {
@@ -25,7 +25,7 @@ describe('api', () => {
         api.validate(jsonValidator);
       });
 
-      it('issues data should be empty', done => {
+      it('should have NO issues', done => {
         const jsonValidator = new JSONValidator('./test/fixtures/good-folder-indexed');
 
         jsonValidator.on('finish', (err, jsonData) => {
@@ -42,7 +42,7 @@ describe('api', () => {
     describe('and DDF dataset is incorrect', () => {
       const path = './test/fixtures/wrong-file-in-index';
 
-      it('should NOT be error', done => {
+      it('should NOT emit error', done => {
         const jsonValidator = new JSONValidator(path);
 
         jsonValidator.on('finish', err => {
@@ -54,7 +54,7 @@ describe('api', () => {
         api.validate(jsonValidator);
       });
 
-      it('issues data should NOT be empty', done => {
+      it('should issues data is NOT empty', done => {
         const jsonValidator = new JSONValidator(path);
 
         jsonValidator.on('finish', (err, data) => {
@@ -67,7 +67,7 @@ describe('api', () => {
         api.validate(jsonValidator);
       });
 
-      it('"includeRules" settings should work correctly', done => {
+      it('should correctly handle "includeRules" settings', done => {
         const expectedRule = 'INCORRECT_FILE';
         const jsonValidator = new JSONValidator(path, {includeRules: expectedRule});
 
@@ -90,7 +90,7 @@ describe('api', () => {
 
   describe('when StreamValidator', () => {
     describe('and DDF dataset is correct', () => {
-      it('should NOT be an error', done => {
+      it('should NOT emit error', done => {
         const streamValidator = new StreamValidator('./test/fixtures/good-folder-indexed');
 
         streamValidator.on('finish', err => {
@@ -102,7 +102,7 @@ describe('api', () => {
         api.validate(streamValidator);
       });
 
-      it('issues data should be empty', done => {
+      it('should issues data is empty', done => {
         const streamValidator = new StreamValidator('./test/fixtures/good-folder-indexed');
 
         let issuesCount = 0;
@@ -124,7 +124,7 @@ describe('api', () => {
     describe('and DDF dataset is incorrect', () => {
       const path = './test/fixtures/wrong-file-in-index';
 
-      it('should NOT be error', done => {
+      it('should NOT emit error', done => {
         const streamValidator = new StreamValidator(path);
 
         streamValidator.on('finish', err => {
@@ -136,7 +136,7 @@ describe('api', () => {
         api.validate(streamValidator);
       });
 
-      it('issues data should NOT be empty', done => {
+      it('should issues data are NOT empty', done => {
         const streamValidator = new StreamValidator(path);
 
         let issuesCount = 0;
@@ -154,7 +154,7 @@ describe('api', () => {
         api.validate(streamValidator);
       });
 
-      it('"includeRules" settings should work correctly', done => {
+      it('should correctly handle "includeRules" settings', done => {
         const expectedRule = 'INCORRECT_FILE';
         const streamValidator = new StreamValidator(path, {includeRules: expectedRule});
 
@@ -179,10 +179,10 @@ describe('api', () => {
     });
   });
 
-  describe('when FundamentalValidator', () => {
+  describe('when SimpleValidator', () => {
     describe('and DDF dataset is correct', () => {
-      it('dataset should be correct', done => {
-        const fundamentalValidator = new FundamentalValidator('./test/fixtures/good-folder-indexed');
+      it('should dataset is correct', done => {
+        const fundamentalValidator = new SimpleValidator('./test/fixtures/good-folder-indexed');
 
         fundamentalValidator.on('finish', (err, isDataSetCorrect) => {
           expect(!!err).to.be.false;
@@ -198,8 +198,8 @@ describe('api', () => {
     describe('and DDF dataset is incorrect', () => {
       const path = './test/fixtures/wrong-file-in-index';
 
-      it('dataset should NOT be correct', done => {
-        const fundamentalValidator = new FundamentalValidator(path);
+      it('should dataset is NOT correct', done => {
+        const fundamentalValidator = new SimpleValidator(path);
 
         fundamentalValidator.on('finish', (err, isDataSetCorrect) => {
           expect(!!err).to.be.false;

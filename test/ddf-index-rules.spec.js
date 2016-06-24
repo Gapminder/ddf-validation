@@ -23,7 +23,7 @@ describe('rules for index', () => {
       });
     });
 
-    it('one issue should be found', done => {
+    it('should one issue is found', done => {
       ddfDataSet.load(() => {
         const result = indexRules[rulesRegistry.INCORRECT_FILE](ddfDataSet);
 
@@ -43,7 +43,7 @@ describe('rules for index', () => {
       });
     });
 
-    it('path field of the issue should contain "foo.csv"', done => {
+    it('should path field of the issue contains "foo.csv"', done => {
       ddfDataSet.load(() => {
         const result = indexRules[rulesRegistry.INCORRECT_FILE](ddfDataSet);
 
@@ -61,7 +61,7 @@ describe('rules for index', () => {
       });
     });
 
-    it('there should be no issues', done => {
+    it('should issues are NOT found', done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/dummy-companies-with-index');
       ddfDataSet.load(() => {
         const result = indexRules[rulesRegistry.INCORRECT_FILE](ddfDataSet);
@@ -84,7 +84,7 @@ describe('rules for index', () => {
       });
     });
 
-    it('1 error should be recognized', done => {
+    it('should 1 error is recognized', done => {
       ddfDataSet.load(() => {
         const result = indexRules[rulesRegistry.INDEX_IS_NOT_FOUND](ddfDataSet);
 
@@ -95,7 +95,7 @@ describe('rules for index', () => {
       });
     });
 
-    it('error should contain "INDEX_IS_NOT_FOUND" type', done => {
+    it('should error has "INDEX_IS_NOT_FOUND" type', done => {
       ddfDataSet.load(() => {
         const result = indexRules[rulesRegistry.INDEX_IS_NOT_FOUND](ddfDataSet);
 
@@ -105,7 +105,7 @@ describe('rules for index', () => {
       });
     });
 
-    it('data from issue should contain an input ddf path', done => {
+    it('should data from issue contains an input ddf path', done => {
       ddfDataSet.load(() => {
         const result = indexRules[rulesRegistry.INDEX_IS_NOT_FOUND](ddfDataSet);
 
@@ -124,7 +124,7 @@ describe('rules for index', () => {
     });
 
     describe('and WRONG_INDEX_KEY rule', () => {
-      it('any issue should NOT be found for good folder', done => {
+      it('should any issue is NOT found for good folder', done => {
         ddfDataSet = new DdfDataSet('./test/fixtures/good-folder-indexed');
 
         ddfDataSet.load(() => {
@@ -136,7 +136,7 @@ describe('rules for index', () => {
         });
       });
 
-      it(`expected issue should be found for folder with the problem
+      it(`should expected issue is found for folder with the problem
     (fixtures/rules-cases/wrong-index-key)`, done => {
         ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/wrong-index-key');
 
@@ -157,7 +157,7 @@ describe('rules for index', () => {
     });
 
     describe('and WRONG_INDEX_VALUE rule', () => {
-      it('any issue should NOT be found for good folder', done => {
+      it('should any issue is NOT found for good folder', done => {
         ddfDataSet = new DdfDataSet('./test/fixtures/good-folder-indexed');
 
         ddfDataSet.load(() => {
@@ -169,7 +169,7 @@ describe('rules for index', () => {
         });
       });
 
-      it(`expected issue should be found for folder with the problem
+      it(`should expected issue is found for folder with the problem
     (fixtures/rules-cases/wrong-index-value)`, done => {
         ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/wrong-index-value');
 

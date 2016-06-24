@@ -40,11 +40,11 @@ Examples:
 
 First of all you should install this package: `npm i ddf-validation`
 
-API for `ddf-validation` has one method that expects particular type of validator and 3 types of validator:
+`ddf-validation` can be used via an API in three different ways:
 
  * JSON based validator (`JSONValidator`)
- * stream based validator (`StreamValidator`)
- * validator that returns only kind of current DDF dataset: `correct/true` or `incorrect/false`
+ * Stream based validator (`StreamValidator`)
+ * Validator that checks whether dataset has errors and if there are some - returns `true`, otherwise - `false`
  
 Some examples of API using:
 
@@ -54,6 +54,7 @@ Simple example
 
 ```
 const api = require('ddf-validation');
+const JSONValidator = api.JSONValidator;
 const jsonValidator = new JSONValidator('path to ddf dataset');
 
 jsonValidator.on('finish', (err, jsonIssuesContent) => {
@@ -64,12 +65,13 @@ api.validate(jsonValidator);
 ```
 
 This validator's type returns all issues as JSON object. 
-And for this reason it not will be good for huge DDF datasets.
+And for this reason it's not suitable for huge DDF datasets.
 
 ### StreamValidator
 
 ```
 const api = require('ddf-validation');
+const StreamValidator = api.StreamValidator;
 const streamValidator = new StreamValidator('path to ddf dataset');
 
 streamValidator.on('issue', () => {
@@ -83,25 +85,26 @@ streamValidator.on('finish', err => {
 api.validate(streamValidator);
 ```
 
-This validator's type returns each issue separately one by one.
-And for this reason it will be good for huge DDF datasets.
-By the way `StreamValidator` is used in console utility (`validate-ddf`) of this package.
+StreamValidator returns each issue separately one by one.
+It is good choice for huge DDF datasets.
+`StreamValidator` is the default validator.
 
-### FundamentalValidator
+### SimpleValidator
 
-This validator's type returns only `true` or `false` in accordance with kind of DDF dataset.
-This way of validation is fastest.
+According to the state of the dataset (valid or not) this validator returns only true or false with appropriate meaning.
+This is the fastest validator among given here.
 
 ```
 const api = require('ddf-validation');
-const fundamentalValidator = new FundamentalValidator('./test/fixtures/good-folder-indexed');
+const SimpleValidator = api.SimpleValidator;
+const simpleValidator = new SimpleValidator('./test/fixtures/good-folder-indexed');
 
-fundamentalValidator.on('finish', (err, isDataSetCorrect) => {
+simpleValidator.on('finish', (err, isDataSetCorrect) => {
   // isDataSetCorrect === true if DDF dataset is correct
   // isDataSetCorrect === true if DDF dataset is incorrect
 });
 
-api.validate(fundamentalValidator);
+api.validate(simpleValidator);
 ```
 
 ### Custom rules
@@ -118,6 +121,7 @@ Here is an example:
 ```
 const api = require('ddf-validation');
 const expectedRule = 'INCORRECT_FILE';
+const StreamValidator = api.StreamValidator;
 const streamValidator = new StreamValidator(path, {includeRules: expectedRule});
 
 streamValidator.on('issue', issue => {
