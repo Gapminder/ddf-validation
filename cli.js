@@ -38,8 +38,10 @@ if (utils.settings.isPrintRules) {
 
 const validator = new StreamValidator(utils.ddfRootFolder, utils.settings);
 
+logger.notice('[');
+
 validator.on('issue', issue => {
-  logger.notice(`${JSON.stringify(issue)}\n`);
+  logger.notice(`${JSON.stringify(issue)},\n`);
 });
 
 validator.on('finish', err => {
@@ -47,7 +49,7 @@ validator.on('finish', err => {
     throw err;
   }
 
-  logger.notice('finished...');
+  logger.notice('{}]\n');
 });
 
 api.validate(validator);
