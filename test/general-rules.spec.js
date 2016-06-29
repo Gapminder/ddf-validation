@@ -151,8 +151,7 @@ describe('general rules', () => {
     const folder = './test/fixtures/rules-cases/filename-does-not-match-header';
     const ddfDataSet = new DdfDataSet(folder);
 
-    it('2 issues should be found and they should be expected', done => {
-      const EXPECTED_ISSUES_QUANTITY = 2;
+    it('3 issues should be found and they should be expected', done => {
       const issuesData = [
         {
           file: 'ddf--datapoints--pop--by--country--year.csv',
@@ -160,14 +159,24 @@ describe('general rules', () => {
         },
         {
           file: 'ddf--entities--geo--country.csv',
-          data: ['geo', 'country']
+          data: {
+            reason: 'Headers does not corresponds with file name',
+            headers: ['region', 'name', 'lat', 'lng', 'is--region', 'is--country', 'is--capital']
+          }
+        },
+        {
+          file: 'ddf--entities--geo--region.csv',
+          data: {
+            reason: 'Wrong Entity data for "is--" based column (non "1")',
+            conditionalHeader: 'is--region'
+          }
         }
       ];
 
       ddfDataSet.load(() => {
         const results = generalRules[rulesRegistry.FILENAME_DOES_NOT_MATCH_HEADER](ddfDataSet);
 
-        expect(results.length).to.equal(EXPECTED_ISSUES_QUANTITY);
+        expect(results.length).to.equal(issuesData.length);
 
         issuesData.forEach((issueData, index) => {
           expect(results[index].type).to.equal(rulesRegistry.FILENAME_DOES_NOT_MATCH_HEADER);
