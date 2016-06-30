@@ -247,16 +247,16 @@ describe('rules for concept', () => {
           {
             conceptDomain: 'geo2',
             expectedDomain: 'geo',
-            reason: 'wrong entity domain for entity set'
+            reason: 'Domain in a Drillup is not a domain of a concept having this Drillup belongs to'
           },
           {
             drillUpName: 'foo',
-            reason: 'concept for drill up is not found'
+            reason: 'Concept for Drillup is not found'
           },
           {
             conceptDomain: 'geo2',
             expectedDomain: 'geo',
-            reason: 'entity domain in drill up should be same as entity domain for current concept'
+            reason: 'Entity domain in Drillup should be same as Entity domain for current Concept'
           }
         ];
 
