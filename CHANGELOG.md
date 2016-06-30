@@ -1,3 +1,13 @@
+<a name="0.12.4"></a>
+## [0.12.4](https://github.com/Gapminder/ddf-validation/compare/v0.12.3...v0.12.4) (2016-06-30)
+
+
+### Features
+
+* **optimization:** parallel mode and optimization for datapoints checking ([a2ee6bc](https://github.com/Gapminder/ddf-validation/commit/a2ee6bc)), closes [#143](https://github.com/Gapminder/ddf-validation/issues/143)
+
+
+
 <a name="0.12.3"></a>
 ## [0.12.3](https://github.com/Gapminder/ddf-validation/compare/v0.12.2...v0.12.3) (2016-06-24)
 
