@@ -4,7 +4,7 @@ drill_up,string,,,
 geo,entity_domain,,,
 geo2,entity_domain,,,
 domain,string,,Domain,
-region,entity_set,geo,Region,"[""country"",""capital2"",""foo"", ""name""]"
+region,entity_set,geo,Region,"[""country"",""capital2"",""foo"", ""name"", ""geo"", ""geo2""]"
 country,entity_set,geo,Country,"['country','capital']"
 capital,entity_set,geo,Capital,
 capital2,entity_set,geo2,Capital,
