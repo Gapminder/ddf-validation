@@ -33,7 +33,7 @@ Examples:
   validate-ddf ../ddf-example -j                                     fix JSONs for this DDF dataset
   validate-ddf ../ddf-example --rules                                print information regarding supported rules
   validate-ddf ../ddf-example --include-rules "INCORRECT_JSON_FIELD" Validate only by  INCORRECT_JSON_FIELD rule
-  validate-ddf ../ddf-example --exclude-tags "WARNING_TAG"           Get all kinds of issues except warnings
+  validate-ddf ../ddf-example --exclude-tags "WARNING"           Get all kinds of issues except warnings
 ```
 
 ## API usage
@@ -74,7 +74,7 @@ const api = require('ddf-validation');
 const StreamValidator = api.StreamValidator;
 const streamValidator = new StreamValidator('path to ddf dataset');
 
-streamValidator.on('issue', () => {
+streamValidator.on('issue', issue => {
   // catch new issue here
 });
 
