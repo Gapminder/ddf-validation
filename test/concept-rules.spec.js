@@ -230,9 +230,9 @@ describe('rules for concept', () => {
     it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
       ddfDataSet.load(() => {
-        const result = conceptRules[rulesRegistry.INVALID_DRILL_UP](ddfDataSet);
+        const results = conceptRules[rulesRegistry.INVALID_DRILL_UP](ddfDataSet);
 
-        expect(_.isEmpty(result)).to.be.true;
+        expect(_.isEmpty(results)).to.be.true;
 
         done();
       });
@@ -245,18 +245,18 @@ describe('rules for concept', () => {
         const results = conceptRules[rulesRegistry.INVALID_DRILL_UP](ddfDataSet);
         const expectedReasons = [
           {
-            myDomain: 'geo',
-            drillUpDomain: 'geo2',
-            reason: 'wrong entity domain'
+            conceptDomain: 'geo2',
+            expectedDomain: 'geo',
+            reason: 'wrong entity domain for entity set'
           },
           {
             drillUpName: 'foo',
             reason: 'concept for drill up is not found'
           },
           {
-            myDomain: 'geo',
-            drillUpDomain: '',
-            reason: 'wrong entity domain'
+            conceptDomain: 'geo2',
+            expectedDomain: 'geo',
+            reason: 'entity domain in drill up should be same as entity domain for current concept'
           }
         ];
 
