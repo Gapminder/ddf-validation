@@ -8,6 +8,8 @@ const ddfRules = require('./lib/ddf-rules');
 const ddfDataPointRules = require('./lib/ddf-rules/data-point-rules');
 const IssuesFilter = require('./lib/utils/issues-filter');
 
+const CONCURRENT_OPERATIONS_AMOUNT = 30;
+
 function walkNonDataPointIssue(context, onIssue) {
   ddfRules.forEach(ruleSet => {
     Object.getOwnPropertySymbols(ruleSet)
@@ -75,7 +77,7 @@ class JSONValidator {
         dataPointActions.push(this.prepareDataPointProcessor(detail));
       });
 
-      async.waterfall(dataPointActions, err => {
+      async.parallelLimit(dataPointActions, CONCURRENT_OPERATIONS_AMOUNT, err => {
         this.issueEmitter.emit('finish', err, this.out);
         this.ddfDataSet.dismiss();
       });
@@ -139,7 +141,7 @@ class StreamValidator {
         dataPointActions.push(this.prepareDataPointProcessor(detail));
       });
 
-      async.waterfall(dataPointActions, err => {
+      async.parallelLimit(dataPointActions, CONCURRENT_OPERATIONS_AMOUNT, err => {
         this.issueEmitter.emit('finish', err);
         this.ddfDataSet.dismiss();
       });
@@ -214,7 +216,7 @@ class SimpleValidator {
         return;
       }
 
-      async.waterfall(getDataPointsActions(), err => {
+      async.parallelLimit(getDataPointsActions(), CONCURRENT_OPERATIONS_AMOUNT, err => {
         this.issueEmitter.emit('finish', err, this.isDataSetCorrect);
         this.ddfDataSet.dismiss();
       });
