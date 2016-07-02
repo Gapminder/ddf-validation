@@ -55,7 +55,7 @@ class JSONValidator {
 
   validate() {
     this.issuesFilter = new IssuesFilter(this.settings);
-    this.ddfDataSet = new DdfDataSet(this.rootPath);
+    this.ddfDataSet = new DdfDataSet(this.rootPath, this.settings);
     this.out = [];
 
     this.ddfDataSet.load(() => {
@@ -120,7 +120,7 @@ class StreamValidator {
 
   validate() {
     this.issuesFilter = new IssuesFilter(this.settings);
-    this.ddfDataSet = new DdfDataSet(this.rootPath);
+    this.ddfDataSet = new DdfDataSet(this.rootPath, this.settings);
 
     this.ddfDataSet.load(() => {
       walkNonDataPointIssue(this, issue => {
@@ -190,7 +190,7 @@ class SimpleValidator {
 
   validate() {
     this.issuesFilter = new IssuesFilter(this.settings);
-    this.ddfDataSet = new DdfDataSet(this.rootPath);
+    this.ddfDataSet = new DdfDataSet(this.rootPath, this.settings);
 
     const validateNonDataPoints = () => {
       for (const ruleSet of ddfRules) {
