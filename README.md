@@ -26,6 +26,7 @@ Options:
   --exclude-tags   Process all tags except selected
   --include-rules  Process only issues by selected rules
   --exclude-rules  Process all rules except selected
+  --exclude-dirs   Process all directories except selected
 
 Examples:
   validate-ddf ../ddf-example                                        validate DDF datasets for the root
