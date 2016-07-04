@@ -123,6 +123,8 @@ class StreamValidator {
     this.ddfDataSet = new DdfDataSet(this.rootPath, this.settings);
 
     this.ddfDataSet.load(() => {
+      ////////////////////console.log(JSON.stringify(this.ddfDataSet.ddfRoot.directoryDescriptors[0]));
+
       walkNonDataPointIssue(this, issue => {
         if (!_.isArray(issue)) {
           this.issueEmitter.emit('issue', issue.view());

@@ -13,7 +13,7 @@ describe('ddf root folder validation', () => {
     const ddfRoot = new DDFRoot('./test/fixtures/bad-folder');
 
     it('ddf folders should not be defined', done => {
-      ddfRoot.check([], () => {
+      ddfRoot.check(() => {
         expect(ddfRoot.getDdfDirectoriesDescriptors().length)
           .to.equal(FOLDERS_ARE_ABSENT);
         done();
@@ -21,7 +21,7 @@ describe('ddf root folder validation', () => {
     });
 
     it('count of non-ddf folders should be equal count of all folders', done => {
-      ddfRoot.check([], () => {
+      ddfRoot.check(() => {
         expect(ddfRoot.getNonDdfDirectoriesDescriptors().length)
           .to.equal(ddfRoot.directoryDescriptors.length);
         done();
@@ -33,7 +33,7 @@ describe('ddf root folder validation', () => {
     it('count of ddf folders should be 1', done => {
       const ddfRoot = new DDFRoot('./test/fixtures/good-folder');
 
-      ddfRoot.check([], () => {
+      ddfRoot.check(() => {
         expect(ddfRoot.getDdfDirectoriesDescriptors().length)
           .to.equal(AT_LEAST_ONE_FOLDER_SHOULD_EXIST);
         done();
@@ -45,7 +45,7 @@ describe('ddf root folder validation', () => {
     it('count of ddf folders should be greater than 1', done => {
       const ddfRoot = new DDFRoot('./test/fixtures/good-folder-with-subfolders');
 
-      ddfRoot.check([], () => {
+      ddfRoot.check(() => {
         expect(ddfRoot.getDdfDirectoriesDescriptors().length)
           .to.be.greaterThan(AT_LEAST_ONE_FOLDER_SHOULD_EXIST);
         done();
