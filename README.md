@@ -22,6 +22,7 @@ Options:
   -i               Generate index file
   -j               Fix wrong JSONs
   --rules          print information regarding supported rules
+  --indexless      forget about ddf--index.csv and validate
   --include-tags   Process only issues by selected tags
   --exclude-tags   Process all tags except selected
   --include-rules  Process only issues by selected rules
@@ -32,7 +33,8 @@ Examples:
   validate-ddf ../ddf-example                                        validate DDF datasets for the root
   validate-ddf ../ddf-example -i                                     generate ddf--index file
   validate-ddf ../ddf-example -j                                     fix JSONs for this DDF dataset
-  validate-ddf ../ddf-example --rules                                print information regarding supported rules
+  validate-ddf  --rules                                              print information regarding supported rules
+  validate-ddf ../ddf-example --indexless                            forget about ddf--index.csv and validate
   validate-ddf ../ddf-example --include-rules "INCORRECT_JSON_FIELD" Validate only by  INCORRECT_JSON_FIELD rule
   validate-ddf ../ddf-example --exclude-tags "WARNING"           Get all kinds of issues except warnings
 ```
