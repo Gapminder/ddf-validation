@@ -1,4 +1,5 @@
 'use strict';
+const _ = require('lodash');
 const chai = require('chai');
 const sinonChai = require('sinon-chai');
 const expect = chai.expect;
@@ -24,7 +25,11 @@ describe('DDF data', () => {
     });
 
     it('non-DDF directory descriptors should NOT be present', () => {
+      const unexpectedFolders = ddfDataSet.ddfRoot.directoryDescriptors
+        .filter(directoryDescriptor => _.includes(directoryDescriptor.dir, '.some-folder'));
+
       expect(ddfDataSet.ddfRoot.getNonDdfDirectoriesDescriptors().length).to.equal(0);
+      expect(_.isEmpty(unexpectedFolders)).to.be.true;
     });
   });
 
