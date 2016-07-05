@@ -36,6 +36,7 @@
     "levenshtein": "1.0.5",
     "lodash": "4.13.1",
     "lokijs": "1.3.19",
+    "parse-decimal-number": "0.1.1",
     "path": "0.12.7",
     "prettyjson": "1.1.3",
     "util": "0.10.3",
