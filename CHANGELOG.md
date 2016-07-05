@@ -1,3 +1,15 @@
+<a name="0.12.6"></a>
+## [0.12.6](https://github.com/Gapminder/ddf-validation/compare/v0.12.5...v0.12.6) (2016-07-05)
+
+
+### Features
+
+* **datapoints:** numbers validation was improved ([1b0f3c9](https://github.com/Gapminder/ddf-validation/commit/1b0f3c9)), closes [#165](https://github.com/Gapminder/ddf-validation/issues/165) [#144](https://github.com/Gapminder/ddf-validation/issues/144)
+* **general:** indexless validation mode was provided ([393b2b3](https://github.com/Gapminder/ddf-validation/commit/393b2b3)), closes [#162](https://github.com/Gapminder/ddf-validation/issues/162)
+* **index:** clear approach for validation/indexing ([7ac7ead](https://github.com/Gapminder/ddf-validation/commit/7ac7ead))
+
+
+
 <a name="0.12.5"></a>
 ## [0.12.5](https://github.com/Gapminder/ddf-validation/compare/v0.12.4...v0.12.5) (2016-06-30)
 
