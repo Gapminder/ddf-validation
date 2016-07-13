@@ -1,3 +1,13 @@
+<a name="0.12.7"></a>
+## [0.12.7](https://github.com/Gapminder/ddf-validation/compare/v0.12.6...v0.12.7) (2016-07-13)
+
+
+### Features
+
+* **general:** allow hidden folders validation ([955c21b](https://github.com/Gapminder/ddf-validation/commit/955c21b)), closes [#176](https://github.com/Gapminder/ddf-validation/issues/176)
+
+
+
 <a name="0.12.6"></a>
 ## [0.12.6](https://github.com/Gapminder/ddf-validation/compare/v0.12.5...v0.12.6) (2016-07-05)
 
