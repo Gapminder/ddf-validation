@@ -23,6 +23,7 @@ Options:
   -j               Fix wrong JSONs
   --rules          print information regarding supported rules
   --indexless      forget about ddf--index.csv and validate
+  --datapointless  forget about datapoint validation
   --hidden         allow hidden folders validation
   --include-tags   Process only issues by selected tags
   --exclude-tags   Process all tags except selected
@@ -36,6 +37,7 @@ Examples:
   validate-ddf ../ddf-example -j                                     fix JSONs for this DDF dataset
   validate-ddf  --rules                                              print information regarding supported rules
   validate-ddf ../ddf-example --indexless                            forget about ddf--index.csv and validate
+  validate-ddf ../ddf-example  --datapointless                       forget about datapoint validation
   validate-ddf ../ddf-example --hidden                               allow hidden folders validation
   validate-ddf ../ddf-example --include-rules "INCORRECT_JSON_FIELD" Validate only by  INCORRECT_JSON_FIELD rule
   validate-ddf ../ddf-example --exclude-tags "WARNING"           Get all kinds of issues except warnings
