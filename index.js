@@ -71,6 +71,13 @@ class JSONValidator {
         }
       });
 
+      if (this.settings.datapointlessMode) {
+        this.issueEmitter.emit('finish', null, this.out);
+        this.ddfDataSet.dismiss();
+
+        return;
+      }
+
       const dataPointActions = [];
 
       this.ddfDataSet.getDataPoint().details.forEach(detail => {
@@ -134,6 +141,13 @@ class StreamValidator {
           });
         }
       });
+
+      if (this.settings.datapointlessMode) {
+        this.issueEmitter.emit('finish');
+        this.ddfDataSet.dismiss();
+
+        return;
+      }
 
       const dataPointActions = [];
 
@@ -205,6 +219,14 @@ class SimpleValidator {
         }
       }
     };
+
+    if (this.settings.datapointlessMode) {
+      this.issueEmitter.emit('finish', null, this.isDataSetCorrect);
+      this.ddfDataSet.dismiss();
+
+      return;
+    }
+
     const getDataPointsActions = () => this.ddfDataSet.getDataPoint().details
       .map(detail => this.prepareDataPointProcessor(detail));
 
