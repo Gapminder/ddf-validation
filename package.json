@@ -30,7 +30,7 @@
     "blessed": "0.1.81",
     "ddf-time-utils": "0.1.1",
     "deep-diff": "0.3.4",
-    "fast-csv": "2.0.1",
+    "fast-csv": "2.1.0",
     "fs": "0.0.2",
     "json2csv": "3.6.2",
     "levenshtein": "1.0.5",
