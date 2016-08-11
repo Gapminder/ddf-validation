@@ -102,4 +102,66 @@ describe('rules for entry', () => {
       });
     });
   });
+
+  describe('when "NON_UNIQUE_ENTITY_VALUE" rule', () => {
+    afterEach(done => {
+      ddfDataSet.dismiss(() => {
+        done();
+      });
+    });
+
+    it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
+      ddfDataSet.load(() => {
+        expect(entryRules[rulesRegistry.NON_UNIQUE_ENTITY_VALUE](ddfDataSet).length).to.equal(0);
+
+        done();
+      });
+    });
+
+    it(`issues should be found for folder with the problem
+    (fixtures/rules-cases/non-unique-entity-value)`, done => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/non-unique-entity-value');
+      ddfDataSet.load(() => {
+        const result = entryRules[rulesRegistry.NON_UNIQUE_ENTITY_VALUE](ddfDataSet);
+        const issuesData = [
+          {
+            source: {
+              geo: 'vat',
+              name: 'Vatican2'
+            },
+            duplicate: {
+              geo: 'vat',
+              name: 'Vatican'
+            }
+          },
+          {
+            source: {
+              geo: 'afg',
+              name: 'Afghanistan'
+            },
+            duplicate: {
+              geo: 'afg',
+              name: 'Afghanistan2'
+            }
+          }
+        ];
+
+        expect(result.length).to.equal(issuesData.length);
+
+        issuesData.forEach((issueData, index) => {
+          expect(result[index].type).to.equal(rulesRegistry.NON_UNIQUE_ENTITY_VALUE);
+          expect(!!result[index].data).to.be.true;
+          expect(!!result[index].data.source).to.be.true;
+          expect(!!result[index].data.duplicate).to.be.true;
+          expect(result[index].data.source.geo).to.equal(issueData.source.geo);
+          expect(result[index].data.source.name).to.equal(issueData.source.name);
+          expect(result[index].data.duplicate.geo).to.equal(issueData.duplicate.geo);
+          expect(result[index].data.duplicate.name).to.equal(issueData.duplicate.name);
+        });
+
+        done();
+      });
+    });
+  });
 });
