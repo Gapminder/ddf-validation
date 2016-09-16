@@ -1,3 +1,13 @@
+<a name="0.12.10"></a>
+## [0.12.10](https://github.com/Gapminder/ddf-validation/compare/v0.12.9...v0.12.10) (2016-09-16)
+
+
+### Features
+
+* **rule:** NON_UNIQUE_ENTITY_VALUE rule implementation ([0007482](https://github.com/Gapminder/ddf-validation/commit/0007482)), closes [#197](https://github.com/Gapminder/ddf-validation/issues/197)
+
+
+
 <a name="0.12.9"></a>
 ## [0.12.9](https://github.com/Gapminder/ddf-validation/compare/v0.12.8...v0.12.9) (2016-07-26)
 
