@@ -1,6 +1,6 @@
-region,name,lat,lng,is--region,is--country,is--capital
-and,Andorra,,,0,1,0
-africa,Africa,,,1,0,0
-europe,Europe,,,1,0,0
-americas,Americas,,,1,0,0
-asia,Asia,,,1,0,0
+geo,name,lat,lng,is--region,is--country,is--capital
+and,Andorra,,,false,true,false
+africa,Africa,,,true,false,false
+europe,Europe,,,true,false,false
+americas,Americas,,,true,false,false
+asia,Asia,,,true,false,false

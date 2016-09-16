@@ -80,12 +80,20 @@ describe('rules for entry', () => {
         const result = entryRules[rulesRegistry.WRONG_ENTITY_IS_VALUE](ddfDataSet);
         const issuesData = [
           {
+            header: 'is--region',
+            value: '0'
+          }, {
             header: 'is--country',
             value: 'foo'
-          },
-          {
+          }, {
+            header: 'is--region',
+            value: '0'
+          }, {
+            header: 'is--country',
+            value: 'True'
+          }, {
             header: 'is--capital',
-            value: 'bar'
+            value: 'fAlse'
           }
         ];
 
