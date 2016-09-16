@@ -163,13 +163,6 @@ describe('general rules', () => {
             reason: 'Headers does not corresponds with file name',
             headers: ['region', 'name', 'lat', 'lng', 'is--region', 'is--country', 'is--capital']
           }
-        },
-        {
-          file: 'ddf--entities--geo--region.csv',
-          data: {
-            reason: 'Wrong Entity data for "is--" based column (non "1")',
-            conditionalHeader: 'is--region'
-          }
         }
       ];
 
