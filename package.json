@@ -28,7 +28,7 @@
   "dependencies": {
     "async": "2.0.1",
     "blessed": "0.1.81",
-    "ddf-time-utils": "0.1.2",
+    "ddf-time-utils": "0.1.5",
     "deep-diff": "0.3.4",
     "fast-csv": "2.1.0",
     "fs": "0.0.2",
