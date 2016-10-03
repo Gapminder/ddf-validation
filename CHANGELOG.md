@@ -1,3 +1,13 @@
+<a name="0.12.11"></a>
+## [0.12.11](https://github.com/Gapminder/ddf-validation/compare/v0.12.10...v0.12.11) (2016-10-03)
+
+
+### Bug Fixes
+
+* **rule:** unexpeced call DATA_POINT_UNEXPECTED_ENTITY_VALUE ([7670679](https://github.com/Gapminder/ddf-validation/commit/7670679)), closes [#219](https://github.com/Gapminder/ddf-validation/issues/219)
+
+
+
 <a name="0.12.10"></a>
 ## [0.12.10](https://github.com/Gapminder/ddf-validation/compare/v0.12.9...v0.12.10) (2016-09-16)
 
