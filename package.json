@@ -54,7 +54,7 @@
     "istanbul": "0.4.5",
     "mocha": "3.0.2",
     "shelljs": "0.7.4",
-    "sinon": "1.17.5",
+    "sinon": "1.17.6",
     "sinon-chai": "2.8.0"
   }
 }
