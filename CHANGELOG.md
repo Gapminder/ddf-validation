@@ -1,3 +1,13 @@
+<a name="0.12.12"></a>
+## [0.12.12](https://github.com/Gapminder/ddf-validation/compare/v0.12.11...v0.12.12) (2016-10-11)
+
+
+### Bug Fixes
+
+* **windows:** error in windows ([f450b6d](https://github.com/Gapminder/ddf-validation/commit/f450b6d)), closes [#220](https://github.com/Gapminder/ddf-validation/issues/220)
+
+
+
 <a name="0.12.11"></a>
 ## [0.12.11](https://github.com/Gapminder/ddf-validation/compare/v0.12.10...v0.12.11) (2016-10-03)
 
