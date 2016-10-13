@@ -43,7 +43,10 @@ describe('ddf root folder validation', () => {
 
   describe('when good folder with sub-folders (fixtures/good-folder-with-subfolders)', () => {
     it('count of ddf folders should be greater than 1', done => {
-      const ddfRoot = new DDFRoot('./test/fixtures/good-folder-with-subfolders');
+      const ddfRoot = new DDFRoot(
+        './test/fixtures/good-folder-with-subfolders',
+        {multiDirMode: true}
+      );
 
       ddfRoot.check(() => {
         expect(ddfRoot.getDdfDirectoriesDescriptors().length)

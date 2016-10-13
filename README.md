@@ -12,24 +12,25 @@
 
 ## Console utility usage
 
-`validate-ddf <root> [options]`
+`validate-ddf [root] [options]`
 
 ```
 Commands:
-  root  DDF Root directory
+  root  DDF Root directory. Current directory will be processed if DDF Root directory is undefined.
 
 Options:
   -i               Generate index file
   -j               Fix wrong JSONs
   --rules          print information regarding supported rules
   --indexless      forget about ddf--index.csv and validate
+  --multidir       validate all subdirectories
   --datapointless  forget about datapoint validation
   --hidden         allow hidden folders validation
   --include-tags   Process only issues by selected tags
   --exclude-tags   Process all tags except selected
   --include-rules  Process only issues by selected rules
   --exclude-rules  Process all rules except selected
-  --exclude-dirs   Process all directories except selected
+  --exclude-dirs   Process all directories except selected. Truly only for `--multidir` mode
 
 Examples:
   validate-ddf ../ddf-example                                        validate DDF datasets for the root
@@ -37,10 +38,12 @@ Examples:
   validate-ddf ../ddf-example -j                                     fix JSONs for this DDF dataset
   validate-ddf  --rules                                              print information regarding supported rules
   validate-ddf ../ddf-example --indexless                            forget about ddf--index.csv and validate
+  validate-ddf ../ddf-example --multidir                             validate `ddf-example` and all subdirectories under "ddf-example"
   validate-ddf ../ddf-example  --datapointless                       forget about datapoint validation
   validate-ddf ../ddf-example --hidden                               allow hidden folders validation
-  validate-ddf ../ddf-example --include-rules "INCORRECT_JSON_FIELD" Validate only by  INCORRECT_JSON_FIELD rule
-  validate-ddf ../ddf-example --exclude-tags "WARNING"           Get all kinds of issues except warnings
+  validate-ddf ../ddf-example --include-rules "INCORRECT_JSON_FIELD" validate only by  INCORRECT_JSON_FIELD rule
+  validate-ddf ../ddf-example --exclude-tags "WARNING"               get all kinds of issues except warnings
+  validate-ddf ../ddf-example --exclude-dirs "etl foo-dir"           validate "ddf-example" and its subdirectories except "etl" and "foo-dir"
 ```
 
 ## API usage
@@ -118,10 +121,17 @@ api.validate(simpleValidator);
 
 Also all validators supports validation parameters that corresponds with command line:
 
- * includeTags   Process only issues by selected tags
- * excludeTags   Process all tags except selected
- * includeRules  Process only issues by selected rules
- * excludeRules  Process all rules except selected
+ * includeTags               Process only issues by selected tags
+ * excludeTags               Process all tags except selected
+ * includeRules              Process only issues by selected rules
+ * excludeRules              Process all rules except selected
+ * isIndexGenerationMode     `-i` option
+ * isJsonAutoCorrectionMode  `-j` option
+ * indexlessMode             `--indexless` option
+ * multiDirMode              `--multidir` option
+ * datapointlessMode         `--datapointless` option
+ * isPrintRules              `--rules` option
+ * isCheckHidden             `--hidden` option
  
 Here is an example:
 
@@ -129,7 +139,10 @@ Here is an example:
 const api = require('ddf-validation');
 const expectedRule = 'INCORRECT_FILE';
 const StreamValidator = api.StreamValidator;
-const streamValidator = new StreamValidator(path, {includeRules: expectedRule});
+const streamValidator = new StreamValidator(path, {
+  includeRules: expectedRule,
+  multiDirMode: true
+});
 
 streamValidator.on('issue', issue => {
   // only one type of issue (INCORRECT_FILE) should be catched
