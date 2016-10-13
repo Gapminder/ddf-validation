@@ -94,8 +94,8 @@ describe('general rules', () => {
     });
   });
 
-  describe(`when concepts in DDF folder contain wrong JSON fields 
-  (fixtures/rules-cases/incorrect-json-field)`, () => {
+  describe(`when concepts in DDF folder contain wrong JSON fields
+   (fixtures/rules-cases/incorrect-json-field)`, () => {
     const folder = './test/fixtures/rules-cases/incorrect-json-field';
     const ddfDataSet = new DdfDataSet(folder);
 
@@ -146,8 +146,8 @@ describe('general rules', () => {
     });
   });
 
-  describe(`when filename does not match to header 
-  (fixtures/rules-cases/filename-does-not-match-header)`, () => {
+  describe(`when filename does not match to header
+   (fixtures/rules-cases/filename-does-not-match-header)`, () => {
     const folder = './test/fixtures/rules-cases/filename-does-not-match-header';
     const ddfDataSet = new DdfDataSet(folder);
 
@@ -182,8 +182,8 @@ describe('general rules', () => {
     });
   });
 
-  describe(`when some concepts and entity values have incorrect identifiers 
-  (fixtures/rules-cases/incorrect-identifier)`, () => {
+  describe(`when some concepts and entity values have incorrect identifiers
+   (fixtures/rules-cases/incorrect-identifier)`, () => {
     const folder = './test/fixtures/rules-cases/incorrect-identifier';
     const ddfDataSet = new DdfDataSet(folder);
 
@@ -210,6 +210,37 @@ describe('general rules', () => {
           expect(_.endsWith(results[index].path, issueData.file)).to.be.true;
           expect(_.isEqual(results[index].data, issueData.data)).to.be.true;
         });
+
+        done();
+      });
+    });
+  });
+
+  describe('when "WRONG_DATA_POINT_HEADER" rule', () => {
+    it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
+
+      ddfDataSet.load(() => {
+        expect(generalRules[rulesRegistry.WRONG_DATA_POINT_HEADER](ddfDataSet).length).to.equal(0);
+
+        done();
+      });
+    });
+
+    it(`issues should be found for folder with the problem
+    (fixtures/rules-cases/wrong-data-point-header)`, done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/wrong-data-point-header');
+
+      ddfDataSet.load(() => {
+        const results = generalRules[rulesRegistry.WRONG_DATA_POINT_HEADER](ddfDataSet);
+        const result = _.head(results);
+        const EXPECTED_ISSUES_QUANTITY = 1;
+        const EXPECTED_WRONG_CONCEPT = 'name';
+
+        expect(results.length).to.equal(EXPECTED_ISSUES_QUANTITY);
+        expect(!!result.data).to.be.true;
+        expect(_.isEmpty(result.data.wrongConcepts)).to.be.false;
+        expect(_.head(result.data.wrongConcepts)).to.equal(EXPECTED_WRONG_CONCEPT);
 
         done();
       });

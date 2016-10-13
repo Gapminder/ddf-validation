@@ -1,0 +1,9 @@
+geo,name,lat,lng,is--region,is--country,is--capital
+and,Andorra,,,false,true,false
+afg,Afghanistan,,,false,true,false
+dza,Algeria,,,false,true,false
+africa,Africa,,,true,false,false
+europe,Europe,,,true,false,false
+americas,Americas,,,true,false,false
+asia,Asia,,,true,false,false
+vat,Vatican,,,false,true,true
