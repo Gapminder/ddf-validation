@@ -1,3 +1,16 @@
+<a name="0.13.0"></a>
+# [0.13.0](https://github.com/Gapminder/ddf-validation/compare/v0.12.15...v0.13.0) (2016-10-17)
+
+
+### Features
+
+* **generic:** simple run & only root directory checking by default ([f1eddd8](https://github.com/Gapminder/ddf-validation/commit/f1eddd8)), closes [#228](https://github.com/Gapminder/ddf-validation/issues/228) [#195](https://github.com/Gapminder/ddf-validation/issues/195)
+* **rule:** EMPTY_DATA rule providing ([d63d266](https://github.com/Gapminder/ddf-validation/commit/d63d266)), closes [#66](https://github.com/Gapminder/ddf-validation/issues/66)
+* **rule:** UNEXPECTED_DATA rule providing ([ae31db9](https://github.com/Gapminder/ddf-validation/commit/ae31db9)), closes [#67](https://github.com/Gapminder/ddf-validation/issues/67)
+* **rule:** WRONG_DATA_POINT_HEADER rule implementation ([67da6be](https://github.com/Gapminder/ddf-validation/commit/67da6be)), closes [#224](https://github.com/Gapminder/ddf-validation/issues/224)
+
+
+
 <a name="0.12.15"></a>
 ## [0.12.15](https://github.com/Gapminder/ddf-validation/compare/v0.12.14...v0.12.15) (2016-10-12)
 
