@@ -1,4 +1,5 @@
 'use strict';
+const _ = require('lodash');
 const chai = require('chai');
 const sinonChai = require('sinon-chai');
 const DdfDataSet = require('../lib/ddf-definitions/ddf-data-set');
@@ -131,18 +132,8 @@ describe('rules for entry', () => {
     (fixtures/rules-cases/non-unique-entity-value)`, done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/non-unique-entity-value');
       ddfDataSet.load(() => {
-        const result = entryRules[rulesRegistry.NON_UNIQUE_ENTITY_VALUE](ddfDataSet);
+        const results = entryRules[rulesRegistry.NON_UNIQUE_ENTITY_VALUE](ddfDataSet);
         const issuesData = [
-          {
-            source: {
-              geo: 'vat',
-              name: 'Vatican2'
-            },
-            duplicate: {
-              geo: 'vat',
-              name: 'Vatican'
-            }
-          },
           {
             source: {
               geo: 'afg',
@@ -152,20 +143,31 @@ describe('rules for entry', () => {
               geo: 'afg',
               name: 'Afghanistan2'
             }
+          },
+          {
+            source: {
+              geo: 'vat',
+              name: 'Vatican2'
+            },
+            duplicate: {
+              geo: 'vat',
+              name: 'Vatican'
+            }
           }
         ];
+        const resultsCopy = _.sortBy(results, result => result.data.source.geo);
 
-        expect(result.length).to.equal(issuesData.length);
+        expect(resultsCopy.length).to.equal(issuesData.length);
 
         issuesData.forEach((issueData, index) => {
-          expect(result[index].type).to.equal(rulesRegistry.NON_UNIQUE_ENTITY_VALUE);
-          expect(!!result[index].data).to.be.true;
-          expect(!!result[index].data.source).to.be.true;
-          expect(!!result[index].data.duplicate).to.be.true;
-          expect(result[index].data.source.geo).to.equal(issueData.source.geo);
-          expect(result[index].data.source.name).to.equal(issueData.source.name);
-          expect(result[index].data.duplicate.geo).to.equal(issueData.duplicate.geo);
-          expect(result[index].data.duplicate.name).to.equal(issueData.duplicate.name);
+          expect(resultsCopy[index].type).to.equal(rulesRegistry.NON_UNIQUE_ENTITY_VALUE);
+          expect(!!resultsCopy[index].data).to.be.true;
+          expect(!!resultsCopy[index].data.source).to.be.true;
+          expect(!!resultsCopy[index].data.duplicate).to.be.true;
+          expect(resultsCopy[index].data.source.geo).to.equal(issueData.source.geo);
+          expect(resultsCopy[index].data.source.name).to.equal(issueData.source.name);
+          expect(resultsCopy[index].data.duplicate.geo).to.equal(issueData.duplicate.geo);
+          expect(resultsCopy[index].data.duplicate.name).to.equal(issueData.duplicate.name);
         });
 
         done();

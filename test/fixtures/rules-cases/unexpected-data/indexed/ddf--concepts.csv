@@ -1,0 +1,6 @@
+concept,concept_type,name
+geo,entity_domain,Geo
+foo
+name,string,Name
+geo_name,string,Name
+year,time,Year
