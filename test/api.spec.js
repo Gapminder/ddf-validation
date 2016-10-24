@@ -195,6 +195,27 @@ describe('api', () => {
       });
     });
 
+    describe('and DDF dataset is correct', () => {
+      it('should dataset is correct', done => {
+        const config = {indexlessMode: true};
+        const issues = [];
+        const streamValidator = new StreamValidator('./test/fixtures/good-folder', config);
+
+        streamValidator.on('issue', issue => {
+          issues.push(issue);
+        });
+
+        streamValidator.on('finish', err => {
+          expect(!!err).to.be.false;
+          expect(_.isEmpty(issues)).to.be.true;
+
+          done();
+        });
+
+        api.validate(streamValidator);
+      });
+    });
+
     describe('and DDF dataset is incorrect', () => {
       const path = './test/fixtures/wrong-file-in-index';
 
