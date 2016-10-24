@@ -1,3 +1,13 @@
+<a name="0.13.2"></a>
+## [0.13.2](https://github.com/Gapminder/ddf-validation/compare/v0.13.1...v0.13.2) (2016-10-24)
+
+
+### Bug Fixes
+
+* **index:** unexpected 'index missing' warning ([f060f40](https://github.com/Gapminder/ddf-validation/commit/f060f40)), closes [#243](https://github.com/Gapminder/ddf-validation/issues/243)
+
+
+
 <a name="0.13.1"></a>
 ## [0.13.1](https://github.com/Gapminder/ddf-validation/compare/v0.13.0...v0.13.1) (2016-10-24)
 
