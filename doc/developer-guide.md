@@ -28,7 +28,7 @@ exports.descriptions = {
 There are 5 types of rules supported by `ddf-validation`:
 
 * General rules
-* Index rules
+* DataPackage rules
 * Concept rules
 * Entity rules
 * Data points rules
@@ -38,30 +38,30 @@ There are 5 types of rules supported by `ddf-validation`:
 General rules are applied to whole DDF dataset. And the don't validate Concepts, Entities and 
 Datapoints on their own. For example, rule `Folder is not DDF`.
 
-### Index rules
+### DataPackage rules
 
 This kind of rules is exclusively about `ddf--index` file. For example, `Index is not found`
 or `File in index doesn't exist`.
 
-`Index rules` are placed [here](../lib/ddf-rules/index-rules.js).
+`Index rules` are placed [here](../lib/ddf-rules/data-package-rules).
 
 ### Concept rules
 
 This kind of rules is exclusively about Concepts. For example, `Concept ID is not unique`.
 
-`Concept rules` are placed [here](../lib/ddf-rules/concept-rules.js).
+`Concept rules` are placed [here](../lib/ddf-rules/concept-rules).
 
 ### Entity rules
 
 This kind of rules is exclusively about Entities. For example, `Entity header is not Concept`.
 
-`Entity rules` are placed [here](../lib/ddf-rules/entity-rules.js).
+`Entity rules` are placed [here](../lib/ddf-rules/entity-rules).
 
 ### Data points rules
 
 This kind of rules is exclusively about Data points. For example, `Unexpected time value`.
 
-`Data points` are placed [here](../lib/ddf-rules/data-point-rules.js).
+`Data points` are placed [here](../lib/ddf-rules/data-point-rules).
 
 ## Issue
 
@@ -83,7 +83,7 @@ With a help of following methods you can populate Issue instance with additional
 * Set path contains location of the file where issue was found
 
 ```javascript
-fillPath : (
+setPath : (
   path: String|Array<String>
 ) => Issue
 ```
@@ -91,7 +91,7 @@ fillPath : (
 * Set an additional information (data) regarding this issue
 
 ```javascript
-fillData : (
+setData : (
   data: Object
 ) => Issue
 ```
@@ -99,7 +99,7 @@ fillData : (
 * Set suggestions for this issue. Suggestions is an object that describes how to solve found issue.
 
 ```javascript
-fillSuggestions : (
+setSuggestions : (
   suggestions: Array<String>
 ) => Issue
 ```
@@ -121,9 +121,9 @@ const data = {
   line: 665
 };
 const issue = new Issue(registry.MY_NEW_RULE)
-  .fillData(data)
-  .fillPath('/path/to/file-with-this-issue.csv').
-  .fillSuggestions(['bar']);
+  .setData(data)
+  .setPath('/path/to/file-with-this-issue.csv').
+  .setSuggestions(['bar']);
 // also you can use next class members:
 console.log(issue.type);
 console.log(issue.path);
@@ -149,14 +149,6 @@ const ddfDataSet = new DdfDataSet('/path-to-ddf-data-set-folder');
 Constructor `DdfDataSet` has only one argument - path of DDF dataset.
 
 Also `DdfDataSet` class has additional methods:
-
-* Clear all memory data regarding this DDF dataset.
-
-```javascript
-dismiss : (
-  _cb: Function
-) => void
-```
 
 * Get object that represents Dataset's concepts
 
@@ -197,8 +189,6 @@ const ddfDataSet = new DdfDataSet(utils.ddfRootFolder);
 
 ddfDataSet.load(() => {
   // rules processing, for example...
-  
-  ddfDataSet.dismiss();
 });
 ```
 

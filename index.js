@@ -31,7 +31,7 @@ class JSONValidator {
     const ddfDataSet = this.ddfDataSet;
 
     return onDataPointReady => {
-      this.ddfDataSet.getDataPoint().loadDetail(
+      this.ddfDataSet.getDataPoint().loadFile(
         dataPointDetail,
         (dataPointRecord, line) => {
           Object.getOwnPropertySymbols(ddfDataPointRules)
@@ -73,20 +73,18 @@ class JSONValidator {
 
       if (this.settings.datapointlessMode) {
         this.issueEmitter.emit('finish', null, this.out);
-        this.ddfDataSet.dismiss();
 
         return;
       }
 
       const dataPointActions = [];
 
-      this.ddfDataSet.getDataPoint().details.forEach(detail => {
+      this.ddfDataSet.getDataPoint().fileDescriptors.forEach(detail => {
         dataPointActions.push(this.prepareDataPointProcessor(detail));
       });
 
       async.parallelLimit(dataPointActions, CONCURRENT_OPERATIONS_AMOUNT, err => {
         this.issueEmitter.emit('finish', err, this.out);
-        this.ddfDataSet.dismiss();
       });
     });
   }
@@ -103,7 +101,7 @@ class StreamValidator {
     const ddfDataSet = this.ddfDataSet;
 
     return onDataPointReady => {
-      this.ddfDataSet.getDataPoint().loadDetail(
+      this.ddfDataSet.getDataPoint().loadFile(
         dataPointDetail,
         (dataPointRecord, line) => {
           Object.getOwnPropertySymbols(ddfDataPointRules)
@@ -144,20 +142,18 @@ class StreamValidator {
 
       if (this.settings.datapointlessMode) {
         this.issueEmitter.emit('finish');
-        this.ddfDataSet.dismiss();
 
         return;
       }
 
       const dataPointActions = [];
 
-      this.ddfDataSet.getDataPoint().details.forEach(detail => {
+      this.ddfDataSet.getDataPoint().fileDescriptors.forEach(detail => {
         dataPointActions.push(this.prepareDataPointProcessor(detail));
       });
 
       async.parallelLimit(dataPointActions, CONCURRENT_OPERATIONS_AMOUNT, err => {
         this.issueEmitter.emit('finish', err);
-        this.ddfDataSet.dismiss();
       });
     });
   }
@@ -180,7 +176,7 @@ class SimpleValidator {
         return;
       }
 
-      this.ddfDataSet.getDataPoint().loadDetail(
+      this.ddfDataSet.getDataPoint().loadFile(
         dataPointDetail,
         (dataPointRecord, line) => {
           Object.getOwnPropertySymbols(ddfDataPointRules)
@@ -222,12 +218,11 @@ class SimpleValidator {
 
     if (this.settings.datapointlessMode) {
       this.issueEmitter.emit('finish', null, this.isDataSetCorrect);
-      this.ddfDataSet.dismiss();
 
       return;
     }
 
-    const getDataPointsActions = () => this.ddfDataSet.getDataPoint().details
+    const getDataPointsActions = () => this.ddfDataSet.getDataPoint().fileDescriptors
       .map(detail => this.prepareDataPointProcessor(detail));
 
     this.ddfDataSet.load(() => {
@@ -240,7 +235,6 @@ class SimpleValidator {
 
       async.parallelLimit(getDataPointsActions(), CONCURRENT_OPERATIONS_AMOUNT, err => {
         this.issueEmitter.emit('finish', err, this.isDataSetCorrect);
-        this.ddfDataSet.dismiss();
       });
     });
   }

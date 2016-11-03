@@ -6,3 +6,5 @@ country,entity_set,geoCountry
 capital,entity_set,geo,Capital
 pop,measure,geo,Population
 year,time,,Year
+lat,measure,,Latitude
+lng,measure,,Longitude

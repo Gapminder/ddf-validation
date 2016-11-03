@@ -1,5 +1,0 @@
-key,value,file
-concept,concept_type,ddf--concepts.csv
-concept,name,ddf--concepts.csv
-"geo,year",gas_production_bcf
-geo,geo_name,ddf--entities--geo.csv

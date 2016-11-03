@@ -1,0 +1,66 @@
+{
+	"name": "wrong-file-in-index",
+	"title": "wrong-file-in-index",
+	"description": "",
+	"version": "0.0.1",
+	"language": {
+		"id": "en",
+		"name": "English"
+	},
+	"translations": [],
+	"license": "",
+	"author": "",
+	"resources": [
+		{
+			"path": "ddf--concepts.csv",
+			"name": "ddf--concepts",
+			"schema": {
+				"fields": [
+					{
+						"name": "concept"
+					},
+					{
+						"name": "concept_type"
+					},
+					{
+						"name": "domain"
+					},
+					{
+						"name": "name"
+					}
+				],
+				"primaryKey": "concept"
+			}
+		},
+		{
+			"path": "ddf--entities--geo--foo.csv",
+			"name": "ddf--entities--geo--country",
+			"schema": {
+				"fields": [
+					{
+						"name": "geo"
+					},
+					{
+						"name": "name"
+					},
+					{
+						"name": "lat"
+					},
+					{
+						"name": "lng"
+					},
+					{
+						"name": "is--region"
+					},
+					{
+						"name": "is--country"
+					},
+					{
+						"name": "is--capital"
+					}
+				],
+				"primaryKey": "country"
+			}
+		}
+	]
+}
