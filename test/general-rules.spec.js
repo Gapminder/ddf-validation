@@ -146,42 +146,6 @@ describe('general rules', () => {
     });
   });
 
-  describe(`when filename does not match to header
-   (fixtures/rules-cases/filename-does-not-match-header)`, () => {
-    const folder = './test/fixtures/rules-cases/filename-does-not-match-header';
-    const ddfDataSet = new DdfDataSet(folder);
-
-    it('3 issues should be found and they should be expected', done => {
-      const issuesData = [
-        {
-          file: 'ddf--datapoints--pop--by--country--year.csv',
-          data: ['country']
-        },
-        {
-          file: 'ddf--entities--geo--country.csv',
-          data: {
-            reason: 'Headers does not corresponds with file name',
-            headers: ['region', 'name', 'lat', 'lng', 'is--region', 'is--country', 'is--capital']
-          }
-        }
-      ];
-
-      ddfDataSet.load(() => {
-        const results = generalRules[rulesRegistry.FILENAME_DOES_NOT_MATCH_HEADER](ddfDataSet);
-
-        expect(results.length).to.equal(issuesData.length);
-
-        issuesData.forEach((issueData, index) => {
-          expect(results[index].type).to.equal(rulesRegistry.FILENAME_DOES_NOT_MATCH_HEADER);
-          expect(_.endsWith(results[index].path, issueData.file)).to.be.true;
-          expect(_.isEqual(results[index].data, issueData.data)).to.be.true;
-        });
-
-        done();
-      });
-    });
-  });
-
   describe(`when some concepts and entity values have incorrect identifiers
    (fixtures/rules-cases/incorrect-identifier)`, () => {
     const folder = './test/fixtures/rules-cases/incorrect-identifier';

@@ -1,0 +1,69 @@
+{
+	"name": "good-folder-dp",
+	"title": "good-folder-dp",
+	"description": "",
+	"version": "0.0.1",
+	"language": {
+		"id": "en",
+		"name": "English"
+	},
+	"translations": [],
+	"license": "",
+	"author": "",
+	"resources": [
+		{
+			"path": "ddf--concepts.csv",
+			"name": "ddf--concepts",
+			"schema": {
+				"fields": [
+					{
+						"name": "concept"
+					},
+					{
+						"name": "concept_type"
+					},
+					{
+						"name": "name"
+					}
+				],
+				"primaryKey": "concept"
+			}
+		},
+		{
+			"path": "ddf--datapoints--gas_production_bcf--by--geo--year.csv",
+			"name": "ddf--concepts",
+			"schema": {
+				"fields": [
+					{
+						"name": "geo"
+					},
+					{
+						"name": "year"
+					},
+					{
+						"name": "gas_production_bcf"
+					}
+				],
+				"primaryKey": [
+					"geo",
+					"year"
+				]
+			}
+		},
+		{
+			"path": "ddf--entities--geo.csv",
+			"name": "ddf--entities--geo",
+			"schema": {
+				"fields": [
+					{
+						"name": "geo"
+					},
+					{
+						"name": "geo_name"
+					}
+				],
+				"primaryKey": "geo"
+			}
+		}
+	]
+}

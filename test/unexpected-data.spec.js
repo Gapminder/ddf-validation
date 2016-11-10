@@ -26,23 +26,12 @@ describe('general rules', () => {
     });
 
     it(`issues should be found for indexed folder with the problem
-     (fixtures/rules-cases/unexpected-data/indexed)`, done => {
-      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/unexpected-data/indexed');
+     (fixtures/rules-cases/unexpected-data/with-dp)`, done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/unexpected-data/with-dp');
 
       ddfDataSet.load(() => {
         const results = generalRules[rulesRegistry.UNEXPECTED_DATA](ddfDataSet);
         const expectedResult = [{
-          path: 'ddf--index.csv',
-          data: [{
-            message: 'Too few fields: expected 3 fields but parsed 2',
-            row: 2,
-            type: 'FieldMismatch/TooFewFields',
-            data: {
-              key: 'geo,year',
-              value: 'gas_production_bcf'
-            }
-          }]
-        }, {
           path: 'ddf--concepts.csv',
           data: [{
             message: 'Too few fields: expected 3 fields but parsed 1',
@@ -63,20 +52,12 @@ describe('general rules', () => {
       });
     });
     it(`issues should be found for indexless folder with the problem
-     (fixtures/rules-cases/unexpected-data/indexless)`, done => {
-      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/unexpected-data/indexless');
+     (fixtures/rules-cases/unexpected-data/dp-less)`, done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/unexpected-data/dp-less');
 
       ddfDataSet.load(() => {
         const results = generalRules[rulesRegistry.UNEXPECTED_DATA](ddfDataSet);
         const expectedResult = [{
-          path: 'ddf--concepts--measures.csv',
-          data: [{
-            message: 'Too few fields: expected 4 fields but parsed 1',
-            row: 1,
-            type: 'FieldMismatch/TooFewFields',
-            data: {concept: 'lng'}
-          }]
-        }, {
           path: 'ddf--concepts.csv',
           data: [{
             message: 'Too few fields: expected 5 fields but parsed 2',
@@ -86,6 +67,21 @@ describe('general rules', () => {
               concept: 'drill_up',
               concept_type: ''
             }
+          }, {
+            message: 'Too few fields: expected 5 fields but parsed 4',
+            row: 9,
+            type: 'FieldMismatch/TooFewFields',
+            data: {
+              concept: 'lat',
+              concept_type: 'measure',
+              domain: '',
+              name: 'Latitude'
+            }
+          }, {
+            message: 'Too few fields: expected 5 fields but parsed 1',
+            row: 10,
+            type: 'FieldMismatch/TooFewFields',
+            data: {concept: 'lng'}
           }]
         }, {
           path: 'ddf--datapoints--pop--by--country--year.csv',

@@ -2,15 +2,21 @@
 'use strict';
 
 const utils = require('./lib/utils');
-const DdfIndexGenerator = require('./lib/ddf-definitions/ddf-index-generator');
+const DataPackage = require('./lib/data/data-package');
 const DdfJsonCorrector = require('./lib/ddf-definitions/ddf-json-corrector');
 const api = require('./index');
 const StreamValidator = api.StreamValidator;
 const rulesRegistry = require('./lib/ddf-rules/registry');
 const logger = utils.logger;
 
-if (utils.settings.isIndexGenerationMode) {
-  new DdfIndexGenerator(utils.ddfRootFolder).writeIndex();
+if (utils.settings.isDataPackageGenerationMode) {
+  const dataPackage = new DataPackage(utils.ddfRootFolder || '.');
+
+  dataPackage.build(() => {
+    dataPackage.write(() => {
+      logger.notice(`datapackage.json for ${utils.ddfRootFolder} was created.`);
+    });
+  });
   return;
 }
 

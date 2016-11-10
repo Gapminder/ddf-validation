@@ -13,12 +13,6 @@ describe('rules for concept', () => {
   let ddfDataSet = null;
 
   describe('when "CONCEPT_ID_IS_NOT_UNIQUE" rule', () => {
-    afterEach(done => {
-      ddfDataSet.dismiss(() => {
-        done();
-      });
-    });
-
     it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
       ddfDataSet.load(() => {
@@ -45,12 +39,6 @@ describe('rules for concept', () => {
   });
 
   describe('when "EMPTY_CONCEPT_ID" rule', () => {
-    afterEach(done => {
-      ddfDataSet.dismiss(() => {
-        done();
-      });
-    });
-
     it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
       ddfDataSet.load(() => {
@@ -79,12 +67,6 @@ describe('rules for concept', () => {
   });
 
   describe('when "NON_CONCEPT_HEADER" rule', () => {
-    afterEach(done => {
-      ddfDataSet.dismiss(() => {
-        done();
-      });
-    });
-
     it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
       ddfDataSet.load(() => {
@@ -111,10 +93,6 @@ describe('rules for concept', () => {
           {
             wrongHeaderDetails: 'domain',
             suggestions: []
-          },
-          {
-            wrongHeaderDetails: 'domain',
-            suggestions: []
           }
         ];
 
@@ -133,12 +111,6 @@ describe('rules for concept', () => {
   });
 
   describe('when "CONCEPT_MANDATORY_FIELD_NOT_FOUND" rule', () => {
-    afterEach(done => {
-      ddfDataSet.dismiss(() => {
-        done();
-      });
-    });
-
     it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
       ddfDataSet.load(() => {
@@ -189,12 +161,6 @@ describe('rules for concept', () => {
   });
 
   describe('when "CONCEPTS_NOT_FOUND" rule', () => {
-    afterEach(done => {
-      ddfDataSet.dismiss(() => {
-        done();
-      });
-    });
-
     it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
       ddfDataSet.load(() => {
@@ -221,12 +187,6 @@ describe('rules for concept', () => {
   });
 
   describe('when "INVALID_DRILL_UP" rule', () => {
-    afterEach(done => {
-      ddfDataSet.dismiss(() => {
-        done();
-      });
-    });
-
     it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
       ddfDataSet.load(() => {

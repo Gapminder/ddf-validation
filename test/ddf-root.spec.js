@@ -2,7 +2,7 @@
 const chai = require('chai');
 const sinonChai = require('sinon-chai');
 const expect = chai.expect;
-const DDFRoot = require('../lib/data/root');
+const DDFRoot = require('../lib/data/ddf-root');
 const FOLDERS_ARE_ABSENT = 0;
 const AT_LEAST_ONE_FOLDER_SHOULD_EXIST = 1;
 
@@ -14,16 +14,8 @@ describe('ddf root folder validation', () => {
 
     it('ddf folders should not be defined', done => {
       ddfRoot.check(() => {
-        expect(ddfRoot.getDdfDirectoriesDescriptors().length)
+        expect(ddfRoot.getDirectoriesDescriptors().length)
           .to.equal(FOLDERS_ARE_ABSENT);
-        done();
-      });
-    });
-
-    it('count of non-ddf folders should be equal count of all folders', done => {
-      ddfRoot.check(() => {
-        expect(ddfRoot.getNonDdfDirectoriesDescriptors().length)
-          .to.equal(ddfRoot.directoryDescriptors.length);
         done();
       });
     });
@@ -34,7 +26,7 @@ describe('ddf root folder validation', () => {
       const ddfRoot = new DDFRoot('./test/fixtures/good-folder');
 
       ddfRoot.check(() => {
-        expect(ddfRoot.getDdfDirectoriesDescriptors().length)
+        expect(ddfRoot.getDirectoriesDescriptors().length)
           .to.equal(AT_LEAST_ONE_FOLDER_SHOULD_EXIST);
         done();
       });
@@ -49,7 +41,7 @@ describe('ddf root folder validation', () => {
       );
 
       ddfRoot.check(() => {
-        expect(ddfRoot.getDdfDirectoriesDescriptors().length)
+        expect(ddfRoot.getDirectoriesDescriptors().length)
           .to.be.greaterThan(AT_LEAST_ONE_FOLDER_SHOULD_EXIST);
         done();
       });
