@@ -1,3 +1,13 @@
+<a name="1.0.0"></a>
+# [1.0.0](https://github.com/Gapminder/ddf-validation/compare/v0.13.2...v1.0.0) (2016-11-10)
+
+
+### Features
+
+* **general:** datapackage functionality implementation ([8ee77a7](https://github.com/Gapminder/ddf-validation/commit/8ee77a7)), closes [#256](https://github.com/Gapminder/ddf-validation/issues/256)
+
+
+
 <a name="0.13.2"></a>
 ## [0.13.2](https://github.com/Gapminder/ddf-validation/compare/v0.13.1...v0.13.2) (2016-10-24)
 
