@@ -4,7 +4,7 @@
 	"description": "A dummy dataset for showing the DDF dataformat",
 	"version": "0.0.2",
 	"language": { "id": "en", "name": "English" },
-	"translations": { "id": "nl-nl", "name": "Nederlands (Nederland)" },
+	"translations": [{ "id": "nl-nl", "name": "Nederlands (Nederland)" }],
 	"license": "foo",
 	"author": "Jasper Heeffer <jasper@gapminder.org> (http://gapminder.org)",
 	"resources": [
