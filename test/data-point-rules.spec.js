@@ -17,14 +17,14 @@ describe('rules for data points', () => {
     Object.getOwnPropertySymbols(dataPointsRules).forEach(dataPointRuleKey => {
       it(`any issue should NOT be found for rule ${Symbol.keyFor(dataPointRuleKey)}`, done => {
         ddfDataSet.load(() => {
-          const dataPointDetail = _.head(ddfDataSet.getDataPoint().fileDescriptors);
+          const dataPointFileDescriptor = _.head(ddfDataSet.getDataPoint().fileDescriptors);
 
           ddfDataSet.getDataPoint().loadFile(
-            dataPointDetail,
+            dataPointFileDescriptor,
             (dataPointRecord, line) => {
               expect(dataPointsRules[dataPointRuleKey]({
                 ddfDataSet,
-                dataPointDetail,
+                dataPointFileDescriptor,
                 dataPointRecord,
                 line
               }).length).to.equal(0);
@@ -42,15 +42,15 @@ describe('rules for data points', () => {
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-value-not-num');
       ddfDataSet.load(() => {
         const dataPointValueNotNumRule = dataPointsRules[rulesRegistry.MEASURE_VALUE_NOT_NUMERIC];
-        const dataPointDetail = _.head(ddfDataSet.getDataPoint().fileDescriptors);
+        const dataPointFileDescriptor = _.head(ddfDataSet.getDataPoint().fileDescriptors);
         const expectedFileName = 'ddf--datapoints--pop--by--country--year.csv';
         const expectedMeasure = 'pop';
         const expectedLine = 2;
         const expectedValue = 'huge';
 
-        ddfDataSet.getDataPoint().loadFile(dataPointDetail,
+        ddfDataSet.getDataPoint().loadFile(dataPointFileDescriptor,
           (dataPointRecord, line) => {
-            const issues = dataPointValueNotNumRule({ddfDataSet, dataPointDetail, dataPointRecord, line});
+            const issues = dataPointValueNotNumRule({ddfDataSet, dataPointFileDescriptor, dataPointRecord, line});
             const issue = _.head(issues);
 
             expect(issues.length).to.equal(1);
@@ -72,16 +72,16 @@ describe('rules for data points', () => {
       ddfDataSet.load(() => {
         const dataPointUnexpectedConceptRule =
           dataPointsRules[rulesRegistry.DATA_POINT_UNEXPECTED_ENTITY_VALUE];
-        const dataPointDetail = _.head(ddfDataSet.getDataPoint().fileDescriptors);
+        const dataPointFileDescriptor = _.head(ddfDataSet.getDataPoint().fileDescriptors);
         const expectedFileName = 'ddf--datapoints--pop--by--country--year.csv';
         const expectedConcept = 'country';
         const expectedLine = 2;
         const expectedValue = 'non-usa';
 
         ddfDataSet.getDataPoint().loadFile(
-          dataPointDetail,
+          dataPointFileDescriptor,
           (dataPointRecord, line) => {
-            const issues = dataPointUnexpectedConceptRule({ddfDataSet, dataPointDetail, dataPointRecord, line});
+            const issues = dataPointUnexpectedConceptRule({ddfDataSet, dataPointFileDescriptor, dataPointRecord, line});
             const issue = _.head(issues);
 
             expect(issues.length).to.equal(1);
@@ -103,16 +103,16 @@ describe('rules for data points', () => {
       ddfDataSet.load(() => {
         const dataPointUnexpectedTimeRule =
           dataPointsRules[rulesRegistry.DATA_POINT_UNEXPECTED_TIME_VALUE];
-        const dataPointDetail = _.head(ddfDataSet.getDataPoint().fileDescriptors);
+        const dataPointFileDescriptor = _.head(ddfDataSet.getDataPoint().fileDescriptors);
         const expectedFileName = 'ddf--datapoints--pop--by--country--year.csv';
         const expectedConcept = 'year';
         const expectedLine = 2;
         const expectedValue = '1960wfoo';
 
         ddfDataSet.getDataPoint().loadFile(
-          dataPointDetail,
+          dataPointFileDescriptor,
           (dataPointRecord, line) => {
-            const issues = dataPointUnexpectedTimeRule({ddfDataSet, dataPointDetail, dataPointRecord, line});
+            const issues = dataPointUnexpectedTimeRule({ddfDataSet, dataPointFileDescriptor, dataPointRecord, line});
             const issue = _.head(issues);
 
             expect(issues.length).to.equal(1);
