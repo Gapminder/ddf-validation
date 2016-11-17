@@ -6,6 +6,7 @@ const _ = require('lodash');
 const DdfDataSet = require('./lib/ddf-definitions/ddf-data-set');
 const ddfRules = require('./lib/ddf-rules');
 const ddfDataPointRules = require('./lib/ddf-rules/data-point-rules');
+const ddfDataPointTransRules = require('./lib/ddf-rules/translation-rules/data-point-rules');
 const IssuesFilter = require('./lib/utils/issues-filter');
 
 const CONCURRENT_OPERATIONS_AMOUNT = 30;
@@ -20,6 +21,80 @@ function walkNonDataPointIssue(context, onIssue) {
   });
 }
 
+function createDatapointProcessor(context, dataPointFileDescriptor, resultHandler) {
+  const ddfDataSet = context.ddfDataSet;
+
+  return onDataPointReady => {
+    context.ddfDataSet.getDataPoint().loadFile(
+      dataPointFileDescriptor,
+      (dataPointRecord, line) => {
+        Object.getOwnPropertySymbols(ddfDataPointRules)
+          .filter(key => context.issuesFilter.isAllowed(key))
+          .forEach(key => {
+            const issues = ddfDataPointRules[key]({ddfDataSet, dataPointFileDescriptor, dataPointRecord, line});
+
+            resultHandler(issues);
+          });
+      },
+      onDataPointReady
+    );
+  };
+}
+
+function createDatapointTranslationProcessor(context, dataPointFileTransDescriptor, resultHandler) {
+  const ddfDataSet = context.ddfDataSet;
+
+  return onDataPointReady => {
+    context.ddfDataSet.getDataPoint().loadFile(
+      dataPointFileTransDescriptor,
+      (transRecord, line) => {
+        Object.getOwnPropertySymbols(ddfDataPointTransRules)
+          .filter(key => context.issuesFilter.isAllowed(key))
+          .forEach(key => {
+            const issues =
+              ddfDataPointTransRules[key]({ddfDataSet, dataPointFileTransDescriptor, transRecord, line});
+
+            resultHandler(issues);
+          });
+      },
+      onDataPointReady
+    );
+  };
+}
+
+function createDatapointTranslationByRuleProcessor(context, dataPointFileTransDescriptor, resultHandler) {
+  const ddfDataSet = context.ddfDataSet;
+
+  return onDataPointReady => {
+    context.ddfDataSet.getDataPoint().loadFile(
+      dataPointFileTransDescriptor,
+      (transRecord, line) => {
+        const issues =
+          ddfDataPointTransRules[context.ruleKey]({ddfDataSet, dataPointFileTransDescriptor, transRecord, line});
+
+        resultHandler(issues);
+      },
+      onDataPointReady
+    );
+  };
+}
+
+function getValidationActions(context) {
+  const dataPointActions =
+    context.ddfDataSet.getDataPoint().fileDescriptors
+      .map(fileDescriptor =>
+        context.prepareDataPointProcessor(fileDescriptor));
+  const dataPointTransActions = _.flattenDeep(
+    context.ddfDataSet.getDataPoint().fileDescriptors
+      .map(fileDescriptor =>
+        fileDescriptor.getExistingTranslationDescriptors()
+          .map(transFileDescriptor =>
+            context.prepareDataPointTransProcessor(transFileDescriptor, fileDescriptor)))
+  );
+
+  return _.concat(dataPointActions, dataPointTransActions);
+}
+
 class JSONValidator {
   constructor(rootPath, settings) {
     this.rootPath = rootPath;
@@ -27,26 +102,22 @@ class JSONValidator {
     this.issueEmitter = new EventEmitter();
   }
 
-  prepareDataPointProcessor(dataPointDetail) {
-    const ddfDataSet = this.ddfDataSet;
+  prepareDataPointProcessor(dataPointFileDescriptor) {
+    return createDatapointProcessor(this, dataPointFileDescriptor, result => {
+      if (!_.isEmpty(result)) {
+        this.out = this.out.concat(result.map(issue => issue.view()));
+      }
+    });
+  }
 
-    return onDataPointReady => {
-      this.ddfDataSet.getDataPoint().loadFile(
-        dataPointDetail,
-        (dataPointRecord, line) => {
-          Object.getOwnPropertySymbols(ddfDataPointRules)
-            .filter(key => this.issuesFilter.isAllowed(key))
-            .forEach(key => {
-              const result = ddfDataPointRules[key]({ddfDataSet, dataPointDetail, dataPointRecord, line});
+  prepareDataPointTransProcessor(dataPointFileTransDescriptor, fileDescriptor) {
+    dataPointFileTransDescriptor.primaryKey = fileDescriptor.primaryKey;
 
-              if (!_.isEmpty(result)) {
-                this.out = this.out.concat(result.map(issue => issue.view()));
-              }
-            });
-        },
-        err => onDataPointReady(err)
-      );
-    };
+    return createDatapointTranslationProcessor(this, dataPointFileTransDescriptor, result => {
+      if (!_.isEmpty(result)) {
+        this.out = this.out.concat(result.map(issue => issue.view()));
+      }
+    });
   }
 
   on(type, data) {
@@ -77,13 +148,7 @@ class JSONValidator {
         return;
       }
 
-      const dataPointActions = [];
-
-      this.ddfDataSet.getDataPoint().fileDescriptors.forEach(detail => {
-        dataPointActions.push(this.prepareDataPointProcessor(detail));
-      });
-
-      async.parallelLimit(dataPointActions, CONCURRENT_OPERATIONS_AMOUNT, err => {
+      async.parallelLimit(getValidationActions(this), CONCURRENT_OPERATIONS_AMOUNT, err => {
         this.issueEmitter.emit('finish', err, this.out);
       });
     });
@@ -98,25 +163,21 @@ class StreamValidator {
   }
 
   prepareDataPointProcessor(dataPointDetail) {
-    const ddfDataSet = this.ddfDataSet;
+    return createDatapointProcessor(this, dataPointDetail, result => {
+      if (!_.isEmpty(result)) {
+        result.map(issue => this.issueEmitter.emit('issue', issue.view()));
+      }
+    });
+  }
 
-    return onDataPointReady => {
-      this.ddfDataSet.getDataPoint().loadFile(
-        dataPointDetail,
-        (dataPointRecord, line) => {
-          Object.getOwnPropertySymbols(ddfDataPointRules)
-            .filter(key => this.issuesFilter.isAllowed(key))
-            .forEach(key => {
-              const result = ddfDataPointRules[key]({ddfDataSet, dataPointDetail, dataPointRecord, line});
+  prepareDataPointTransProcessor(dataPointFileTransDescriptor, fileDescriptor) {
+    dataPointFileTransDescriptor.primaryKey = fileDescriptor.primaryKey;
 
-              if (!_.isEmpty(result)) {
-                result.map(issue => this.issueEmitter.emit('issue', issue.view()));
-              }
-            });
-        },
-        err => onDataPointReady(err)
-      );
-    };
+    return createDatapointTranslationProcessor(this, dataPointFileTransDescriptor, result => {
+      if (!_.isEmpty(result)) {
+        result.map(issue => this.issueEmitter.emit('issue', issue.view()));
+      }
+    });
   }
 
   on(type, data) {
@@ -146,13 +207,7 @@ class StreamValidator {
         return;
       }
 
-      const dataPointActions = [];
-
-      this.ddfDataSet.getDataPoint().fileDescriptors.forEach(detail => {
-        dataPointActions.push(this.prepareDataPointProcessor(detail));
-      });
-
-      async.parallelLimit(dataPointActions, CONCURRENT_OPERATIONS_AMOUNT, err => {
+      async.parallelLimit(getValidationActions(this), CONCURRENT_OPERATIONS_AMOUNT, err => {
         this.issueEmitter.emit('finish', err);
       });
     });
@@ -168,30 +223,21 @@ class SimpleValidator {
   }
 
   prepareDataPointProcessor(dataPointDetail) {
-    const ddfDataSet = this.ddfDataSet;
-
-    return onDataPointReady => {
-      if (!this.isDataSetCorrect) {
-        onDataPointReady();
-        return;
+    return createDatapointProcessor(this, dataPointDetail, result => {
+      if (!_.isEmpty(result)) {
+        this.isDataSetCorrect = false;
       }
+    });
+  }
 
-      this.ddfDataSet.getDataPoint().loadFile(
-        dataPointDetail,
-        (dataPointRecord, line) => {
-          Object.getOwnPropertySymbols(ddfDataPointRules)
-            .filter(key => this.issuesFilter.isAllowed(key))
-            .forEach(key => {
-              const result = ddfDataPointRules[key]({ddfDataSet, dataPointDetail, dataPointRecord, line});
+  prepareDataPointTransProcessor(dataPointFileTransDescriptor, fileDescriptor) {
+    dataPointFileTransDescriptor.primaryKey = fileDescriptor.primaryKey;
 
-              if (!_.isEmpty(result)) {
-                this.isDataSetCorrect = false;
-              }
-            });
-        },
-        err => onDataPointReady(err)
-      );
-    };
+    return createDatapointTranslationProcessor(this, dataPointFileTransDescriptor, result => {
+      if (!_.isEmpty(result)) {
+        this.isDataSetCorrect = false;
+      }
+    });
   }
 
   on(type, data) {
@@ -222,9 +268,6 @@ class SimpleValidator {
       return;
     }
 
-    const getDataPointsActions = () => this.ddfDataSet.getDataPoint().fileDescriptors
-      .map(detail => this.prepareDataPointProcessor(detail));
-
     this.ddfDataSet.load(() => {
       validateNonDataPoints();
 
@@ -233,13 +276,17 @@ class SimpleValidator {
         return;
       }
 
-      async.parallelLimit(getDataPointsActions(), CONCURRENT_OPERATIONS_AMOUNT, err => {
+      async.parallelLimit(getValidationActions(this), CONCURRENT_OPERATIONS_AMOUNT, err => {
         this.issueEmitter.emit('finish', err, this.isDataSetCorrect);
       });
     });
   }
 }
 
+
+exports.createDatapointProcessor = createDatapointProcessor;
+exports.createDatapointTranslationProcessor = createDatapointTranslationProcessor;
+exports.createDatapointTranslationByRuleProcessor = createDatapointTranslationByRuleProcessor;
 exports.JSONValidator = JSONValidator;
 exports.StreamValidator = StreamValidator;
 exports.SimpleValidator = SimpleValidator;
