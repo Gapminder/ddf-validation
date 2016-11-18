@@ -16,7 +16,7 @@ describe('rules for entry', () => {
     it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
       ddfDataSet.load(() => {
-        expect(entryRules[rulesRegistry.WRONG_ENTITY_IS_HEADER](ddfDataSet).length).to.equal(0);
+        expect(entryRules[rulesRegistry.WRONG_ENTITY_IS_HEADER].rule(ddfDataSet).length).to.equal(0);
 
         done();
       });
@@ -26,7 +26,7 @@ describe('rules for entry', () => {
     (fixtures/rules-cases/wrong-entity-is-header)`, done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/wrong-entity-is-header');
       ddfDataSet.load(() => {
-        const result = entryRules[rulesRegistry.WRONG_ENTITY_IS_HEADER](ddfDataSet);
+        const result = entryRules[rulesRegistry.WRONG_ENTITY_IS_HEADER].rule(ddfDataSet);
         const issuesData = [
           {
             message: 'Not a concept',
@@ -56,7 +56,7 @@ describe('rules for entry', () => {
     it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
       ddfDataSet.load(() => {
-        expect(entryRules[rulesRegistry.WRONG_ENTITY_IS_VALUE](ddfDataSet).length).to.equal(0);
+        expect(entryRules[rulesRegistry.WRONG_ENTITY_IS_VALUE].rule(ddfDataSet).length).to.equal(0);
 
         done();
       });
@@ -66,7 +66,7 @@ describe('rules for entry', () => {
     (fixtures/rules-cases/wrong-entity-is-value)`, done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/wrong-entity-is-value');
       ddfDataSet.load(() => {
-        const result = entryRules[rulesRegistry.WRONG_ENTITY_IS_VALUE](ddfDataSet);
+        const result = entryRules[rulesRegistry.WRONG_ENTITY_IS_VALUE].rule(ddfDataSet);
         const issuesData = [
           {
             header: 'is--region',
@@ -104,7 +104,7 @@ describe('rules for entry', () => {
     it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
       ddfDataSet.load(() => {
-        expect(entryRules[rulesRegistry.NON_UNIQUE_ENTITY_VALUE](ddfDataSet).length).to.equal(0);
+        expect(entryRules[rulesRegistry.NON_UNIQUE_ENTITY_VALUE].rule(ddfDataSet).length).to.equal(0);
 
         done();
       });
@@ -114,7 +114,7 @@ describe('rules for entry', () => {
     (fixtures/rules-cases/non-unique-entity-value)`, done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/non-unique-entity-value');
       ddfDataSet.load(() => {
-        const results = entryRules[rulesRegistry.NON_UNIQUE_ENTITY_VALUE](ddfDataSet);
+        const results = entryRules[rulesRegistry.NON_UNIQUE_ENTITY_VALUE].rule(ddfDataSet);
         const issuesData = [
           {
             source: {

@@ -15,7 +15,7 @@ describe('general rules', () => {
 
     it('there should be no issues for "NON_DDF_DATA_SET" rule', done => {
       ddfDataSet.load(() => {
-        const result = generalRules[rulesRegistry.NON_DDF_DATA_SET](ddfDataSet);
+        const result = generalRules[rulesRegistry.NON_DDF_DATA_SET].rule(ddfDataSet);
 
         expect(result.length).to.equal(0);
 
@@ -25,7 +25,7 @@ describe('general rules', () => {
 
     it('there should be no issues for "NON_DDF_FOLDER" rule', done => {
       ddfDataSet.load(() => {
-        const result = generalRules[rulesRegistry.NON_DDF_FOLDER](ddfDataSet);
+        const result = generalRules[rulesRegistry.NON_DDF_FOLDER].rule(ddfDataSet);
 
         expect(result.length).to.equal(0);
 
@@ -35,7 +35,7 @@ describe('general rules', () => {
 
     it('there should be no issues for "INCORRECT_JSON_FIELD" rule', done => {
       ddfDataSet.load(() => {
-        const result = generalRules[rulesRegistry.INCORRECT_JSON_FIELD](ddfDataSet);
+        const result = generalRules[rulesRegistry.INCORRECT_JSON_FIELD].rule(ddfDataSet);
 
         expect(result.length).to.equal(0);
 
@@ -45,7 +45,7 @@ describe('general rules', () => {
 
     it('there should be no issues for "INCORRECT_IDENTIFIER" rule', done => {
       ddfDataSet.load(() => {
-        const result = generalRules[rulesRegistry.INCORRECT_IDENTIFIER](ddfDataSet);
+        const result = generalRules[rulesRegistry.INCORRECT_IDENTIFIER].rule(ddfDataSet);
 
         expect(result.length).to.equal(0);
 
@@ -62,7 +62,7 @@ describe('general rules', () => {
     expectedRules.forEach(generalRuleKey => {
       it(`one issue should be detected for "${Symbol.keyFor(generalRuleKey)}" rule`, done => {
         ddfDataSet.load(() => {
-          const result = generalRules[generalRuleKey](ddfDataSet);
+          const result = generalRules[generalRuleKey].rule(ddfDataSet);
 
           expect(result.length).to.equal(1);
 
@@ -72,7 +72,7 @@ describe('general rules', () => {
 
       it(`type of issue for "${Symbol.keyFor(generalRuleKey)}" rule should be expected`, done => {
         ddfDataSet.load(() => {
-          const result = generalRules[generalRuleKey](ddfDataSet);
+          const result = generalRules[generalRuleKey].rule(ddfDataSet);
           const issue = _.head(result);
 
           expect(issue.type).to.equal(generalRuleKey);
@@ -83,7 +83,7 @@ describe('general rules', () => {
 
       it(`path of issue for "${Symbol.keyFor(generalRuleKey)}" rule should be "${folder}"`, done => {
         ddfDataSet.load(() => {
-          const result = generalRules[generalRuleKey](ddfDataSet);
+          const result = generalRules[generalRuleKey].rule(ddfDataSet);
           const issue = _.head(result);
 
           expect(issue.path).to.equal(folder);
@@ -102,7 +102,7 @@ describe('general rules', () => {
     it('4 issues should be found', done => {
       ddfDataSet.load(() => {
         const EXPECTED_ISSUES_QUANTITY = 4;
-        const result = generalRules[rulesRegistry.INCORRECT_JSON_FIELD](ddfDataSet);
+        const result = generalRules[rulesRegistry.INCORRECT_JSON_FIELD].rule(ddfDataSet);
 
         expect(result.length).to.equal(EXPECTED_ISSUES_QUANTITY);
 
@@ -112,7 +112,7 @@ describe('general rules', () => {
 
     it('all of issues should be a valid type', done => {
       ddfDataSet.load(() => {
-        const result = generalRules[rulesRegistry.INCORRECT_JSON_FIELD](ddfDataSet);
+        const result = generalRules[rulesRegistry.INCORRECT_JSON_FIELD].rule(ddfDataSet);
 
         result.forEach(issue => {
           expect(issue.type).to.equal(rulesRegistry.INCORRECT_JSON_FIELD);
@@ -133,7 +133,7 @@ describe('general rules', () => {
           '["ordinal"]',
           '{"palette":{"0":"#62CCE3","1":"#B4DE79","2":"#E1CE00","3":"#F77481"}}'
         ];
-        const result = generalRules[rulesRegistry.INCORRECT_JSON_FIELD](ddfDataSet);
+        const result = generalRules[rulesRegistry.INCORRECT_JSON_FIELD].rule(ddfDataSet);
 
         for (let count = 0; count <= LAST_WARNING_INDEX; count++) {
           const suggestion = _.head(result[count].suggestions);
@@ -165,7 +165,7 @@ describe('general rules', () => {
       ];
 
       ddfDataSet.load(() => {
-        const results = generalRules[rulesRegistry.INCORRECT_IDENTIFIER](ddfDataSet);
+        const results = generalRules[rulesRegistry.INCORRECT_IDENTIFIER].rule(ddfDataSet);
 
         expect(results.length).to.equal(EXPECTED_ISSUES_QUANTITY);
 
@@ -185,7 +185,7 @@ describe('general rules', () => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
 
       ddfDataSet.load(() => {
-        expect(generalRules[rulesRegistry.WRONG_DATA_POINT_HEADER](ddfDataSet).length).to.equal(0);
+        expect(generalRules[rulesRegistry.WRONG_DATA_POINT_HEADER].rule(ddfDataSet).length).to.equal(0);
 
         done();
       });
@@ -196,7 +196,7 @@ describe('general rules', () => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/wrong-data-point-header');
 
       ddfDataSet.load(() => {
-        const results = generalRules[rulesRegistry.WRONG_DATA_POINT_HEADER](ddfDataSet);
+        const results = generalRules[rulesRegistry.WRONG_DATA_POINT_HEADER].rule(ddfDataSet);
         const result = _.head(results);
         const EXPECTED_ISSUES_QUANTITY = 1;
         const EXPECTED_WRONG_CONCEPT = 'name';

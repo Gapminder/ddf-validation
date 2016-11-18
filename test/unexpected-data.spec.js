@@ -17,7 +17,7 @@ describe('general rules', () => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
 
       ddfDataSet.load(() => {
-        const results = generalRules[rulesRegistry.UNEXPECTED_DATA](ddfDataSet);
+        const results = generalRules[rulesRegistry.UNEXPECTED_DATA].rule(ddfDataSet);
 
         expect(results.length).to.equal(0);
 
@@ -30,7 +30,7 @@ describe('general rules', () => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/unexpected-data/with-dp');
 
       ddfDataSet.load(() => {
-        const results = generalRules[rulesRegistry.UNEXPECTED_DATA](ddfDataSet);
+        const results = generalRules[rulesRegistry.UNEXPECTED_DATA].rule(ddfDataSet);
         const expectedResult = [{
           path: 'ddf--concepts.csv',
           data: [{
@@ -56,7 +56,7 @@ describe('general rules', () => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/unexpected-data/dp-less');
 
       ddfDataSet.load(() => {
-        const results = generalRules[rulesRegistry.UNEXPECTED_DATA](ddfDataSet);
+        const results = generalRules[rulesRegistry.UNEXPECTED_DATA].rule(ddfDataSet);
         const expectedResult = [{
           path: 'ddf--concepts.csv',
           data: [{

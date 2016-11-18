@@ -16,7 +16,7 @@ describe('rules for concept', () => {
     it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
       ddfDataSet.load(() => {
-        expect(conceptRules[rulesRegistry.CONCEPT_ID_IS_NOT_UNIQUE](ddfDataSet)).to.be.null;
+        expect(conceptRules[rulesRegistry.CONCEPT_ID_IS_NOT_UNIQUE].rule(ddfDataSet)).to.be.null;
 
         done();
       });
@@ -26,7 +26,7 @@ describe('rules for concept', () => {
     (fixtures/rules-cases/concept-is-not-unique)`, done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/concept-is-not-unique');
       ddfDataSet.load(() => {
-        const result = conceptRules[rulesRegistry.CONCEPT_ID_IS_NOT_UNIQUE](ddfDataSet);
+        const result = conceptRules[rulesRegistry.CONCEPT_ID_IS_NOT_UNIQUE].rule(ddfDataSet);
 
         expect(result).to.be.not.null;
         expect(result.type).to.equal(rulesRegistry.CONCEPT_ID_IS_NOT_UNIQUE);
@@ -42,7 +42,7 @@ describe('rules for concept', () => {
     it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
       ddfDataSet.load(() => {
-        expect(conceptRules[rulesRegistry.EMPTY_CONCEPT_ID](ddfDataSet).length).to.equal(0);
+        expect(conceptRules[rulesRegistry.EMPTY_CONCEPT_ID].rule(ddfDataSet).length).to.equal(0);
 
         done();
       });
@@ -53,7 +53,7 @@ describe('rules for concept', () => {
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/empty-concept-id');
       ddfDataSet.load(() => {
         const EXPECTED_CSV_LINE = 2;
-        const results = conceptRules[rulesRegistry.EMPTY_CONCEPT_ID](ddfDataSet);
+        const results = conceptRules[rulesRegistry.EMPTY_CONCEPT_ID].rule(ddfDataSet);
         const result = _.head(results);
 
         expect(results).to.be.not.null;
@@ -70,7 +70,7 @@ describe('rules for concept', () => {
     it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
       ddfDataSet.load(() => {
-        expect(conceptRules[rulesRegistry.NON_CONCEPT_HEADER](ddfDataSet).length).to.equal(0);
+        expect(conceptRules[rulesRegistry.NON_CONCEPT_HEADER].rule(ddfDataSet).length).to.equal(0);
 
         done();
       });
@@ -80,7 +80,7 @@ describe('rules for concept', () => {
     (fixtures/rules-cases/non-concept-header)`, done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/non-concept-header');
       ddfDataSet.load(() => {
-        const result = conceptRules[rulesRegistry.NON_CONCEPT_HEADER](ddfDataSet);
+        const result = conceptRules[rulesRegistry.NON_CONCEPT_HEADER].rule(ddfDataSet);
         const issuesData = [
           {
             wrongHeaderDetails: 'wrong-header-1',
@@ -114,7 +114,7 @@ describe('rules for concept', () => {
     it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
       ddfDataSet.load(() => {
-        expect(conceptRules[rulesRegistry.CONCEPT_MANDATORY_FIELD_NOT_FOUND](ddfDataSet).length).to.equal(0);
+        expect(conceptRules[rulesRegistry.CONCEPT_MANDATORY_FIELD_NOT_FOUND].rule(ddfDataSet).length).to.equal(0);
 
         done();
       });
@@ -124,7 +124,7 @@ describe('rules for concept', () => {
     (fixtures/rules-cases/concept-mandatory-field-not-found)`, done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/concept-mandatory-field-not-found');
       ddfDataSet.load(() => {
-        const result = conceptRules[rulesRegistry.CONCEPT_MANDATORY_FIELD_NOT_FOUND](ddfDataSet);
+        const result = conceptRules[rulesRegistry.CONCEPT_MANDATORY_FIELD_NOT_FOUND].rule(ddfDataSet);
         const issuesData = [
           {
             line: 1,
@@ -164,7 +164,7 @@ describe('rules for concept', () => {
     it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
       ddfDataSet.load(() => {
-        const result = conceptRules[rulesRegistry.CONCEPTS_NOT_FOUND](ddfDataSet);
+        const result = conceptRules[rulesRegistry.CONCEPTS_NOT_FOUND].rule(ddfDataSet);
 
         expect(result).to.be.null;
 
@@ -176,7 +176,7 @@ describe('rules for concept', () => {
     (fixtures/rules-cases/concepts-not-found)`, done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/concepts-not-found');
       ddfDataSet.load(() => {
-        const result = conceptRules[rulesRegistry.CONCEPTS_NOT_FOUND](ddfDataSet);
+        const result = conceptRules[rulesRegistry.CONCEPTS_NOT_FOUND].rule(ddfDataSet);
 
         expect(result).to.be.not.null;
         expect(result.type).to.equal(rulesRegistry.CONCEPTS_NOT_FOUND);
@@ -190,7 +190,7 @@ describe('rules for concept', () => {
     it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
       ddfDataSet.load(() => {
-        const results = conceptRules[rulesRegistry.INVALID_DRILL_UP](ddfDataSet);
+        const results = conceptRules[rulesRegistry.INVALID_DRILL_UP].rule(ddfDataSet);
 
         expect(_.isEmpty(results)).to.be.true;
 
@@ -202,7 +202,7 @@ describe('rules for concept', () => {
      (fixtures/rules-cases/invalid-drill-up)`, done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/invalid-drill-up');
       ddfDataSet.load(() => {
-        const results = conceptRules[rulesRegistry.INVALID_DRILL_UP](ddfDataSet);
+        const results = conceptRules[rulesRegistry.INVALID_DRILL_UP].rule(ddfDataSet);
         const expectedReasons = [
           {
             conceptDomain: 'geo2',

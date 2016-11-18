@@ -15,7 +15,7 @@ describe('ddf datapackage.json validation', () => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
 
       ddfDataSet.load(() => {
-        expect(dataPackageRules[rulesRegistry.INCORRECT_FILE](ddfDataSet).length).to.equal(0);
+        expect(dataPackageRules[rulesRegistry.INCORRECT_FILE].rule(ddfDataSet).length).to.equal(0);
 
         done();
       });
@@ -25,9 +25,9 @@ describe('ddf datapackage.json validation', () => {
 
       ddfDataSet.load(() => {
         const EXPECTED_INCORRECT_FILE = 'ddf--entities--geo--foo.csv';
-        const results = dataPackageRules[rulesRegistry.INCORRECT_FILE](ddfDataSet);
+        const results = dataPackageRules[rulesRegistry.INCORRECT_FILE].rule(ddfDataSet);
 
-        expect(dataPackageRules[rulesRegistry.INCORRECT_FILE](ddfDataSet).length).to.equal(1);
+        expect(results.length).to.equal(1);
 
         const result = _.head(results);
 
@@ -43,7 +43,7 @@ describe('ddf datapackage.json validation', () => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
 
       ddfDataSet.load(() => {
-        expect(dataPackageRules[rulesRegistry.DATAPACKAGE_CONFUSED_FIELDS](ddfDataSet).length).to.equal(0);
+        expect(dataPackageRules[rulesRegistry.DATAPACKAGE_CONFUSED_FIELDS].rule(ddfDataSet).length).to.equal(0);
 
         done();
       });
@@ -53,7 +53,7 @@ describe('ddf datapackage.json validation', () => {
 
       ddfDataSet.load(() => {
         const EXPECTED_ISSUES_QUANTITY = 3;
-        const results = dataPackageRules[rulesRegistry.DATAPACKAGE_CONFUSED_FIELDS](ddfDataSet);
+        const results = dataPackageRules[rulesRegistry.DATAPACKAGE_CONFUSED_FIELDS].rule(ddfDataSet);
 
         expect(results.length).to.equal(EXPECTED_ISSUES_QUANTITY);
 
@@ -95,7 +95,7 @@ describe('ddf datapackage.json validation', () => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
 
       ddfDataSet.load(() => {
-        expect(dataPackageRules[rulesRegistry.DATAPACKAGE_NON_CONCEPT_PRIMARY_KEY](ddfDataSet).length).to.equal(0);
+        expect(dataPackageRules[rulesRegistry.DATAPACKAGE_NON_CONCEPT_PRIMARY_KEY].rule(ddfDataSet).length).to.equal(0);
 
         done();
       });
@@ -106,7 +106,7 @@ describe('ddf datapackage.json validation', () => {
 
       ddfDataSet.load(() => {
         const EXPECTED_ISSUES_QUANTITY = 3;
-        const results = dataPackageRules[rulesRegistry.DATAPACKAGE_NON_CONCEPT_PRIMARY_KEY](ddfDataSet);
+        const results = dataPackageRules[rulesRegistry.DATAPACKAGE_NON_CONCEPT_PRIMARY_KEY].rule(ddfDataSet);
 
         expect(results.length).to.equal(EXPECTED_ISSUES_QUANTITY);
 
@@ -138,7 +138,9 @@ describe('ddf datapackage.json validation', () => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
 
       ddfDataSet.load(() => {
-        expect(dataPackageRules[rulesRegistry.DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME](ddfDataSet).length).to.equal(0);
+        const results = dataPackageRules[rulesRegistry.DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME].rule(ddfDataSet);
+
+        expect(results.length).to.equal(0);
 
         done();
       });
@@ -147,7 +149,7 @@ describe('ddf datapackage.json validation', () => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/non-unique-resource-name');
 
       ddfDataSet.load(() => {
-        const results = dataPackageRules[rulesRegistry.DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME](ddfDataSet);
+        const results = dataPackageRules[rulesRegistry.DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME].rule(ddfDataSet);
 
         expect(results.length).to.equal(1);
 
@@ -165,7 +167,9 @@ describe('ddf datapackage.json validation', () => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
 
       ddfDataSet.load(() => {
-        expect(dataPackageRules[rulesRegistry.DATAPACKAGE_NON_UNIQUE_RESOURCE_FILE](ddfDataSet).length).to.equal(0);
+        const results = dataPackageRules[rulesRegistry.DATAPACKAGE_NON_UNIQUE_RESOURCE_FILE].rule(ddfDataSet);
+
+        expect(results.length).to.equal(0);
 
         done();
       });
@@ -174,7 +178,7 @@ describe('ddf datapackage.json validation', () => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/non-unique-resource-file');
 
       ddfDataSet.load(() => {
-        const results = dataPackageRules[rulesRegistry.DATAPACKAGE_NON_UNIQUE_RESOURCE_FILE](ddfDataSet);
+        const results = dataPackageRules[rulesRegistry.DATAPACKAGE_NON_UNIQUE_RESOURCE_FILE].rule(ddfDataSet);
 
         expect(results.length).to.equal(1);
 

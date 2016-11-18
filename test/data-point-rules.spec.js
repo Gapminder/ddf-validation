@@ -17,15 +17,15 @@ describe('rules for data points', () => {
     Object.getOwnPropertySymbols(dataPointsRules).forEach(dataPointRuleKey => {
       it(`any issue should NOT be found for rule ${Symbol.keyFor(dataPointRuleKey)}`, done => {
         ddfDataSet.load(() => {
-          const dataPointFileDescriptor = _.head(ddfDataSet.getDataPoint().fileDescriptors);
+          const fileDescriptor = _.head(ddfDataSet.getDataPoint().fileDescriptors);
 
           ddfDataSet.getDataPoint().loadFile(
-            dataPointFileDescriptor,
-            (dataPointRecord, line) => {
-              expect(dataPointsRules[dataPointRuleKey]({
+            fileDescriptor,
+            (record, line) => {
+              expect(dataPointsRules[dataPointRuleKey].recordRule({
                 ddfDataSet,
-                dataPointFileDescriptor,
-                dataPointRecord,
+                fileDescriptor,
+                record,
                 line
               }).length).to.equal(0);
             },
@@ -41,16 +41,16 @@ describe('rules for data points', () => {
    (fixtures/rules-cases/data-point-value-not-num)`, done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-value-not-num');
       ddfDataSet.load(() => {
-        const dataPointValueNotNumRule = dataPointsRules[rulesRegistry.MEASURE_VALUE_NOT_NUMERIC];
-        const dataPointFileDescriptor = _.head(ddfDataSet.getDataPoint().fileDescriptors);
+        const dataPointValueNotNumRule = dataPointsRules[rulesRegistry.MEASURE_VALUE_NOT_NUMERIC].recordRule;
+        const fileDescriptor = _.head(ddfDataSet.getDataPoint().fileDescriptors);
         const expectedFileName = 'ddf--datapoints--pop--by--country--year.csv';
         const expectedMeasure = 'pop';
         const expectedLine = 2;
         const expectedValue = 'huge';
 
-        ddfDataSet.getDataPoint().loadFile(dataPointFileDescriptor,
-          (dataPointRecord, line) => {
-            const issues = dataPointValueNotNumRule({ddfDataSet, dataPointFileDescriptor, dataPointRecord, line});
+        ddfDataSet.getDataPoint().loadFile(fileDescriptor,
+          (record, line) => {
+            const issues = dataPointValueNotNumRule({ddfDataSet, fileDescriptor, record, line});
             const issue = _.head(issues);
 
             expect(issues.length).to.equal(1);
@@ -71,17 +71,17 @@ describe('rules for data points', () => {
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-unexpected-entity-value');
       ddfDataSet.load(() => {
         const dataPointUnexpectedConceptRule =
-          dataPointsRules[rulesRegistry.DATA_POINT_UNEXPECTED_ENTITY_VALUE];
-        const dataPointFileDescriptor = _.head(ddfDataSet.getDataPoint().fileDescriptors);
+          dataPointsRules[rulesRegistry.DATA_POINT_UNEXPECTED_ENTITY_VALUE].recordRule;
+        const fileDescriptor = _.head(ddfDataSet.getDataPoint().fileDescriptors);
         const expectedFileName = 'ddf--datapoints--pop--by--country--year.csv';
         const expectedConcept = 'country';
         const expectedLine = 2;
         const expectedValue = 'non-usa';
 
         ddfDataSet.getDataPoint().loadFile(
-          dataPointFileDescriptor,
-          (dataPointRecord, line) => {
-            const issues = dataPointUnexpectedConceptRule({ddfDataSet, dataPointFileDescriptor, dataPointRecord, line});
+          fileDescriptor,
+          (record, line) => {
+            const issues = dataPointUnexpectedConceptRule({ddfDataSet, fileDescriptor, record, line});
             const issue = _.head(issues);
 
             expect(issues.length).to.equal(1);
@@ -101,18 +101,17 @@ describe('rules for data points', () => {
    (fixtures/rules-cases/data-point-unexpected-time-value)`, done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-unexpected-time-value');
       ddfDataSet.load(() => {
-        const dataPointUnexpectedTimeRule =
-          dataPointsRules[rulesRegistry.DATA_POINT_UNEXPECTED_TIME_VALUE];
-        const dataPointFileDescriptor = _.head(ddfDataSet.getDataPoint().fileDescriptors);
+        const dataPointUnexpectedTimeRule = dataPointsRules[rulesRegistry.DATA_POINT_UNEXPECTED_TIME_VALUE].recordRule;
+        const fileDescriptor = _.head(ddfDataSet.getDataPoint().fileDescriptors);
         const expectedFileName = 'ddf--datapoints--pop--by--country--year.csv';
         const expectedConcept = 'year';
         const expectedLine = 2;
         const expectedValue = '1960wfoo';
 
         ddfDataSet.getDataPoint().loadFile(
-          dataPointFileDescriptor,
-          (dataPointRecord, line) => {
-            const issues = dataPointUnexpectedTimeRule({ddfDataSet, dataPointFileDescriptor, dataPointRecord, line});
+          fileDescriptor,
+          (record, line) => {
+            const issues = dataPointUnexpectedTimeRule({ddfDataSet, fileDescriptor, record, line});
             const issue = _.head(issues);
 
             expect(issues.length).to.equal(1);

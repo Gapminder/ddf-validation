@@ -22,7 +22,7 @@ describe('translation rules', () => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/dummy-companies');
 
       ddfDataSet.load(() => {
-        const results = translationRules[rulesRegistry.UNEXPECTED_TRANSLATION_HEADER](ddfDataSet);
+        const results = translationRules[rulesRegistry.UNEXPECTED_TRANSLATION_HEADER].rule(ddfDataSet);
 
         expect(results.length).to.equal(0);
 
@@ -36,7 +36,7 @@ describe('translation rules', () => {
 
       ddfDataSet.load(() => {
         const EXPECTED_ISSUES_LENGTH = 2;
-        const results = translationRules[rulesRegistry.UNEXPECTED_TRANSLATION_HEADER](ddfDataSet);
+        const results = translationRules[rulesRegistry.UNEXPECTED_TRANSLATION_HEADER].rule(ddfDataSet);
         const EXPECTED_RESULTS = [{
           path: 'ddf--datapoints--company_size_string--by--company--anno.csv',
           data: {
@@ -71,7 +71,7 @@ describe('translation rules', () => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/dummy-companies');
 
       ddfDataSet.load(() => {
-        const results = translationRules[rulesRegistry.UNEXPECTED_TRANSLATIONS_DATA](ddfDataSet);
+        const results = translationRules[rulesRegistry.UNEXPECTED_TRANSLATIONS_DATA].rule(ddfDataSet);
 
         expect(results.length).to.equal(0);
 
@@ -84,7 +84,7 @@ describe('translation rules', () => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/unexpected-translations-data');
 
       ddfDataSet.load(() => {
-        const results = translationRules[rulesRegistry.UNEXPECTED_TRANSLATIONS_DATA](ddfDataSet);
+        const results = translationRules[rulesRegistry.UNEXPECTED_TRANSLATIONS_DATA].rule(ddfDataSet);
         const EXPECTED_RESULT = {
           path: 'ddf--entities--company.csv',
           data: {
@@ -118,25 +118,22 @@ describe('translation rules', () => {
 
       ddfDataSet.load(() => {
         const actions = _.flattenDeep(
-          ddfDataSet.getDataPoint().fileDescriptors
-            .map(fileDescriptor =>
-              fileDescriptor.getExistingTranslationDescriptors()
-                .map(transDescriptor => {
-                  transDescriptor.primaryKey = fileDescriptor.primaryKey;
-
-                  return api.createDatapointTranslationByRuleProcessor(
-                    {
-                      ddfDataSet,
-                      ruleKey: rulesRegistry.UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA,
-                      issuesFilter: {isAllowed: () => true}
-                    },
-                    transDescriptor,
-                    result => {
-                      tempResults.push(result);
-                    }
-                  );
-                })
+          ddfDataSet.getDataPoint().fileDescriptors.map(fileDescriptor =>
+            fileDescriptor.getExistingTranslationDescriptors().map(transDescriptor =>
+              api.createRecordBasedRuleProcessor(
+                {
+                  ddfDataSet,
+                  ruleKey: rulesRegistry.UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA,
+                  rule: translationRules[rulesRegistry.UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA],
+                  issuesFilter: {isAllowed: () => true}
+                },
+                transDescriptor,
+                result => {
+                  tempResults.push(result);
+                }
+              )
             )
+          )
         );
 
         async.parallelLimit(actions, CONCURRENT_OPERATIONS_AMOUNT, () => {
@@ -151,31 +148,28 @@ describe('translation rules', () => {
   });
 
   describe('when "UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA" rule', () => {
-    it('any issue should NOT be found for "fixtures/rules-cases/unexpected-data-point-translations-data"', done => {
+    it('an issue should be found for "fixtures/rules-cases/unexpected-data-point-translations-data"', done => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/unexpected-data-point-translations-data');
       const tempResults = [];
 
       ddfDataSet.load(() => {
         const actions = _.flattenDeep(
-          ddfDataSet.getDataPoint().fileDescriptors
-            .map(fileDescriptor =>
-              fileDescriptor.getExistingTranslationDescriptors()
-                .map(transDescriptor => {
-                  transDescriptor.primaryKey = fileDescriptor.primaryKey;
-
-                  return api.createDatapointTranslationByRuleProcessor(
-                    {
-                      ddfDataSet,
-                      ruleKey: rulesRegistry.UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA,
-                      issuesFilter: {isAllowed: () => true}
-                    },
-                    transDescriptor,
-                    result => {
-                      tempResults.push(result);
-                    }
-                  );
-                })
+          ddfDataSet.getDataPoint().fileDescriptors.map(fileDescriptor =>
+            fileDescriptor.getExistingTranslationDescriptors().map(transDescriptor =>
+              api.createRecordBasedRuleProcessor(
+                {
+                  ddfDataSet,
+                  ruleKey: rulesRegistry.UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA,
+                  rule: translationRules[rulesRegistry.UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA],
+                  issuesFilter: {isAllowed: () => true}
+                },
+                transDescriptor,
+                result => {
+                  tempResults.push(result);
+                }
+              )
             )
+          )
         );
 
         async.parallelLimit(actions, CONCURRENT_OPERATIONS_AMOUNT, () => {
@@ -198,6 +192,134 @@ describe('translation rules', () => {
 
           done();
         });
+      });
+    });
+  });
+
+
+  describe('when "DUPLICATED_DATA_POINT_TRANSLATION_KEY" rule', () => {
+    it('any issue should NOT be found for "fixtures/dummy-companies"', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/dummy-companies');
+      const tempResults = [];
+
+      translationRules[rulesRegistry.DUPLICATED_DATA_POINT_TRANSLATION_KEY].resetStorage();
+
+      ddfDataSet.load(() => {
+        const actions = _.flattenDeep(
+          ddfDataSet.getDataPoint().fileDescriptors.map(fileDescriptor =>
+            fileDescriptor.getExistingTranslationDescriptors().map(transDescriptor =>
+              api.createRecordBasedRuleProcessor(
+                {
+                  ddfDataSet,
+                  ruleKey: rulesRegistry.DUPLICATED_DATA_POINT_TRANSLATION_KEY,
+                  rule: translationRules[rulesRegistry.DUPLICATED_DATA_POINT_TRANSLATION_KEY],
+                  issuesFilter: {isAllowed: () => true}
+                },
+                transDescriptor,
+                result => {
+                  tempResults.push(result);
+                }
+              )
+            )
+          )
+        );
+
+        async.parallelLimit(actions, CONCURRENT_OPERATIONS_AMOUNT, () => {
+          const results = _.compact(tempResults);
+
+          expect(_.isEmpty(results)).to.be.true;
+
+          done();
+        });
+      });
+    });
+  });
+
+  describe('when "DUPLICATED_TRANSLATION_KEY" rule', () => {
+    it('an issue should be found for "fixtures/rules-cases/duplicated-data-point-translation-key"', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/duplicated-data-point-translation-key');
+      const tempResults = [];
+
+      translationRules[rulesRegistry.DUPLICATED_DATA_POINT_TRANSLATION_KEY].resetStorage();
+
+      ddfDataSet.load(() => {
+        const actions = _.flattenDeep(
+          ddfDataSet.getDataPoint().fileDescriptors.map(fileDescriptor =>
+            fileDescriptor.getExistingTranslationDescriptors().map(transDescriptor =>
+              api.createRecordBasedRuleProcessor(
+                {
+                  ddfDataSet,
+                  ruleKey: rulesRegistry.DUPLICATED_DATA_POINT_TRANSLATION_KEY,
+                  rule: translationRules[rulesRegistry.DUPLICATED_DATA_POINT_TRANSLATION_KEY],
+                  issuesFilter: {isAllowed: () => true}
+                },
+                transDescriptor,
+                result => {
+                  tempResults.push(result);
+                }
+              )
+            )
+          )
+        );
+
+        async.parallelLimit(actions, CONCURRENT_OPERATIONS_AMOUNT, () => {
+          const results = _.compact(tempResults);
+          const EXPECTED_RESULT = {
+            path: 'lang/nl-nl/ddf--datapoints--company_size_string--by--company--anno.csv',
+            data: ['mic,2016']
+          };
+
+          expect(results.length).to.equal(1);
+
+          const result = _.head(results);
+
+          expect(result.type).to.equal(rulesRegistry.DUPLICATED_DATA_POINT_TRANSLATION_KEY);
+          expect(_.endsWith(result.path, EXPECTED_RESULT.path)).to.be.true;
+          expect(_.isEqual(result.data, EXPECTED_RESULT.data)).to.be.true;
+
+          done();
+        });
+      });
+    });
+  });
+
+  describe('when "DUPLICATED_TRANSLATION_KEY" rule', () => {
+    it('any issue should NOT be found for folder without the problem (fixtures/dummy-companies-with-dp)', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/dummy-companies');
+
+      ddfDataSet.load(() => {
+        const results = translationRules[rulesRegistry.DUPLICATED_TRANSLATION_KEY].rule(ddfDataSet);
+
+        expect(results.length).to.equal(0);
+
+        done();
+      });
+    });
+
+    it(`expected issues should be found for folder with the problem
+   (fixtures/rules-cases/unexpected-translation-header)`, done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/duplicated-translation-key');
+
+      ddfDataSet.load(() => {
+        const EXPECTED_ISSUES_LENGTH = 2;
+        const results = translationRules[rulesRegistry.DUPLICATED_TRANSLATION_KEY].rule(ddfDataSet);
+        const EXPECTED_RESULTS = [{
+          path: 'lang/nl-nl/ddf--entities--company.csv',
+          data: ['gap']
+        }, {
+          path: 'lang/nl-nl/ddf--entities--region.csv',
+          data: ['america']
+        }];
+
+        expect(results.length).to.equal(EXPECTED_ISSUES_LENGTH);
+
+        results.forEach((result, index) => {
+          expect(result.type).to.equal(rulesRegistry.DUPLICATED_TRANSLATION_KEY);
+          expect(_.endsWith(result.path, EXPECTED_RESULTS[index].path)).to.be.true;
+          expect(_.isEqual(result.data, EXPECTED_RESULTS[index].data)).to.be.true;
+        });
+
+        done();
       });
     });
   });
