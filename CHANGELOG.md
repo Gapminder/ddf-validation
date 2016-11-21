@@ -1,3 +1,15 @@
+<a name="1.1.0"></a>
+# [1.1.0](https://github.com/Gapminder/ddf-validation/compare/v1.0.0...v1.1.0) (2016-11-21)
+
+
+### Features
+
+* **rukle:** DUPLICATED_TRANSLATION_KEY rule providing ([ccf583c](https://github.com/Gapminder/ddf-validation/commit/ccf583c)), closes [#252](https://github.com/Gapminder/ddf-validation/issues/252)
+* **rules:** UNEXPECTED_TRANSLATIONS_DATA rule implementation ([2b46d27](https://github.com/Gapminder/ddf-validation/commit/2b46d27)), closes [#247](https://github.com/Gapminder/ddf-validation/issues/247)
+* **translations:** UNEXPECTED_TRANSLATIONS_HEADER rule implementation ([7623c48](https://github.com/Gapminder/ddf-validation/commit/7623c48)), closes [#248](https://github.com/Gapminder/ddf-validation/issues/248)
+
+
+
 <a name="1.0.0"></a>
 # [1.0.0](https://github.com/Gapminder/ddf-validation/compare/v0.13.2...v1.0.0) (2016-11-10)
 
