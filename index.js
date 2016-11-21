@@ -5,91 +5,117 @@ const async = require('async');
 const _ = require('lodash');
 const DdfDataSet = require('./lib/ddf-definitions/ddf-data-set');
 const ddfRules = require('./lib/ddf-rules');
-const ddfDataPointRules = require('./lib/ddf-rules/data-point-rules');
-const ddfDataPointTransRules = require('./lib/ddf-rules/translation-rules/data-point-rules');
 const IssuesFilter = require('./lib/utils/issues-filter');
-
 const CONCURRENT_OPERATIONS_AMOUNT = 30;
 
-function walkNonDataPointIssue(context, onIssue) {
-  ddfRules.forEach(ruleSet => {
-    Object.getOwnPropertySymbols(ruleSet)
+const isSimpleRule = ruleObject => !!ruleObject.rule;
+const isRecordRule = ruleObject => !!ruleObject.recordRule;
+const isAggregativeRule = ruleObject => !!ruleObject.aggregateRecord && !!ruleObject.aggregativeRule;
+const sameTranslation = (key, fileDescriptor) => fileDescriptor.isTranslation === ddfRules[key].isTranslation;
+const noTranslation = (key, fileDescriptor) => !fileDescriptor.isTranslation && !ddfRules[key].isTranslation;
+
+function processSimpleRules(context, onIssue) {
+  Object.getOwnPropertySymbols(ddfRules)
+    .filter(key => isSimpleRule(ddfRules[key]))
+    .filter(key => context.issuesFilter.isAllowed(key))
+    .map(key => ddfRules[key].rule(context.ddfDataSet))
+    .filter(issues => !_.isEmpty(issues))
+    .forEach(issue => onIssue(issue));
+}
+
+/*eslint max-params: ["error", 4]*/
+function createRecordAggregationProcessor(context, ddfDataSet, fileDescriptor, resultHandler) {
+  return (record, line) => {
+    Object.getOwnPropertySymbols(ddfRules)
+      .filter(key => sameTranslation(key, fileDescriptor) || noTranslation(key, fileDescriptor))
+      .filter(key => isRecordRule(ddfRules[key]) || isAggregativeRule(ddfRules[key]))
       .filter(key => context.issuesFilter.isAllowed(key))
-      .map(key => ruleSet[key](context.ddfDataSet))
-      .filter(issues => !_.isEmpty(issues))
-      .forEach(issue => onIssue(issue));
-  });
+      .forEach(key => {
+        if (isRecordRule(ddfRules[key])) {
+          const issues = ddfRules[key].recordRule({ddfDataSet, fileDescriptor, record, line});
+
+          resultHandler(issues);
+        }
+
+        if (isAggregativeRule(ddfRules[key])) {
+          ddfRules[key].aggregateRecord({ddfDataSet, fileDescriptor, record, line}, key);
+        }
+      });
+  };
 }
 
-function createDatapointProcessor(context, dataPointFileDescriptor, resultHandler) {
+function processAggregation(context, ddfDataSet, fileDescriptor, resultHandler) {
+  Object.getOwnPropertySymbols(ddfRules)
+    .filter(key => sameTranslation(key, fileDescriptor) || noTranslation(key, fileDescriptor))
+    .filter(key => isAggregativeRule(ddfRules[key]))
+    .filter(key => context.issuesFilter.isAllowed(key))
+    .forEach(key => {
+      resultHandler(ddfRules[key].aggregativeRule({ddfDataSet, fileDescriptor}, key));
+    });
+}
+
+function createRecordBasedRulesProcessor(context, fileDescriptor, resultHandler) {
   const ddfDataSet = context.ddfDataSet;
 
   return onDataPointReady => {
     context.ddfDataSet.getDataPoint().loadFile(
-      dataPointFileDescriptor,
-      (dataPointRecord, line) => {
-        Object.getOwnPropertySymbols(ddfDataPointRules)
-          .filter(key => context.issuesFilter.isAllowed(key))
-          .forEach(key => {
-            const issues = ddfDataPointRules[key]({ddfDataSet, dataPointFileDescriptor, dataPointRecord, line});
-
-            resultHandler(issues);
-          });
-      },
-      onDataPointReady
+      fileDescriptor,
+      createRecordAggregationProcessor(context, ddfDataSet, fileDescriptor, resultHandler),
+      () => {
+        processAggregation(context, ddfDataSet, fileDescriptor, resultHandler);
+        onDataPointReady();
+      }
     );
   };
 }
 
-function createDatapointTranslationProcessor(context, dataPointFileTransDescriptor, resultHandler) {
+function createRecordBasedRuleProcessor(context, fileDescriptor, resultHandler) {
   const ddfDataSet = context.ddfDataSet;
 
   return onDataPointReady => {
     context.ddfDataSet.getDataPoint().loadFile(
-      dataPointFileTransDescriptor,
-      (transRecord, line) => {
-        Object.getOwnPropertySymbols(ddfDataPointTransRules)
-          .filter(key => context.issuesFilter.isAllowed(key))
-          .forEach(key => {
-            const issues =
-              ddfDataPointTransRules[key]({ddfDataSet, dataPointFileTransDescriptor, transRecord, line});
+      fileDescriptor,
+      (record, line) => {
+        if (context.issuesFilter.isAllowed(context.ruleKey)) {
+          if (isRecordRule(context.rule)) {
+            const issues = context.rule.recordRule({ddfDataSet, fileDescriptor, record, line});
 
             resultHandler(issues);
-          });
+          }
+
+          if (isAggregativeRule(context.rule)) {
+            context.rule.aggregateRecord({
+              ddfDataSet,
+              fileDescriptor,
+              record,
+              line
+            }, context.ruleKey);
+          }
+        }
       },
-      onDataPointReady
-    );
-  };
-}
+      () => {
+        if (sameTranslation(context.ruleKey, fileDescriptor) || noTranslation(context.ruleKey, fileDescriptor)) {
+          if (context.issuesFilter.isAllowed(context.ruleKey)) {
+            if (isAggregativeRule(ddfRules[context.ruleKey])) {
+              resultHandler(ddfRules[context.ruleKey].aggregativeRule({ddfDataSet, fileDescriptor}, context.ruleKey));
+            }
+          }
+        }
 
-function createDatapointTranslationByRuleProcessor(context, dataPointFileTransDescriptor, resultHandler) {
-  const ddfDataSet = context.ddfDataSet;
 
-  return onDataPointReady => {
-    context.ddfDataSet.getDataPoint().loadFile(
-      dataPointFileTransDescriptor,
-      (transRecord, line) => {
-        const issues =
-          ddfDataPointTransRules[context.ruleKey]({ddfDataSet, dataPointFileTransDescriptor, transRecord, line});
-
-        resultHandler(issues);
-      },
-      onDataPointReady
+        onDataPointReady();
+      }
     );
   };
 }
 
 function getValidationActions(context) {
-  const dataPointActions =
-    context.ddfDataSet.getDataPoint().fileDescriptors
-      .map(fileDescriptor =>
-        context.prepareDataPointProcessor(fileDescriptor));
+  const dataPointActions = context.ddfDataSet.getDataPoint().fileDescriptors.map(fileDescriptor =>
+    context.processRecordBasedRules(fileDescriptor));
   const dataPointTransActions = _.flattenDeep(
-    context.ddfDataSet.getDataPoint().fileDescriptors
-      .map(fileDescriptor =>
-        fileDescriptor.getExistingTranslationDescriptors()
-          .map(transFileDescriptor =>
-            context.prepareDataPointTransProcessor(transFileDescriptor, fileDescriptor)))
+    context.ddfDataSet.getDataPoint().fileDescriptors.map(fileDescriptor =>
+      fileDescriptor.getExistingTranslationDescriptors().map(transFileDescriptor =>
+        context.processRecordBasedRules(transFileDescriptor, fileDescriptor)))
   );
 
   return _.concat(dataPointActions, dataPointTransActions);
@@ -102,18 +128,8 @@ class JSONValidator {
     this.issueEmitter = new EventEmitter();
   }
 
-  prepareDataPointProcessor(dataPointFileDescriptor) {
-    return createDatapointProcessor(this, dataPointFileDescriptor, result => {
-      if (!_.isEmpty(result)) {
-        this.out = this.out.concat(result.map(issue => issue.view()));
-      }
-    });
-  }
-
-  prepareDataPointTransProcessor(dataPointFileTransDescriptor, fileDescriptor) {
-    dataPointFileTransDescriptor.primaryKey = fileDescriptor.primaryKey;
-
-    return createDatapointTranslationProcessor(this, dataPointFileTransDescriptor, result => {
+  processRecordBasedRules(fileDescriptor) {
+    return createRecordBasedRulesProcessor(this, fileDescriptor, result => {
       if (!_.isEmpty(result)) {
         this.out = this.out.concat(result.map(issue => issue.view()));
       }
@@ -130,7 +146,7 @@ class JSONValidator {
     this.out = [];
 
     this.ddfDataSet.load(() => {
-      walkNonDataPointIssue(this, issue => {
+      processSimpleRules(this, issue => {
         if (!_.isArray(issue)) {
           this.out.push(issue.view());
         }
@@ -162,18 +178,8 @@ class StreamValidator {
     this.issueEmitter = new EventEmitter();
   }
 
-  prepareDataPointProcessor(dataPointDetail) {
-    return createDatapointProcessor(this, dataPointDetail, result => {
-      if (!_.isEmpty(result)) {
-        result.map(issue => this.issueEmitter.emit('issue', issue.view()));
-      }
-    });
-  }
-
-  prepareDataPointTransProcessor(dataPointFileTransDescriptor, fileDescriptor) {
-    dataPointFileTransDescriptor.primaryKey = fileDescriptor.primaryKey;
-
-    return createDatapointTranslationProcessor(this, dataPointFileTransDescriptor, result => {
+  processRecordBasedRules(dataPointDetail) {
+    return createRecordBasedRulesProcessor(this, dataPointDetail, result => {
       if (!_.isEmpty(result)) {
         result.map(issue => this.issueEmitter.emit('issue', issue.view()));
       }
@@ -189,7 +195,7 @@ class StreamValidator {
     this.ddfDataSet = new DdfDataSet(this.rootPath, this.settings);
 
     this.ddfDataSet.load(() => {
-      walkNonDataPointIssue(this, issue => {
+      processSimpleRules(this, issue => {
         if (!_.isArray(issue)) {
           this.issueEmitter.emit('issue', issue.view());
         }
@@ -222,18 +228,8 @@ class SimpleValidator {
     this.isDataSetCorrect = true;
   }
 
-  prepareDataPointProcessor(dataPointDetail) {
-    return createDatapointProcessor(this, dataPointDetail, result => {
-      if (!_.isEmpty(result)) {
-        this.isDataSetCorrect = false;
-      }
-    });
-  }
-
-  prepareDataPointTransProcessor(dataPointFileTransDescriptor, fileDescriptor) {
-    dataPointFileTransDescriptor.primaryKey = fileDescriptor.primaryKey;
-
-    return createDatapointTranslationProcessor(this, dataPointFileTransDescriptor, result => {
+  processRecordBasedRules(dataPointDetail) {
+    return createRecordBasedRulesProcessor(this, dataPointDetail, result => {
       if (!_.isEmpty(result)) {
         this.isDataSetCorrect = false;
       }
@@ -248,17 +244,15 @@ class SimpleValidator {
     this.issuesFilter = new IssuesFilter(this.settings);
     this.ddfDataSet = new DdfDataSet(this.rootPath, this.settings);
 
-    const validateNonDataPoints = () => {
-      for (const ruleSet of ddfRules) {
-        const issues = Object.getOwnPropertySymbols(ruleSet)
-          .filter(key => this.issuesFilter.isAllowed(key))
-          .map(key => ruleSet[key](this.ddfDataSet))
-          .filter(newIssues => !_.isEmpty(newIssues));
+    const validateSimpleRules = () => {
+      const issues = Object.getOwnPropertySymbols(ddfRules)
+        .filter(key => isSimpleRule(ddfRules[key]))
+        .filter(key => this.issuesFilter.isAllowed(key))
+        .map(key => ddfRules[key].rule(this.ddfDataSet))
+        .filter(newIssues => !_.isEmpty(newIssues));
 
-        if (!_.isEmpty(issues)) {
-          this.isDataSetCorrect = false;
-          break;
-        }
+      if (!_.isEmpty(issues)) {
+        this.isDataSetCorrect = false;
       }
     };
 
@@ -269,7 +263,7 @@ class SimpleValidator {
     }
 
     this.ddfDataSet.load(() => {
-      validateNonDataPoints();
+      validateSimpleRules();
 
       if (!this.isDataSetCorrect) {
         this.issueEmitter.emit('finish', null, this.isDataSetCorrect);
@@ -284,9 +278,8 @@ class SimpleValidator {
 }
 
 
-exports.createDatapointProcessor = createDatapointProcessor;
-exports.createDatapointTranslationProcessor = createDatapointTranslationProcessor;
-exports.createDatapointTranslationByRuleProcessor = createDatapointTranslationByRuleProcessor;
+exports.createRecordBasedRulesProcessor = createRecordBasedRulesProcessor;
+exports.createRecordBasedRuleProcessor = createRecordBasedRuleProcessor;
 exports.JSONValidator = JSONValidator;
 exports.StreamValidator = StreamValidator;
 exports.SimpleValidator = SimpleValidator;

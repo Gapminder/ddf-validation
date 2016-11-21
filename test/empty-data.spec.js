@@ -15,7 +15,7 @@ describe('general rules', () => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder');
 
       ddfDataSet.load(() => {
-        const results = generalRules[rulesRegistry.EMPTY_DATA](ddfDataSet);
+        const results = generalRules[rulesRegistry.EMPTY_DATA].rule(ddfDataSet);
 
         expect(results.length).to.equal(0);
 
@@ -28,7 +28,7 @@ describe('general rules', () => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/empty-data');
 
       ddfDataSet.load(() => {
-        const results = generalRules[rulesRegistry.EMPTY_DATA](ddfDataSet);
+        const results = generalRules[rulesRegistry.EMPTY_DATA].rule(ddfDataSet);
         const expectedFiles = [
           'ddf--datapoints--pop--by--country--year.csv',
           'ddf--entities--geo--country.csv'
@@ -38,10 +38,7 @@ describe('general rules', () => {
 
         results.forEach(result => {
           const fileIsExpected = !_.isEmpty(
-            expectedFiles
-              .filter(expectedFile =>
-                _.endsWith(result.path, expectedFile))
-          );
+            expectedFiles.filter(expectedFile => _.endsWith(result.path, expectedFile)));
 
           expect(fileIsExpected).to.be.true;
         });

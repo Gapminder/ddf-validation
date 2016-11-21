@@ -1,0 +1,106 @@
+{
+	"name": "ddf--gapminder--dummy_companies",
+	"title": "Gapminder's Dummy Company dataset",
+	"description": "A dummy dataset for showing the DDF dataformat",
+	"version": "0.0.2",
+	"language": { "id": "en", "name": "English" },
+	"translations": [{ "id": "nl-nl", "name": "Nederlands (Nederland)" }],
+	"license": "foo",
+	"author": "Jasper Heeffer <jasper@gapminder.org> (http://gapminder.org)",
+	"resources": [
+		{ 
+			"path": "ddf--concepts.csv", 
+			"name": "ddf--concepts",
+			"schema": {
+				"fields": [
+					{ "name": "concept" },
+					{ "name": "concept_type" },
+					{ "name": "domain" }
+				],
+				"primaryKey": "concept"
+			}
+		},
+		{ 
+			"path": "ddf--datapoints--company_size_string--by--company--anno.csv", 
+			"name": "ddf--datapoints--company_size_string--by--company--anno" ,
+			"schema": {
+				"fields": [
+					{ "name": "company" },
+					{ "name": "anno" },
+					{ "name": "company_size_string" }
+				],
+				"primaryKey": ["company","anno"]
+			}
+		},
+		{ "path": "ddf--entities--company--english_speaking.csv", "name": "ddf--entities--company--english_speaking",
+			"schema": {
+				"fields": [
+					{ "name": "english_speaking_company" },
+					{ "name": "is--english_speaking_company" },
+					{ "name": "name" }
+				],
+				"primaryKey": "english_speaking_company"
+			}
+		 },
+		{ "path": "ddf--entities--company--foundation.csv", "name": "ddf--entities--company--foundation",
+			"schema": {
+				"fields": [
+					{ "name": "company" },
+					{ "name": "is--foundation" }
+				],
+				"primaryKey": "company"
+			}
+		 },
+		{ "path": "ddf--entities--company.csv", "name": "ddf--entities--company",
+			"schema": {
+				"fields": [
+					{ "name": "company" },
+					{ "name": "name" },
+					{ "name": "country" },
+					{ "name": "region" }
+				],
+				"primaryKey": "company"
+			}
+		 },
+		{ "path": "ddf--entities--company_size.csv", "name": "ddf--entities--company_size",
+			"schema": {
+				"fields": [
+					{ "name": "company_size" },
+					{ "name": "full_name" }
+				],
+				"primaryKey": "company_size"
+			}
+		 },
+		{ "path": "ddf--entities--project.csv", "name": "ddf--entities--project",
+			"schema": {
+				"fields": [
+					{ "name": "project" }
+				],
+				"primaryKey": "project"
+			}
+		 },
+		{ "path": "ddf--entities--region.csv", "name": "ddf--entities--region",
+			"schema": {
+				"fields": [
+					{ "name": "region" },
+					{ "name": "name" },
+					{ "name": "full_name" },
+					{ "name": "size" }
+				],
+				"primaryKey": "region"
+			}
+		},
+		{
+			"path": "extra companies/ddf--entities--company.csv",
+			"name": "ddf--entities--company-2",
+			"schema": {
+				"fields": [
+					{ "name": "company" },
+					{ "name": "name" },
+					{ "name": "country" }
+				],
+				"primaryKey": "company"
+			}
+		}
+	]
+}
