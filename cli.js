@@ -1,6 +1,7 @@
 #! /usr/bin/env node
 'use strict';
 
+const path = require('path');
 const utils = require('./lib/utils');
 const DataPackage = require('./lib/data/data-package');
 const DdfJsonCorrector = require('./lib/ddf-definitions/ddf-json-corrector');
@@ -10,11 +11,16 @@ const rulesRegistry = require('./lib/ddf-rules/registry');
 const logger = utils.logger;
 
 if (utils.settings.isDataPackageGenerationMode) {
-  const dataPackage = new DataPackage(utils.ddfRootFolder || '.');
+  const dataPackage = new DataPackage(path.resolve(utils.ddfRootFolder || '.'));
 
   dataPackage.build(() => {
-    dataPackage.write(() => {
-      logger.notice(`datapackage.json for ${utils.ddfRootFolder} was created.`);
+    dataPackage.write((err, filePath) => {
+      if (err) {
+        logger.notice(`datapackage.json was NOT created: ${err}.`);
+        return;
+      }
+
+      logger.notice(`${filePath} was created successfully.`);
     });
   });
   return;
