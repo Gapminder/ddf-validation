@@ -14,6 +14,12 @@ const isAggregativeRule = ruleObject => !!ruleObject.aggregateRecord && !!ruleOb
 const sameTranslation = (key, fileDescriptor) => fileDescriptor.isTranslation === ddfRules[key].isTranslation;
 const noTranslation = (key, fileDescriptor) => !fileDescriptor.isTranslation && !ddfRules[key].isTranslation;
 
+function clearGlobalStates() {
+  Object.getOwnPropertySymbols(ddfRules)
+    .filter(key => ddfRules[key].resetStorage)
+    .forEach(key => ddfRules[key].resetStorage());
+}
+
 function processSimpleRules(context, onIssue) {
   Object.getOwnPropertySymbols(ddfRules)
     .filter(key => isSimpleRule(ddfRules[key]))
@@ -122,7 +128,7 @@ function getValidationActions(context) {
 }
 
 function toArray(value) {
-  return _.isArray(value) ? value : [value];
+  return _.compact(_.isArray(value) ? value : [value]);
 }
 
 class JSONValidator {
@@ -147,6 +153,7 @@ class JSONValidator {
   }
 
   validate() {
+    clearGlobalStates();
     this.issuesFilter = new IssuesFilter(this.settings);
     this.ddfDataSet = new DdfDataSet(this.rootPath, this.settings);
     this.out = [];
@@ -199,6 +206,7 @@ class StreamValidator {
   }
 
   validate() {
+    clearGlobalStates();
     this.issuesFilter = new IssuesFilter(this.settings);
     this.ddfDataSet = new DdfDataSet(this.rootPath, this.settings);
 
@@ -249,6 +257,7 @@ class SimpleValidator {
   }
 
   validate() {
+    clearGlobalStates();
     this.issuesFilter = new IssuesFilter(this.settings);
     this.ddfDataSet = new DdfDataSet(this.rootPath, this.settings);
 
