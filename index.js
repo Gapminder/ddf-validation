@@ -121,6 +121,10 @@ function getValidationActions(context) {
   return _.concat(dataPointActions, dataPointTransActions);
 }
 
+function toArray(value) {
+  return _.isArray(value) ? value : [value];
+}
+
 class JSONValidator {
   constructor(rootPath, settings) {
     this.rootPath = rootPath;
@@ -129,7 +133,9 @@ class JSONValidator {
   }
 
   processRecordBasedRules(fileDescriptor) {
-    return createRecordBasedRulesProcessor(this, fileDescriptor, result => {
+    return createRecordBasedRulesProcessor(this, fileDescriptor, resultParam => {
+      const result = toArray(resultParam);
+
       if (!_.isEmpty(result)) {
         this.out = this.out.concat(result.map(issue => issue.view()));
       }
@@ -179,7 +185,9 @@ class StreamValidator {
   }
 
   processRecordBasedRules(dataPointDetail) {
-    return createRecordBasedRulesProcessor(this, dataPointDetail, result => {
+    return createRecordBasedRulesProcessor(this, dataPointDetail, resultParam => {
+      const result = toArray(resultParam);
+
       if (!_.isEmpty(result)) {
         result.map(issue => this.issueEmitter.emit('issue', issue.view()));
       }
