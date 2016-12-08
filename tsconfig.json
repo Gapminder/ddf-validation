@@ -19,10 +19,5 @@
   "exclude": [
     "node_modules",
     "**/*.spec.ts"
-  ],
-  "ignoreRules": {
-    "TS2304": true,
-    "TS2345": true,
-    "TS2453": true
-  }
+  ]
 }

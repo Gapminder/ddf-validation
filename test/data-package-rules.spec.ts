@@ -41,6 +41,34 @@ describe('ddf datapackage.json validation', () => {
         done();
       });
     });
+
+    it('one issue should be found for expected folder "fixtures/rules-cases/incorrect-file/non-print-chars"', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/incorrect-file/non-print-chars', null);
+
+      ddfDataSet.load(() => {
+        const EXPECTED_REASON = 'Non printable characters in filename';
+        const EXPECTED_SUGGESTION = 'ddf--entities--region.csv';
+        const EXPECTED_INCORRECT_FILE = 'ddf--entities--regi\ron.csv';
+
+        const results: Array<Issue> = allRules[INCORRECT_FILE].rule(ddfDataSet);
+
+        expect(results.length).to.equal(1);
+
+        const result = head(results);
+
+        expect(result.type).to.equal(INCORRECT_FILE);
+        expect(endsWith(result.path, EXPECTED_INCORRECT_FILE)).to.be.true;
+
+        const suggestion = head(result.suggestions);
+
+        expect(endsWith(suggestion, EXPECTED_SUGGESTION)).to.be.true;
+
+
+        expect(result.data.reason).to.equal(EXPECTED_REASON);
+
+        done();
+      });
+    });
   });
   describe('when DATAPACKAGE_CONFUSED_FIELDS', () => {
     it('any issue should NOT be found for folder (fixtures/good-folder)', done => {
