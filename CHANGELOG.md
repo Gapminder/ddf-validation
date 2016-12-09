@@ -1,3 +1,15 @@
+<a name="1.2.0"></a>
+# [1.2.0](https://github.com/Gapminder/ddf-validation/compare/v1.1.5...v1.2.0) (2016-12-09)
+
+
+### Features
+
+* **rule:** DATAPOINT_WITHOUT_INDICATOR rule implementation ([6a425b5](https://github.com/Gapminder/ddf-validation/commit/6a425b5)), closes [#284](https://github.com/Gapminder/ddf-validation/issues/284)
+* **rule:** INCORRECT_FILE rule & non printable characters in filename ([7e3304b](https://github.com/Gapminder/ddf-validation/commit/7e3304b)), closes [#287](https://github.com/Gapminder/ddf-validation/issues/287)
+* **typescript:** strict types providing ([40aeff6](https://github.com/Gapminder/ddf-validation/commit/40aeff6)), closes [#285](https://github.com/Gapminder/ddf-validation/issues/285)
+
+
+
 <a name="1.1.5"></a>
 ## [1.1.5](https://github.com/Gapminder/ddf-validation/compare/v1.1.4...v1.1.5) (2016-11-30)
 
