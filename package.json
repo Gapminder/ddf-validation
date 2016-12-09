@@ -2,7 +2,7 @@
   "name": "ddf-validation",
   "version": "1.1.5",
   "description": "DDF validion tool",
-  "main": "./src/index.js",
+  "main": "./lib/index.js",
   "bin": {
     "validate-ddf": "./src/cli.js"
   },
