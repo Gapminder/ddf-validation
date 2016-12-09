@@ -3,7 +3,7 @@
 ## Registry of issues types
 
 Registry is a structure that contains all available rules and their description.
-First of all new rule should be added to the [rules registry](../lib/ddf-rules/registry.js).
+First of all new rule should be added to the [rules registry](../src/ddf-rules/registry.js).
 
 A new rule should be added in the next way:
 
@@ -43,29 +43,29 @@ Datapoints on their own. For example, rule `Folder is not DDF`.
 This kind of rules is exclusively about `ddf--index` file. For example, `Index is not found`
 or `File in index doesn't exist`.
 
-`Index rules` are placed [here](../lib/ddf-rules/data-package-rules).
+`Index rules` are placed [here](../src/ddf-rules/data-package-rules).
 
 ### Concept rules
 
 This kind of rules is exclusively about Concepts. For example, `Concept ID is not unique`.
 
-`Concept rules` are placed [here](../lib/ddf-rules/concept-rules).
+`Concept rules` are placed [here](../src/ddf-rules/concept-rules).
 
 ### Entity rules
 
 This kind of rules is exclusively about Entities. For example, `Entity header is not Concept`.
 
-`Entity rules` are placed [here](../lib/ddf-rules/entity-rules).
+`Entity rules` are placed [here](../src/ddf-rules/entity-rules).
 
 ### Data points rules
 
 This kind of rules is exclusively about Data points. For example, `Unexpected time value`.
 
-`Data points` are placed [here](../lib/ddf-rules/data-point-rules).
+`Data points` are placed [here](../src/ddf-rules/data-point-rules).
 
 ## Issue
 
-Issue is a class that describes single rule violation. Code is placed [here](../lib/ddf-rules/issue.js).
+Issue is a class that describes single rule violation. Code is placed [here](../src/ddf-rules/issue.js).
 
 A simple way to create Issue object is:
 
@@ -136,7 +136,7 @@ By the way, all rules should return an issue or array of issues.
 
 ## DdfData
 
-This class describes DDF Dataset in general. Code is placed [here](../lib/ddf-definition/ddf-data-set.js)
+This class describes DDF Dataset in general. Code is placed [here](../src/ddf-definition/ddf-data-set.js)
 
 ### How to create a DdfData instance
 
@@ -178,7 +178,7 @@ load : (
 ```
 
 Note: `Concept`, `Entity` and `DataPoint` classes are placed:
-[here](../lib/ddf-definitions/concept.js), [here](../lib/ddf-definitions/entity.js) and [here](../lib/ddf-definitions/data-point.js) respectively.
+[here](../src/ddf-definitions/concept.js), [here](../src/ddf-definitions/entity.js) and [here](../src/ddf-definitions/data-point.js) respectively.
 
 Typical `DdfDataSet` using is:
 

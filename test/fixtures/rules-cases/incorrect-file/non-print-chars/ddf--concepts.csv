@@ -1,0 +1,8 @@
+concept,concept_type,domain
+domain,string,
+full_name,string,
+name,string,
+anno,time,year
+region,entity_domain,
+country,string,
+company_size_string,string,

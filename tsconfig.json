@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "target": "es6",
+    "module": "commonjs",
+    "noImplicitAny": false,
+    "outDir": "./lib",
+    "preserveConstEnums": true,
+    "removeComments": true,
+    "types": [
+      "node",
+      "mocha",
+      "chai"
+    ]
+  },
+  "include": [
+    "src/index.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts"
+  ]
+}
