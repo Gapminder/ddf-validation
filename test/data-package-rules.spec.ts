@@ -5,7 +5,8 @@ import {
   DATAPACKAGE_CONFUSED_FIELDS,
   DATAPACKAGE_NON_CONCEPT_PRIMARY_KEY,
   DATAPACKAGE_NON_UNIQUE_RESOURCE_FILE,
-  DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME
+  DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME,
+  DATA_POINT_WITHOUT_INDICATOR
 } from '../src/ddf-rules/registry';
 import {DdfDataSet} from '../src/ddf-definitions/ddf-data-set';
 import {Issue} from '../src/ddf-rules/issue';
@@ -37,6 +38,33 @@ describe('ddf datapackage.json validation', () => {
 
         expect(result.type).to.equal(INCORRECT_FILE);
         expect(endsWith(result.path, EXPECTED_INCORRECT_FILE)).to.be.true;
+
+        done();
+      });
+    });
+
+    it('one issue should be found for expected folder "fixtures/rules-cases/incorrect-file/non-print-chars"', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/incorrect-file/non-print-chars', null);
+
+      ddfDataSet.load(() => {
+        const EXPECTED_REASON = 'Non printable characters in filename';
+        const EXPECTED_SUGGESTION = 'ddf--entities--region.csv';
+        const EXPECTED_INCORRECT_FILE = 'ddf--entities--regi\ron.csv';
+        const results: Array<Issue> = allRules[INCORRECT_FILE].rule(ddfDataSet);
+
+        expect(results.length).to.equal(1);
+
+        const result = head(results);
+
+        expect(result.type).to.equal(INCORRECT_FILE);
+        expect(endsWith(result.path, EXPECTED_INCORRECT_FILE)).to.be.true;
+
+        const suggestion = head(result.suggestions);
+
+        expect(endsWith(suggestion, EXPECTED_SUGGESTION)).to.be.true;
+
+
+        expect(result.data.reason).to.equal(EXPECTED_REASON);
 
         done();
       });
@@ -190,6 +218,37 @@ describe('ddf datapackage.json validation', () => {
         const EXPECTED_DATA = {duplicates: ['ddf--concepts.csv']};
 
         expect(isEqual(result.data, EXPECTED_DATA)).to.be.true;
+
+        done();
+      });
+    });
+  });
+
+  describe('when DATA_POINT_WITHOUT_INDICATOR', () => {
+    it('any issue should NOT be found for folder (fixtures/good-folder)', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
+
+      ddfDataSet.load(() => {
+        const results: Array<Issue> = allRules[DATA_POINT_WITHOUT_INDICATOR].rule(ddfDataSet);
+
+        expect(results.length).to.equal(0);
+
+        done();
+      });
+    });
+    it('one issue should be found for expected folder "fixtures/rules-cases/datapoint-without-indicator"', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/datapoint-without-indicator', null);
+
+      ddfDataSet.load(() => {
+        const EXPECTED_FILE = 'ddf--datapoints--foo--by--geo--year.csv';
+        const results: Array<Issue> = allRules[DATA_POINT_WITHOUT_INDICATOR].rule(ddfDataSet);
+
+        expect(results.length).to.equal(1);
+
+        const result = head(results);
+
+        expect(result.type).to.equal(DATA_POINT_WITHOUT_INDICATOR);
+        expect(result.path).to.equal(EXPECTED_FILE);
 
         done();
       });

@@ -12,19 +12,19 @@ export class Issue {
     this.suggestions = [];
   }
 
-  setPath(path) {
+  setPath(path: string): Issue {
     this.path = path;
 
     return this;
   }
 
-  setData(data) {
+  setData(data: any): Issue {
     this.data = data;
 
     return this;
   }
 
-  setSuggestions(suggestions) {
+  setSuggestions(suggestions: Array<any>): Issue {
     if (suggestions) {
       this.suggestions = suggestions;
     }

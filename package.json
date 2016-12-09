@@ -2,7 +2,7 @@
   "name": "ddf-validation",
   "version": "1.1.5",
   "description": "DDF validion tool",
-  "main": "./src/index.js",
+  "main": "./lib/index.js",
   "bin": {
     "validate-ddf": "./src/cli.js"
   },
@@ -29,7 +29,7 @@
     "@types/async": "2.0.34",
     "@types/babyparse": "0.0.30",
     "@types/levenshtein": "1.0.1",
-    "@types/lodash": "4.14.42",
+    "@types/lodash": "4.14.43",
     "@types/md5": "2.1.31",
     "@types/node": "0.0.2",
     "@types/winston": "0.0.32",
@@ -49,7 +49,6 @@
     "path": "0.12.7",
     "prettyjson": "1.2.1",
     "ts-node": "1.7.0",
-    "util": "0.10.3",
     "winston": "2.3.0",
     "yargs": "6.5.0"
   },
@@ -69,6 +68,6 @@
     "shelljs": "0.7.5",
     "sinon": "1.17.6",
     "sinon-chai": "2.8.0",
-    "typescript": "2.0.10"
+    "typescript": "2.1.4"
   }
 }
