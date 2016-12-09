@@ -1,17 +1,18 @@
 import * as registry from './registry';
 
 import {rule as conceptIdIsNotUnique} from './concept-rules/concept-id-is-not-unique';
-import {rule as emptyConceptId} from './concept-rules//empty-concept-id';
-import {rule as nonConceptHeader} from './concept-rules//non-concept-header';
-import {rule as conceptMandatoryFieldNotFound} from './concept-rules//concept-mandatory-field-not-found';
-import {rule as conceptsNotFound} from './concept-rules//concepts-not-found';
-import {rule as invalidDrillUp} from './concept-rules//invalid-drill-up';
+import {rule as emptyConceptId} from './concept-rules/empty-concept-id';
+import {rule as nonConceptHeader} from './concept-rules/non-concept-header';
+import {rule as conceptMandatoryFieldNotFound} from './concept-rules/concept-mandatory-field-not-found';
+import {rule as conceptsNotFound} from './concept-rules/concepts-not-found';
+import {rule as invalidDrillUp} from './concept-rules/invalid-drill-up';
 
 import {rule as incorrectFile} from './data-package-rules/incorrect-file';
 import {rule as confusedFields} from './data-package-rules/confused-fields';
 import {rule as nonConceptPrimaryKey} from './data-package-rules/non-concept-primary-key';
 import {rule as nonUniqueResourceName} from './data-package-rules/non-unique-resource-name';
 import {rule as nonUniqueResourceFile} from './data-package-rules/non-unique-resource-file';
+import {rule as dataPointWithoutIndicator} from './data-package-rules/datapoint-without-indicator';
 
 import {rule as measureValueNotNumeric} from './data-point-rules/measure-value-not-numeric';
 import {rule as unexpectedEntityValue} from './data-point-rules/unexpected-entity-value';
@@ -47,6 +48,7 @@ export const allRules = {
   [registry.DATAPACKAGE_NON_CONCEPT_PRIMARY_KEY]: nonConceptPrimaryKey,
   [registry.DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME]: nonUniqueResourceName,
   [registry.DATAPACKAGE_NON_UNIQUE_RESOURCE_FILE]: nonUniqueResourceFile,
+  [registry.DATA_POINT_WITHOUT_INDICATOR]: dataPointWithoutIndicator,
   [registry.MEASURE_VALUE_NOT_NUMERIC]: measureValueNotNumeric,
   [registry.DATA_POINT_UNEXPECTED_ENTITY_VALUE]: unexpectedEntityValue,
   [registry.DATA_POINT_UNEXPECTED_TIME_VALUE]: unexpectedTimeValue,
