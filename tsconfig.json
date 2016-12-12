@@ -14,7 +14,8 @@
     ]
   },
   "include": [
-    "src/index.ts"
+    "src/index.ts",
+    "src/cli-logic.ts"
   ],
   "exclude": [
     "node_modules",

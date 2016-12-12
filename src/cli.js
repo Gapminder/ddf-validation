@@ -4,4 +4,4 @@
 require('ts-node').register({
   compilerOptions: {"target": "es6"}
 });
-require('./cli-logic');
+require('../lib/cli-logic');
