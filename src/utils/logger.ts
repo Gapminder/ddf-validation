@@ -12,7 +12,7 @@ const profiles = {
   }
 };
 
-export const getLogger = () => {
+export const getLogger: Function = () => {
   const mode = CONSOLE_MODE;
 
   class CustomTransport extends Transport {
