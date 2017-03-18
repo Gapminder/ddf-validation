@@ -59,7 +59,7 @@
     "@types/mocha": "2.2.33",
     "@types/node": "0.0.2",
     "chai": "3.5.0",
-    "codecov": "1.0.1",
+    "codecov": "2.1.0",
     "compare-version": "0.1.2",
     "conventional-changelog": "1.1.0",
     "conventional-changelog-cli": "1.2.0",
