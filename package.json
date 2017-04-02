@@ -34,7 +34,7 @@
     "@types/node": "0.0.2",
     "@types/winston": "0.0.32",
     "@types/yargs": "6.3.3",
-    "async": "2.1.4",
+    "async": "2.3.0",
     "babyparse": "0.4.6",
     "ddf-time-utils": "0.1.6",
     "deep-diff": "0.3.4",
