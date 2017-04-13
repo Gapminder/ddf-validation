@@ -9,11 +9,14 @@ import {NON_UNIQUE_ENTITY_VALUE} from '../registry';
 import {DdfDataSet} from '../../ddf-definitions/ddf-data-set';
 import {Issue} from '../issue';
 
+const ddfTimeUtils = require('ddf-time-utils');
+
 export const rule = {
   rule: (ddfDataSet: DdfDataSet) => {
     const conceptTypeHash = ddfDataSet.getConcept().getDictionary(null, 'concept_type');
     const domainTypeHash = ddfDataSet.getConcept().getDictionary(null, 'domain');
     const entities = ddfDataSet.getEntity().getDataByFiles();
+    const isTimeType = (contentType: string) => includes(ddfTimeUtils.TIME_TYPES_DDF_COMPATIBLE, contentType);
 
     function getEntitiesFilesDescriptor() {
       const entitiesFilesDescriptor = {};
@@ -26,7 +29,7 @@ export const rule = {
           Object.keys(firstRecord)
             .filter(
               key =>
-              conceptTypeHash[key] === 'entity_domain' || conceptTypeHash[key] === 'entity_set'
+              conceptTypeHash[key] === 'entity_domain' || conceptTypeHash[key] === 'entity_set' || isTimeType(conceptTypeHash[key])
             )
         );
         entitiesFilesDescriptor[entityFile].entityDomain = entitiesFilesDescriptor[entityFile].entityIdField;
