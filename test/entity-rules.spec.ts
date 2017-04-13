@@ -108,6 +108,15 @@ describe('rules for entry', () => {
       });
     });
 
+    it('any issue should NOT be found for folder with an entity that has time type (fixtures/rules-cases/non-unique-entity-value-time)', done => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
+      ddfDataSet.load(() => {
+        expect(allRules[NON_UNIQUE_ENTITY_VALUE].rule(ddfDataSet).length).to.equal(0);
+
+        done();
+      });
+    });
+
     it(`issues should be found for folder with the problem
     (fixtures/rules-cases/non-unique-entity-value)`, done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/non-unique-entity-value', null);
