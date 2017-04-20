@@ -8,12 +8,14 @@ import {
   first,
   takeRight,
   last,
+  includes,
   compact,
   isEmpty,
+  tail
 } from 'lodash';
-import {readFile} from 'fs';
-import {parallelLimit} from 'async';
-import {resolve, sep} from 'path';
+import { readFile } from 'fs';
+import { parallelLimit } from 'async';
+import { resolve, sep } from 'path';
 import {
   CONCEPT,
   ENTITY,
@@ -21,9 +23,21 @@ import {
   DDF_SEPARATOR,
   DDF_DATAPOINT_SEPARATOR
 } from '../ddf-definitions/constants';
-import {Db} from '../data/db';
-import {Concept} from '../ddf-definitions/concept';
-import {readDir, getFileLine, writeFile, fileExists} from '../utils/file';
+import { Db } from '../data/db';
+import { Concept } from '../ddf-definitions/concept';
+import { readDir, getFileLine, writeFile, fileExists } from '../utils/file';
+
+export interface IDdfFileDescriptor {
+  valid: boolean;
+  filename?: string;
+  name?: string;
+  fullPath?: string;
+  type?: symbol;
+  parts?: string[];
+  constraints?: any;
+  headers?: string[];
+  primaryKey?: string | string[];
+}
 
 const PROCESS_LIMIT = 5;
 const CONCEPT_ID = 'concept';
@@ -33,36 +47,36 @@ const CSV_EXTENSION = 'csv';
 const REQUIRED_DDF_FILE_PARTS = 2;
 const REQUIRED_DATA_POINT_PARTS = 4;
 
-const getConceptType = (fileParts: Array<string>) => {
+const getConceptType = (fileParts: string[]) => {
   if (fileParts.length === 1 && head(fileParts) === 'concepts') {
     return CONCEPT;
   }
 
   return null;
 };
-const getEntityType = (fileParts: Array<string>) => {
+const getEntityType = (fileParts: string[]) => {
   if (fileParts.length > 1 && head(fileParts) === 'entities') {
     return ENTITY;
   }
 
   return null;
 };
-const getDataPointType = (fileParts: Array<string>) => {
+const getDataPointType = (fileParts: string[]) => {
   const baseCheck = fileParts.length > REQUIRED_DATA_POINT_PARTS && head(fileParts) === 'datapoints';
   const indexForBy = indexOf(fileParts, 'by');
   const byCheck = indexForBy > 1 && indexForBy < fileParts.length - 1;
 
   return baseCheck && byCheck ? DATA_POINT : null;
 };
-const getDdfParts = (fileParts: Array<string>) => {
+const getDdfParts = (fileParts: string[]) => {
   if (fileParts.length >= REQUIRED_DDF_FILE_PARTS && head(fileParts) === 'ddf') {
     return drop(fileParts);
   }
 
   return null;
 };
-const parseDdfFile = (folder: string, filename: string): any => {
-  const partsByPoint: Array<string> = split(filename, '.');
+const parseDdfFile = (folder: string, filename: string): IDdfFileDescriptor => {
+  const partsByPoint: string[] = split(filename, '.');
 
   if (partsByPoint.length <= 1 || partsByPoint[1] !== CSV_EXTENSION) {
     return {valid: false};
@@ -103,11 +117,11 @@ const getTypeByResource = (resource: any) => {
 
 export class DataPackage {
   public rootFolder: string;
-  public errors: Array<any>;
-  public warnings: Array<any>;
-  public fileDescriptors: Array<any>;
+  public errors: any[];
+  public warnings: any[];
+  public fileDescriptors: IDdfFileDescriptor[];
   public dataPackage: any;
-  public translationFolders: Array<any>;
+  public translationFolders: any[];
   public db: Db;
 
   constructor(rootFolder: string) {
@@ -119,7 +133,7 @@ export class DataPackage {
   }
 
   getTranslationFileDescriptors(onTranslationsFileDescriptorsReady: Function) {
-    readDir(resolve(this.rootFolder, LANG_FOLDER), (errFolders: any, translationFolders: Array<any>) => {
+    readDir(resolve(this.rootFolder, LANG_FOLDER), (errFolders: any, translationFolders: any[]) => {
         if (errFolders) {
           this.warnings.push({
             source: errFolders,
@@ -136,7 +150,7 @@ export class DataPackage {
 
             this.getDdfFileDescriptors(
               translationFullFolder,
-              (folderErr: any, ddfTransFileDescriptors: Array<any> = []) => {
+              (folderErr: any, ddfTransFileDescriptors: any[] = []) => {
                 const transFileDescriptors = ddfTransFileDescriptors
                   .map(transFileDescriptor => {
                     transFileDescriptor.translation = true;
@@ -156,10 +170,49 @@ export class DataPackage {
     );
   }
 
+  fillConstraints(ddfFileDescriptor: IDdfFileDescriptor): IDdfFileDescriptor {
+    if (ddfFileDescriptor.valid && ddfFileDescriptor.type === DATA_POINT) {
+      const constraintsProcessing = (part: string): string => {
+        const details = compact(split(part, '-'));
+
+        if (details.length <= 1) {
+          ddfFileDescriptor.valid = false;
+          return null;
+        }
+
+        const correctedPart = head(details);
+
+        ddfFileDescriptor.constraints[correctedPart] = tail(details);
+
+        return correctedPart;
+      };
+
+      let isByWordPassed = false;
+
+      ddfFileDescriptor.constraints = {};
+
+      ddfFileDescriptor.parts.forEach((part: string, index: number) => {
+        if (isByWordPassed && includes(part, '-')) {
+          const correctedPart = constraintsProcessing(part);
+
+          if (correctedPart) {
+            ddfFileDescriptor.parts[index] = correctedPart;
+          }
+        }
+
+        if (part === 'by') {
+          isByWordPassed = true;
+        }
+      });
+    }
+
+    return ddfFileDescriptor;
+  }
+
   getDdfFileDescriptors(folder: string, onDdfFileDescriptorsReady: Function) {
-    readDir(folder, (err: any, files: Array<string> = []) => {
-      const ddfFileDescriptors = files
-        .map(file => parseDdfFile(folder, file))
+    readDir(folder, (err: any, files: string[] = []) => {
+      const ddfFileDescriptors: IDdfFileDescriptor[] = files
+        .map(file => this.fillConstraints(parseDdfFile(folder, file)))
         .filter(ddfFile => ddfFile.type);
 
       onDdfFileDescriptorsReady(err, ddfFileDescriptors);
@@ -167,7 +220,7 @@ export class DataPackage {
   }
 
   fillHeaders(onHeadersReady: any) {
-    const headerGetActions = this.fileDescriptors.map((fileDescriptor: any) => onHeaderReady => {
+    const headerGetActions = this.fileDescriptors.map((fileDescriptor: IDdfFileDescriptor) => onHeaderReady => {
       getFileLine(fileDescriptor.fullPath, 0, (err, firstLine) => {
           fileDescriptor.headers = err ? [] : split((firstLine || '').trim(), ',');
           onHeaderReady();
@@ -179,10 +232,10 @@ export class DataPackage {
   }
 
   fillPrimaryKeys(conceptTypeHash) {
-    const fillConceptPrimaryKey = fileDescriptor => {
+    const fillConceptPrimaryKey = (fileDescriptor: IDdfFileDescriptor) => {
       fileDescriptor.primaryKey = 'concept';
     };
-    const fillEntityPrimaryKey = fileDescriptor => {
+    const fillEntityPrimaryKey = (fileDescriptor: IDdfFileDescriptor) => {
       const ONLY_TWO = 2;
 
       if (fileDescriptor.parts.length !== ONLY_TWO) {
@@ -195,7 +248,7 @@ export class DataPackage {
 
       fileDescriptor.primaryKey = entityDomain || entitySet;
     };
-    const fillDataPointPrimaryKey = fileDescriptor => {
+    const fillDataPointPrimaryKey = (fileDescriptor: IDdfFileDescriptor) => {
       const ddfDataPointSeparatorPos = indexOf(fileDescriptor.parts, DDF_DATAPOINT_SEPARATOR);
       const primaryKeyPartsCount = fileDescriptor.parts.length - ddfDataPointSeparatorPos - 1;
 
@@ -219,8 +272,17 @@ export class DataPackage {
   }
 
   getDataPackageObject() {
-    const rootFolderParts: Array<string> = split(this.rootFolder, sep);
+    const rootFolderParts: string[] = split(this.rootFolder, sep);
     const packageName: string = last(rootFolderParts);
+    const prepareField = (header: string, fileDescriptor: IDdfFileDescriptor): any => {
+      const result: any = {name: header};
+
+      if (fileDescriptor.constraints && fileDescriptor.constraints[header]) {
+        result.constraints = {enum: fileDescriptor.constraints[header]};
+      }
+
+      return result;
+    };
 
     return {
       name: packageName,
@@ -233,12 +295,12 @@ export class DataPackage {
       license: '',
       author: '',
       resources: this.fileDescriptors
-        .map(fileDescriptor => ({
+        .map((fileDescriptor: IDdfFileDescriptor) => ({
           path: fileDescriptor.filename,
           name: fileDescriptor.name,
           schema: {
             fields: (fileDescriptor.headers || [])
-              .map(header => ({name: header})),
+              .map(header => prepareField(header, fileDescriptor)),
             primaryKey: fileDescriptor.primaryKey
           }
         }))
@@ -259,7 +321,7 @@ export class DataPackage {
     this.warnings = [];
     this.fileDescriptors = [];
 
-    this.getDdfFileDescriptors(this.rootFolder, (ddfFileErr, ddfFileDescriptors) => {
+    this.getDdfFileDescriptors(this.rootFolder, (ddfFileErr: any, ddfFileDescriptors: IDdfFileDescriptor[]) => {
       if (ddfFileErr) {
         this.errors.push({
           source: ddfFileErr,
@@ -322,7 +384,7 @@ export class DataPackage {
     this.build(() => {
       writeFile(
         filePath,
-        JSON.stringify(this.dataPackage, null, '\t'),
+        JSON.stringify(this.dataPackage, null, 4),
         err => onDataPackageFileReady(err, filePath)
       );
     });

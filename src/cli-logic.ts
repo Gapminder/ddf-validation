@@ -1,9 +1,11 @@
 import * as path from 'path';
-import {logger, settings, ddfRootFolder} from './utils';
-import {getRulesInformation} from './ddf-rules/registry';
-import {DataPackage} from './data/data-package';
-import {DdfJsonCorrector} from './ddf-definitions/ddf-json-corrector';
-import {StreamValidator, validate} from './index';
+import { logger, settings, ddfRootFolder } from './utils';
+import { getRulesInformation } from './ddf-rules/registry';
+import { DataPackage } from './data/data-package';
+import { DdfJsonCorrector } from './ddf-definitions/ddf-json-corrector';
+import { StreamValidator, validate } from './index';
+
+let isValidationExpected: boolean = true;
 
 if (settings.isDataPackageGenerationMode) {
   const dataPackage = new DataPackage(path.resolve(ddfRootFolder || '.'));
@@ -18,6 +20,8 @@ if (settings.isDataPackageGenerationMode) {
       logger.notice(`${filePath} was created successfully.`);
     });
   });
+
+  isValidationExpected = false;
 }
 
 if (settings.isJsonAutoCorrectionMode) {
@@ -33,26 +37,31 @@ if (settings.isJsonAutoCorrectionMode) {
       logger.notice(writeError ? writeError : 'ok...');
     });
   });
+
+  isValidationExpected = false;
 }
 
 if (settings.isPrintRules) {
   logger.notice(getRulesInformation());
+  isValidationExpected = false;
 }
 
-const validator = new StreamValidator(ddfRootFolder, settings);
+if (isValidationExpected) {
+  const validator = new StreamValidator(ddfRootFolder, settings);
 
-logger.notice('[');
+  logger.notice('[');
 
-validator.on('issue', (issue: any) => {
-  logger.notice(`${JSON.stringify(issue)},\n`);
-});
+  validator.on('issue', (issue: any) => {
+    logger.notice(`${JSON.stringify(issue)},\n`);
+  });
 
-validator.on('finish', (err: any) => {
-  if (err) {
-    throw err;
-  }
+  validator.on('finish', (err: any) => {
+    if (err) {
+      throw err;
+    }
 
-  logger.notice('{}]\n');
-});
+    logger.notice('{}]\n');
+  });
 
-validate(validator);
+  validate(validator);
+}
