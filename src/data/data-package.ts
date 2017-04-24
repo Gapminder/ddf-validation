@@ -451,6 +451,7 @@ export class DataPackage {
         this.fileDescriptors = dataPackage.resources.map(resource => ({
           filename: resource.path,
           name: resource.name,
+          schema: resource.schema,
           fullPath: resolve(this.rootFolder, resource.path),
           type: getTypeByResource(resource)
         }));

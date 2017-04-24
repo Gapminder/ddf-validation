@@ -11,7 +11,8 @@
       "node",
       "mocha",
       "chai",
-      "async"
+      "async",
+      "lodash"
     ]
   },
   "include": [

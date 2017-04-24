@@ -1,20 +1,21 @@
 import * as chai from 'chai';
-import {head} from 'lodash';
-import {DdfDataSet} from '../src/ddf-definitions/ddf-data-set';
+import { head, flattenDeep, compact, isEqual } from 'lodash';
+import { DdfDataSet } from '../src/ddf-definitions/ddf-data-set';
 import {
   MEASURE_VALUE_NOT_NUMERIC,
   DATA_POINT_UNEXPECTED_ENTITY_VALUE,
-  DATA_POINT_UNEXPECTED_TIME_VALUE
+  DATA_POINT_UNEXPECTED_TIME_VALUE,
+  DATA_POINT_CONSTRAINT_VIOLATION
 } from '../src/ddf-rules/registry';
-import {allRules} from '../src/ddf-rules';
-import {Issue} from '../src/ddf-rules/issue';
+import { allRules } from '../src/ddf-rules';
+import { Issue } from '../src/ddf-rules/issue';
 
 const expect = chai.expect;
 
 describe('rules for data points', () => {
   let ddfDataSet = null;
 
-  describe('when data set is correct (\'fixtures/good-folder\')', () => {
+  describe(`when data set is correct ('fixtures/good-folder')`, () => {
     ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
 
     Object.getOwnPropertySymbols(allRules).forEach(dataPointRuleKey => {
@@ -41,9 +42,10 @@ describe('rules for data points', () => {
     });
   });
 
+
   describe('when data set is NOT correct', () => {
     it(`an issue should be found for rule 'DATA_POINT_VALUE_NOT_NUMERIC'
-   (fixtures/rules-cases/data-point-value-not-num)`, done => {
+ (fixtures/rules-cases/data-point-value-not-num)`, done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-value-not-num', null);
       ddfDataSet.load(() => {
         const dataPointValueNotNumRule = allRules[MEASURE_VALUE_NOT_NUMERIC].recordRule;
@@ -72,7 +74,7 @@ describe('rules for data points', () => {
     });
 
     it(`an issue should be found for rule 'DATA_POINT_UNEXPECTED_ENTITY_VALUE'
-   (fixtures/rules-cases/data-point-unexpected-entity-value)`, done => {
+ (fixtures/rules-cases/data-point-unexpected-entity-value)`, done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-unexpected-entity-value', null);
       ddfDataSet.load(() => {
         const dataPointUnexpectedConceptRule = allRules[DATA_POINT_UNEXPECTED_ENTITY_VALUE].recordRule;
@@ -102,7 +104,7 @@ describe('rules for data points', () => {
     });
 
     it(`an issue should be found for rule 'DATA_POINT_UNEXPECTED_TIME_VALUE'
-   (fixtures/rules-cases/data-point-unexpected-time-value)`, done => {
+ (fixtures/rules-cases/data-point-unexpected-time-value)`, done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-unexpected-time-value', null);
       ddfDataSet.load(() => {
         const dataPointUnexpectedTimeRule = allRules[DATA_POINT_UNEXPECTED_TIME_VALUE].recordRule;
@@ -127,6 +129,44 @@ describe('rules for data points', () => {
             expect(issue.data.value).to.equal(expectedValue);
           },
           () => done()
+        );
+      });
+    });
+
+    it(`an issue should be found for rule 'DATA_POINT_CONSTRAINT_VIOLATION'
+ (fixtures/rules-cases/data-point-constraint-violation)`, done => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-constraint-violation', null);
+      ddfDataSet.load(() => {
+        const dataPointConstraintViolationRule = allRules[DATA_POINT_CONSTRAINT_VIOLATION].recordRule;
+        const fileDescriptor = head(ddfDataSet.getDataPoint().fileDescriptors);
+        const issuesStorage = [];
+        const EXPECTED_ISSUES_QUANTITY = 2;
+        const EXPECTED_ISSUES_DATA = [{
+          path: 'ddf--datapoints--population--by--country_code-900--year--age.csv',
+          data: {constraints: ['900'], fieldName: 'country_code', fieldValue: '777', line: 1}
+        }, {
+          path: 'ddf--datapoints--population--by--country_code-900--year--age.csv',
+          data: {constraints: ['900'], fieldName: 'country_code', fieldValue: '901', line: 3}
+        }];
+
+        ddfDataSet.getDataPoint().loadFile(fileDescriptor,
+          (record, line) => {
+            issuesStorage.push(dataPointConstraintViolationRule({ddfDataSet, fileDescriptor, record, line}));
+          },
+          () => {
+            const issues = compact(flattenDeep(issuesStorage));
+
+            expect(issues.length).to.equal(EXPECTED_ISSUES_QUANTITY);
+
+            issues.forEach((issue: Issue, index: number) => {
+              expect(issue.type).to.equal(DATA_POINT_CONSTRAINT_VIOLATION);
+              expect(issue.path.endsWith(EXPECTED_ISSUES_DATA[index].path)).to.be.true;
+              expect(!!issue.data).to.be.true;
+              expect(isEqual(issue.data, EXPECTED_ISSUES_DATA[index].data)).to.be.true;
+            });
+
+            done();
+          }
         );
       });
     });

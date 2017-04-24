@@ -28,13 +28,15 @@ export const UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA = Symbol.for('UNEXPECTED_DA
 export const DUPLICATED_DATA_POINT_TRANSLATION_KEY = Symbol.for('DUPLICATED_DATA_POINT_TRANSLATION_KEY');
 export const DUPLICATED_TRANSLATION_KEY = Symbol.for('DUPLICATED_TRANSLATION_KEY');
 export const DATA_POINT_WITHOUT_INDICATOR = Symbol.for('DATA_POINT_WITHOUT_INDICATOR');
+export const UNEXISTING_CONSTRAINT_VALUE = Symbol.for('UNEXISTING_CONSTRAINT_VALUE');
+export const DATA_POINT_CONSTRAINT_VIOLATION = Symbol.for('DATA_POINT_CONSTRAINT_VIOLATION');
 
 export const WARNING_TAG = Symbol.for('WARNING');
 export const FILE_SYSTEM_TAG = Symbol.for('FILE_SYSTEM');
 export const DATAPOINT_TAG = Symbol.for('DATAPOINT');
 export const TRANSLATION_TAG = Symbol.for('TRANSLATION');
 
-function tagsToString(tags: Array<any>) {
+function tagsToString(tags: any[]) {
   return tags.map(tag => Symbol.keyFor(tag));
 }
 
@@ -68,7 +70,9 @@ export const tags: any = {
   [UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA]: [TRANSLATION_TAG, DATAPOINT_TAG],
   [DUPLICATED_DATA_POINT_TRANSLATION_KEY]: [TRANSLATION_TAG, DATAPOINT_TAG],
   [DUPLICATED_TRANSLATION_KEY]: [TRANSLATION_TAG],
-  [DATA_POINT_WITHOUT_INDICATOR]: [DATAPOINT_TAG]
+  [DATA_POINT_WITHOUT_INDICATOR]: [DATAPOINT_TAG],
+  [UNEXISTING_CONSTRAINT_VALUE]: [],
+  [DATA_POINT_CONSTRAINT_VIOLATION]: [DATAPOINT_TAG]
 };
 
 export const descriptions = {
@@ -125,7 +129,9 @@ export const descriptions = {
   primary key is not consistent`,
   [DUPLICATED_DATA_POINT_TRANSLATION_KEY]: 'Duplicated data point translation key',
   [DUPLICATED_TRANSLATION_KEY]: 'Duplicated translation key',
-  [DATA_POINT_WITHOUT_INDICATOR]: 'Datapoint without indicator: primary key is equal fields in datapackage.json resource'
+  [DATA_POINT_WITHOUT_INDICATOR]: 'Datapoint without indicator: primary key is equal fields in datapackage.json resource',
+  [UNEXISTING_CONSTRAINT_VALUE]: 'Constraint value that described in datapackage.json is not a valid entity value',
+  [DATA_POINT_CONSTRAINT_VIOLATION]: 'Constraint violation for particular datapoint. See datapackage.json format.'
 };
 
 export const getRulesInformation = () => Object.getOwnPropertySymbols(exports.descriptions)
