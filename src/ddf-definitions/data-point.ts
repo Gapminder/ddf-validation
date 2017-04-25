@@ -1,5 +1,5 @@
-import {walkFile} from '../utils/file';
-import {FileDescriptor} from '../data/file-descriptor';
+import { walkFile, readFile as _readFile } from '../utils/file';
+import { FileDescriptor } from '../data/file-descriptor';
 
 export class DataPoint {
   public fileDescriptors: Array<FileDescriptor>;
@@ -14,5 +14,9 @@ export class DataPoint {
 
   loadFile(fileDescriptor, onLineRead, onFileRead) {
     walkFile(fileDescriptor.fullPath, onLineRead, onFileRead);
+  }
+
+  readFile(filename, onFileRead) {
+    _readFile(filename, onFileRead);
   }
 }

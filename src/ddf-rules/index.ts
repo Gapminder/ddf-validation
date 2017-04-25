@@ -18,6 +18,7 @@ import { rule as measureValueNotNumeric } from './data-point-rules/measure-value
 import { rule as unexpectedEntityValue } from './data-point-rules/unexpected-entity-value';
 import { rule as unexpectedTimeValue } from './data-point-rules/unexpected-time-value';
 import { rule as dataPointConstraintViolation } from './data-point-rules/constraint-violation';
+import { rule as duplicatedDataPointKey } from './data-point-rules/duplicated-data-point-key';
 
 import { rule as nonUniqueEntityValue } from './entity-rules/non-unique-entity-value';
 import { rule as wrongEntityIsHeader } from './entity-rules/wrong-entity-is-header';
@@ -70,5 +71,6 @@ export const allRules = {
   [registry.DUPLICATED_DATA_POINT_TRANSLATION_KEY]: duplicatedDataPointTranslationKey,
   [registry.DUPLICATED_TRANSLATION_KEY]: duplicatedTranslationKey,
   [registry.UNEXISTING_CONSTRAINT_VALUE]: unexistingConstraintValueRule,
-  [registry.DATA_POINT_CONSTRAINT_VIOLATION]: dataPointConstraintViolation
+  [registry.DATA_POINT_CONSTRAINT_VIOLATION]: dataPointConstraintViolation,
+  [registry.DUPLICATED_DATA_POINT_KEY]: duplicatedDataPointKey
 };

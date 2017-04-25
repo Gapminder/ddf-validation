@@ -1,0 +1,17 @@
+concept,concept_type,domain,additional_column
+company,entity_domain,,bedrijf
+english_speaking,entity_set,company,Engels sprekende
+foundation,entity_set,company,fundament
+company_size,entity_set,company,bedrijfsomvang
+name,string,,naam
+anno,time,,anno
+lines_of_code,measure,,lines_of_code
+region,entity_domain,,regio
+country,string,,land
+num_users,measure,,num gebruikers
+latitude,measure,,breedtegraad
+longitude,measure,,Lengtegraad
+full_name_changed,string,,FULL_NAME veranderd
+project,entity_domain,,project
+domain,string,,domein
+additional_column,string,,extra kolom
