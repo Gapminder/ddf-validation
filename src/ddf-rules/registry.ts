@@ -30,6 +30,7 @@ export const DUPLICATED_TRANSLATION_KEY = Symbol.for('DUPLICATED_TRANSLATION_KEY
 export const DATA_POINT_WITHOUT_INDICATOR = Symbol.for('DATA_POINT_WITHOUT_INDICATOR');
 export const UNEXISTING_CONSTRAINT_VALUE = Symbol.for('UNEXISTING_CONSTRAINT_VALUE');
 export const DATA_POINT_CONSTRAINT_VIOLATION = Symbol.for('DATA_POINT_CONSTRAINT_VIOLATION');
+export const DUPLICATED_DATA_POINT_KEY = Symbol.for('DUPLICATED_DATA_POINT_KEY');
 
 export const WARNING_TAG = Symbol.for('WARNING');
 export const FILE_SYSTEM_TAG = Symbol.for('FILE_SYSTEM');
@@ -72,7 +73,8 @@ export const tags: any = {
   [DUPLICATED_TRANSLATION_KEY]: [TRANSLATION_TAG],
   [DATA_POINT_WITHOUT_INDICATOR]: [DATAPOINT_TAG],
   [UNEXISTING_CONSTRAINT_VALUE]: [],
-  [DATA_POINT_CONSTRAINT_VIOLATION]: [DATAPOINT_TAG]
+  [DATA_POINT_CONSTRAINT_VIOLATION]: [DATAPOINT_TAG],
+  [DUPLICATED_DATA_POINT_KEY]: [DATAPOINT_TAG]
 };
 
 export const descriptions = {
@@ -131,7 +133,8 @@ export const descriptions = {
   [DUPLICATED_TRANSLATION_KEY]: 'Duplicated translation key',
   [DATA_POINT_WITHOUT_INDICATOR]: 'Datapoint without indicator: primary key is equal fields in datapackage.json resource',
   [UNEXISTING_CONSTRAINT_VALUE]: 'Constraint value that described in datapackage.json is not a valid entity value',
-  [DATA_POINT_CONSTRAINT_VIOLATION]: 'Constraint violation for particular datapoint. See datapackage.json format.'
+  [DATA_POINT_CONSTRAINT_VIOLATION]: 'Constraint violation for particular datapoint. See datapackage.json format.',
+  [DUPLICATED_DATA_POINT_KEY]: 'Duplicated datapoint primary key'
 };
 
 export const getRulesInformation = () => Object.getOwnPropertySymbols(exports.descriptions)

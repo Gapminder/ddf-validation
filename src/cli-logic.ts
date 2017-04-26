@@ -52,7 +52,7 @@ if (isValidationExpected) {
   logger.notice('[');
 
   validator.on('issue', (issue: any) => {
-    logger.notice(`${JSON.stringify(issue)},\n`);
+    logger.notice(`${JSON.stringify(issue, null, 2)},\n`);
   });
 
   validator.on('finish', (err: any) => {
