@@ -1,3 +1,15 @@
+<a name="1.3.0"></a>
+# [1.3.0](https://github.com/Gapminder/ddf-validation/compare/v1.2.4...v1.3.0) (2017-04-26)
+
+
+### Features
+
+* **datapackage:** datapackage creation: support file split by dimension value files ([b0d4742](https://github.com/Gapminder/ddf-validation/commit/b0d4742)), closes [#257](https://github.com/Gapminder/ddf-validation/issues/257)
+* **rules:** provide rule that checks duplication on datapoints ([0919394](https://github.com/Gapminder/ddf-validation/commit/0919394)), closes [#347](https://github.com/Gapminder/ddf-validation/issues/347)
+* **rules:** validate enum values when set in datapackage.json ([c204e42](https://github.com/Gapminder/ddf-validation/commit/c204e42)), closes [#258](https://github.com/Gapminder/ddf-validation/issues/258)
+
+
+
 <a name="1.2.4"></a>
 ## [1.2.4](https://github.com/Gapminder/ddf-validation/compare/v1.2.3...v1.2.4) (2017-04-13)
 
