@@ -1,16 +1,20 @@
 import * as chai from 'chai';
-import { head, flattenDeep, compact, isEqual } from 'lodash';
+import { head, flattenDeep, compact, isEqual, endsWith } from 'lodash';
+import { parallelLimit } from 'async';
 import { DdfDataSet } from '../src/ddf-definitions/ddf-data-set';
 import {
   MEASURE_VALUE_NOT_NUMERIC,
   DATA_POINT_UNEXPECTED_ENTITY_VALUE,
   DATA_POINT_UNEXPECTED_TIME_VALUE,
-  DATA_POINT_CONSTRAINT_VIOLATION
+  DATA_POINT_CONSTRAINT_VIOLATION,
+  DUPLICATED_DATA_POINT_KEY
 } from '../src/ddf-rules/registry';
+import { createRecordBasedRuleProcessor } from '../src/index';
 import { allRules } from '../src/ddf-rules';
 import { Issue } from '../src/ddf-rules/issue';
 
 const expect = chai.expect;
+const CONCURRENT_OPERATIONS_AMOUNT = 30;
 
 describe('rules for data points', () => {
   let ddfDataSet = null;
@@ -45,7 +49,7 @@ describe('rules for data points', () => {
 
   describe('when data set is NOT correct', () => {
     it(`an issue should be found for rule 'DATA_POINT_VALUE_NOT_NUMERIC'
- (fixtures/rules-cases/data-point-value-not-num)`, done => {
+   (fixtures/rules-cases/data-point-value-not-num)`, done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-value-not-num', null);
       ddfDataSet.load(() => {
         const dataPointValueNotNumRule = allRules[MEASURE_VALUE_NOT_NUMERIC].recordRule;
@@ -74,7 +78,7 @@ describe('rules for data points', () => {
     });
 
     it(`an issue should be found for rule 'DATA_POINT_UNEXPECTED_ENTITY_VALUE'
- (fixtures/rules-cases/data-point-unexpected-entity-value)`, done => {
+   (fixtures/rules-cases/data-point-unexpected-entity-value)`, done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-unexpected-entity-value', null);
       ddfDataSet.load(() => {
         const dataPointUnexpectedConceptRule = allRules[DATA_POINT_UNEXPECTED_ENTITY_VALUE].recordRule;
@@ -104,7 +108,7 @@ describe('rules for data points', () => {
     });
 
     it(`an issue should be found for rule 'DATA_POINT_UNEXPECTED_TIME_VALUE'
- (fixtures/rules-cases/data-point-unexpected-time-value)`, done => {
+   (fixtures/rules-cases/data-point-unexpected-time-value)`, done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-unexpected-time-value', null);
       ddfDataSet.load(() => {
         const dataPointUnexpectedTimeRule = allRules[DATA_POINT_UNEXPECTED_TIME_VALUE].recordRule;
@@ -134,7 +138,7 @@ describe('rules for data points', () => {
     });
 
     it(`an issue should be found for rule 'DATA_POINT_CONSTRAINT_VIOLATION'
- (fixtures/rules-cases/data-point-constraint-violation)`, done => {
+   (fixtures/rules-cases/data-point-constraint-violation)`, done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-constraint-violation', null);
       ddfDataSet.load(() => {
         const dataPointConstraintViolationRule = allRules[DATA_POINT_CONSTRAINT_VIOLATION].recordRule;
@@ -168,6 +172,70 @@ describe('rules for data points', () => {
             done();
           }
         );
+      });
+    });
+  });
+
+  describe('when "DUPLICATED_KEY" rule', () => {
+    it('an issue should be found for "fixtures/rules-cases/duplicated-data-point-key"', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/duplicated-data-point-key', null);
+      const tempResults = [];
+
+      allRules[DUPLICATED_DATA_POINT_KEY].resetStorage();
+
+      ddfDataSet.load(() => {
+        const actionsSource: any[] = ddfDataSet.getDataPoint().fileDescriptors.map(fileDescriptor =>
+          createRecordBasedRuleProcessor(
+            {
+              ddfDataSet,
+              ruleKey: DUPLICATED_DATA_POINT_KEY,
+              rule: allRules[DUPLICATED_DATA_POINT_KEY],
+              issuesFilter: {isAllowed: () => true}
+            },
+            fileDescriptor,
+            result => {
+              tempResults.push(result);
+            }
+          )
+        );
+        const actions = <any>flattenDeep(actionsSource);
+
+        parallelLimit(actions, CONCURRENT_OPERATIONS_AMOUNT, () => {
+          const results = compact(tempResults);
+          const EXPECTED_RESULT = {
+            path: 'ddf--datapoints--gas_production_bcf--by--geo--year.csv',
+            data: [
+              [
+                {
+                  record: {
+                    geo: 'algeria',
+                    year: '1977',
+                    gas_production_bcf: '0.74553176325556'
+                  },
+                  line: 7
+                },
+                {
+                  record: {
+                    geo: 'algeria',
+                    year: '1977',
+                    gas_production_bcf: '1.15619237401781'
+                  },
+                  line: 8
+                }
+              ]
+            ]
+          };
+
+          expect(results.length).to.equal(1);
+
+          const result = head(results);
+
+          expect(result.type).to.equal(DUPLICATED_DATA_POINT_KEY);
+          expect(endsWith(result.path, EXPECTED_RESULT.path)).to.be.true;
+          expect(isEqual(result.data, EXPECTED_RESULT.data)).to.be.true;
+
+          done();
+        });
       });
     });
   });
