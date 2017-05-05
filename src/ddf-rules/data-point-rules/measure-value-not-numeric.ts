@@ -1,13 +1,14 @@
-import {MEASURE_VALUE_NOT_NUMERIC} from '../registry';
-import {LINE_NUM_INCLUDING_HEADER} from '../../ddf-definitions/constants';
-import {Issue} from '../issue';
+import { isEmpty } from 'lodash';
+import { MEASURE_VALUE_NOT_NUMERIC } from '../registry';
+import { LINE_NUM_INCLUDING_HEADER } from '../../ddf-definitions/constants';
+import { Issue } from '../issue';
 
 const parseDecimalNumber = require('parse-decimal-number');
 
 function isNotNumeric(valueParam) {
   const value = typeof valueParam === 'string' ? valueParam : `${valueParam}`;
 
-  return isNaN(parseDecimalNumber(value));
+  return isNaN(parseDecimalNumber(value)) && !isEmpty(value);
 }
 
 export const rule = {
