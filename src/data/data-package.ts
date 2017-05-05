@@ -26,6 +26,7 @@ import {
 import { Db } from '../data/db';
 import { Concept } from '../ddf-definitions/concept';
 import { readDir, getFileLine, writeFile, fileExists } from '../utils/file';
+import { getDdfSchema } from '../ddf-schema/ddf-schema';
 
 export interface IDdfFileDescriptor {
   valid: boolean;
@@ -382,11 +383,15 @@ export class DataPackage {
     const filePath = resolve(this.rootFolder, `${DATA_PACKAGE_FILE}.${dateLabel}`);
 
     this.build(() => {
-      writeFile(
-        filePath,
-        JSON.stringify(this.dataPackage, null, 4),
-        err => onDataPackageFileReady(err, filePath)
-      );
+      getDdfSchema(this, (ddfSchema: any) => {
+        this.dataPackage.ddfSchema = ddfSchema;
+
+        writeFile(
+          filePath,
+          JSON.stringify(this.dataPackage, null, 4),
+          err => onDataPackageFileReady(err, filePath)
+        );
+      });
     });
   }
 
