@@ -1,0 +1,13 @@
+concept,concept_type,domain
+population,measure,
+geo,entity_domain,
+country,entity_set,geo
+city,entity_set,geo
+un_state,entity_set,geo
+gender,entity_domain,
+binary,entity_set,gender
+nonbinary,entity_set,gender
+year,time,
+sex,string,
+name,string,
+domain,string,

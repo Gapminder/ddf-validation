@@ -26,7 +26,7 @@ import {
 import { Db } from '../data/db';
 import { Concept } from '../ddf-definitions/concept';
 import { readDir, getFileLine, writeFile, fileExists } from '../utils/file';
-import { getDdfSchema } from '../ddf-schema/ddf-schema';
+import { getDdfSchema } from './ddf-schema';
 
 export interface IDdfFileDescriptor {
   valid: boolean;

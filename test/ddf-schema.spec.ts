@@ -1,12 +1,12 @@
 import * as chai from 'chai';
 import { DataPackage } from '../src/data/data-package';
-import { getDdfSchema } from '../src/ddf-schema/ddf-schema';
+import { getDdfSchema } from '../src/data/ddf-schema';
 
 const expect = chai.expect;
 
 describe('ddf schema creation', () => {
   it('for dummy-companies', done => {
-    const dataPackage = new DataPackage('./test/fixtures/dummy-companies-with-dp');
+    const dataPackage = new DataPackage('./test/fixtures/ddf-schema');
 
     dataPackage.take(() => {
       getDdfSchema(dataPackage, (ddfSchema: any) => {

@@ -1,0 +1,5 @@
+geo,name,is--country,is--city
+swe,Sweden,TRUE,FALSE
+sth,Stockholm,FALSE,TRUE
+sgp,Singapore,TRUE,TRUE
+pacific,Pacific Ocean,FALSE,FALSE
