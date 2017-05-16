@@ -1,5 +1,6 @@
 import {
   head,
+  difference,
   indexOf,
   drop,
   split,
@@ -46,29 +47,10 @@ const DATA_PACKAGE_FILE = 'datapackage.json';
 const LANG_FOLDER = 'lang';
 const CSV_EXTENSION = 'csv';
 const REQUIRED_DDF_FILE_PARTS = 2;
-const REQUIRED_DATA_POINT_PARTS = 4;
 
-const getConceptType = (fileParts: string[]) => {
-  if (fileParts.length === 1 && head(fileParts) === 'concepts') {
-    return CONCEPT;
-  }
-
-  return null;
-};
-const getEntityType = (fileParts: string[]) => {
-  if (fileParts.length > 1 && head(fileParts) === 'entities') {
-    return ENTITY;
-  }
-
-  return null;
-};
-const getDataPointType = (fileParts: string[]) => {
-  const baseCheck = fileParts.length > REQUIRED_DATA_POINT_PARTS && head(fileParts) === 'datapoints';
-  const indexForBy = indexOf(fileParts, 'by');
-  const byCheck = indexForBy > 1 && indexForBy < fileParts.length - 1;
-
-  return baseCheck && byCheck ? DATA_POINT : null;
-};
+const getConceptType = (fileParts: string[]) => head(fileParts) === 'concepts' ? CONCEPT : null;
+const getEntityType = (fileParts: string[]) => head(fileParts) === 'entities' ? ENTITY : null;
+const getDataPointType = (fileParts: string[]) => head(fileParts) === 'datapoints' ? DATA_POINT : null;
 const getDdfParts = (fileParts: string[]) => {
   if (fileParts.length >= REQUIRED_DDF_FILE_PARTS && head(fileParts) === 'ddf') {
     return drop(fileParts);
@@ -233,41 +215,23 @@ export class DataPackage {
   }
 
   fillPrimaryKeys(conceptTypeHash) {
-    const fillConceptPrimaryKey = (fileDescriptor: IDdfFileDescriptor) => {
-      fileDescriptor.primaryKey = 'concept';
-    };
-    const fillEntityPrimaryKey = (fileDescriptor: IDdfFileDescriptor) => {
-      const ONLY_TWO = 2;
-
-      if (fileDescriptor.parts.length !== ONLY_TWO) {
-        fileDescriptor.primaryKey = first(fileDescriptor.parts);
-        return;
-      }
-
-      const entityDomain = fileDescriptor.headers.find(header => conceptTypeHash[header] === 'entity_domain');
-      const entitySet = fileDescriptor.headers.find(header => conceptTypeHash[header] === 'entity_set');
-
-      fileDescriptor.primaryKey = entityDomain || entitySet;
-    };
-    const fillDataPointPrimaryKey = (fileDescriptor: IDdfFileDescriptor) => {
-      const ddfDataPointSeparatorPos = indexOf(fileDescriptor.parts, DDF_DATAPOINT_SEPARATOR);
-      const primaryKeyPartsCount = fileDescriptor.parts.length - ddfDataPointSeparatorPos - 1;
-
-      fileDescriptor.primaryKey = takeRight(fileDescriptor.parts, primaryKeyPartsCount);
-    };
-
     this.fileDescriptors
       .forEach(fileDescriptor => {
         if (fileDescriptor.type === CONCEPT) {
-          fillConceptPrimaryKey(fileDescriptor);
+          fileDescriptor.primaryKey = 'concept';
         }
 
         if (fileDescriptor.type === ENTITY) {
-          fillEntityPrimaryKey(fileDescriptor);
+          const entityDomain = fileDescriptor.headers.find(header => conceptTypeHash[header] === 'entity_domain');
+          const entitySet = fileDescriptor.headers.find(header => conceptTypeHash[header] === 'entity_set');
+
+          fileDescriptor.primaryKey = entityDomain || entitySet;
         }
 
         if (fileDescriptor.type === DATA_POINT) {
-          fillDataPointPrimaryKey(fileDescriptor);
+          const measures = fileDescriptor.headers.filter(header => conceptTypeHash[header] === 'measure');
+
+          fileDescriptor.primaryKey = difference(fileDescriptor.headers, measures);
         }
       });
   }

@@ -1,0 +1,10 @@
+concept,concept_type
+country,entity_domain
+world_4region,string
+time,time
+life_expectancy,measure
+gdp_per_capita,measure
+population,measure
+name,string
+latitude,measure
+longitude,measure
