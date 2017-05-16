@@ -1,3 +1,8 @@
+<a name="1.4.2"></a>
+## [1.4.2](https://github.com/Gapminder/ddf-validation/compare/v1.4.1...v1.4.2) (2017-05-16)
+
+
+
 <a name="1.4.1"></a>
 ## [1.4.1](https://github.com/Gapminder/ddf-validation/compare/v1.4.0...v1.4.1) (2017-05-13)
 
