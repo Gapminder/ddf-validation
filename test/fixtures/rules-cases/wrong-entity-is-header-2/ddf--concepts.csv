@@ -1,0 +1,11 @@
+concept,concept_type,domain,name
+name,string,,
+geo,entity_domain,,
+xyz,entity_domain,,
+region,entity_set,geo,Region
+country,entity_set,geo
+capital,entity_set,geo,Capital
+zzz,entity_set,xyz,Zzz
+pop,measure,geo,Population
+lat,measure,,Latitude
+lng,measure,,Longitude
