@@ -1,5 +1,5 @@
 import * as chai from 'chai';
-import { sortBy } from 'lodash';
+import { sortBy, head } from 'lodash';
 import { DdfDataSet } from '../src/ddf-definitions/ddf-data-set';
 import {
   WRONG_ENTITY_IS_HEADER,
@@ -25,11 +25,12 @@ describe('rules for entry', () => {
       });
     });
 
-    it(`issues should be found for folder with the problem
-    (fixtures/rules-cases/wrong-entity-is-header)`, done => {
+    it(`issues should be found for folder with next problems: 'Not a concept' and 'Wrong concept type'
+     (fixtures/rules-cases/wrong-entity-is-header)`, done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/wrong-entity-is-header', null);
       ddfDataSet.load(() => {
         const result = allRules[WRONG_ENTITY_IS_HEADER].rule(ddfDataSet);
+
         const issuesData = [
           {
             message: 'Not a concept',
@@ -41,14 +42,37 @@ describe('rules for entry', () => {
           }
         ];
 
-        expect(result.length).to.equal(issuesData.length);
-
         issuesData.forEach((issueData, index) => {
           expect(result[index].type).to.equal(WRONG_ENTITY_IS_HEADER);
           expect(!!result[index].data).to.be.true;
           expect(result[index].data.message).to.equal(issueData.message);
           expect(result[index].data.headerDetail).to.equal(issueData.headerDetail);
         });
+
+        done();
+      });
+    });
+
+    it(`issues should be found for folder with next problem: 'Forbidden domain for the entity set'
+    (fixtures/rules-cases/wrong-entity-is-header-2)`, done => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/wrong-entity-is-header-2', null);
+      ddfDataSet.load(() => {
+        const results = allRules[WRONG_ENTITY_IS_HEADER].rule(ddfDataSet);
+        const data = {
+          message: 'Forbidden domain for the entity set',
+          currentEntitySet: 'zzz',
+          currentDomain: 'xyz',
+          primaryKeyDomain: 'geo'
+        };
+        const result: Issue = <Issue>head(results);
+
+        expect(results.length).to.equal(1);
+        expect(result.type).to.equal(WRONG_ENTITY_IS_HEADER);
+        expect(!!result.data).to.be.true;
+        expect(result.data.message).to.equal(data.message);
+        expect(result.data.currentEntitySet).to.equal(data.currentEntitySet);
+        expect(result.data.currentDomain).to.equal(data.currentDomain);
+        expect(result.data.primaryKeyDomain).to.equal(data.primaryKeyDomain);
 
         done();
       });
@@ -66,7 +90,7 @@ describe('rules for entry', () => {
     });
 
     it(`issues should be found for folder with the problem
-    (fixtures/rules-cases/wrong-entity-is-value)`, done => {
+   (fixtures/rules-cases/wrong-entity-is-value)`, done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/wrong-entity-is-value', null);
       ddfDataSet.load(() => {
         const result = allRules[WRONG_ENTITY_IS_VALUE].rule(ddfDataSet);
@@ -123,7 +147,7 @@ describe('rules for entry', () => {
     });
 
     it(`issues should be found for folder with the problem
-    (fixtures/rules-cases/non-unique-entity-value)`, done => {
+   (fixtures/rules-cases/non-unique-entity-value)`, done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/non-unique-entity-value', null);
       ddfDataSet.load(() => {
         const results: Array<Issue> = allRules[NON_UNIQUE_ENTITY_VALUE].rule(ddfDataSet);
@@ -159,9 +183,7 @@ describe('rules for entry', () => {
           expect(!!resultsCopy[index].data.source).to.be.true;
           expect(!!resultsCopy[index].data.duplicate).to.be.true;
           expect(resultsCopy[index].data.source.geo).to.equal(issueData.source.geo);
-          expect(resultsCopy[index].data.source.name).to.equal(issueData.source.name);
           expect(resultsCopy[index].data.duplicate.geo).to.equal(issueData.duplicate.geo);
-          expect(resultsCopy[index].data.duplicate.name).to.equal(issueData.duplicate.name);
         });
 
         done();
@@ -180,7 +202,7 @@ describe('rules for entry', () => {
     });
 
     it(`issues should be found for folder with the problem
-    (fixtures/rules-cases/unexisting-constraint-value)`, done => {
+   (fixtures/rules-cases/unexisting-constraint-value)`, done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/unexisting-constraint-value', null);
       ddfDataSet.load(() => {
         const result = allRules[UNEXISTING_CONSTRAINT_VALUE].rule(ddfDataSet);
