@@ -1,4 +1,4 @@
-import {camelCase, split} from 'lodash';
+import { camelCase, split, head } from 'lodash';
 import * as yargs from 'yargs';
 
 declare var process: any;
@@ -11,6 +11,8 @@ const argv = yargs
   // .demand(ROOT_PARAMETER_IS_REQUIRED)
   .example(`${myName} ../ddf-example`, 'validate DDF datasets for the root')
   .example(`${myName} ../ddf-example -i`, 'generate datapackage.json file')
+  .example(`${myName} ../ddf-example -i --translations`, 'update only "translations" section in datapackage.json')
+  .example(`${myName} ../ddf-example -i --translations --content`, 'rewrite "translations", "resources" and "ddfSchema" sections in datapackage.json')
   .example(`${myName} ../ddf-example -j`, 'fix JSONs for this DDF dataset')
   .example(`${myName} --rules`, 'print information regarding supported rules')
   .example(`${myName} ../ddf-example --multidir`,
@@ -22,7 +24,9 @@ const argv = yargs
     'Get all kinds of issues except warnings')
   .example(`${myName} ../ddf-example --exclude-dirs "etl foo-dir"`,
     'validate "ddf-example" and its subdirectories except "etl" and "foo-dir"')
-  .describe('i', 'Generate index file')
+  .describe('i', 'Generate datapackage.json file')
+  .describe('translations', 'Rewrite "translations" section in existing datapackage.json')
+  .describe('content', 'Rewrite "resources" and "ddfSchema" sections in existing datapackage.json')
   .describe('j', 'Fix wrong JSONs')
   .describe('rules', 'print information regarding supported rules')
   .describe('multidir', 'validate all subdirectories')
@@ -36,7 +40,7 @@ const argv = yargs
     'Process all directories except selected. Truly only for `--multidir` mode')
   .argv;
 
-export const getDDFRootFolder = () => argv._[0] || process.cwd();
+export const getDDFRootFolder = () => head(argv._) || process.cwd();
 export const getSettings = () => {
   const settings: any = {};
   const options = ['include-tags', 'exclude-tags', 'include-rules', 'exclude-rules', 'exclude-dirs'];
@@ -46,6 +50,8 @@ export const getSettings = () => {
     settings.isJsonAutoCorrectionMode = !!argv.j;
     settings.multiDirMode = !!argv.multidir;
     settings.datapointlessMode = !!argv.datapointless;
+    settings.updateDataPackageTranslations = !!argv.translations;
+    settings.updateDataPackageContent = !!argv.content;
     settings.isPrintRules = !!argv.rules;
     settings.isCheckHidden = !!argv.hidden;
   };

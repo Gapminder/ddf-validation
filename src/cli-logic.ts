@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import * as path from 'path';
 import { logger, settings, ddfRootFolder } from './utils';
 import { getRulesInformation } from './ddf-rules/registry';
@@ -8,10 +9,25 @@ import { StreamValidator, validate } from './index';
 let isValidationExpected: boolean = true;
 
 if (settings.isDataPackageGenerationMode) {
-  const dataPackage = new DataPackage(path.resolve(ddfRootFolder || '.'));
+  const ddfPath = path.resolve(ddfRootFolder || '.');
+  const dataPackagePath = path.resolve(ddfPath, 'datapackage.json');
+  const isDataPackageExists = fs.existsSync(dataPackagePath);
+
+  let dataPackageContent = null;
+
+  if (isDataPackageExists) {
+    try {
+      dataPackageContent = JSON.parse(fs.readFileSync(dataPackagePath, 'utf-8'));
+    } catch (err) {
+      logger.notice(`datapackage.json error: ${err}.`);
+      process.exit(1);
+    }
+  }
+
+  const dataPackage = new DataPackage(ddfPath);
 
   dataPackage.build(() => {
-    dataPackage.write((err: any, filePath: string) => {
+    dataPackage.write(settings, dataPackageContent, (err: any, filePath: string) => {
       if (err) {
         logger.notice(`datapackage.json was NOT created: ${err}.`);
         return;
