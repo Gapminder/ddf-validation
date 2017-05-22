@@ -19,7 +19,9 @@ Commands:
   root  DDF Root directory. Current directory will be processed if DDF Root directory is undefined.
 
 Options:
-  -i               Generate datapackage.json file
+  -i               Generate datapackage.json
+  --translations   Rewrite "translations" section in existing datapackage.json
+  --content        Rewrite "resources" and "ddfSchema" sections in existing datapackage.json
   -j               Fix wrong JSONs
   --rules          print information regarding supported rules
   --multidir       validate all subdirectories
@@ -34,6 +36,8 @@ Options:
 Examples:
   validate-ddf ../ddf-example                                        validate DDF datasets for the root
   validate-ddf ../ddf-example -i                                     generate datapackage.json file
+  validate-ddf ../ddf-example -i --translations                      update only "translations" section in datapackage.json
+  validate-ddf ../ddf-example -i --translations --content            rewrite "translations", "resources" and "ddfSchema" sections in datapackage.json
   validate-ddf ../ddf-example -j                                     fix JSONs for this DDF dataset
   validate-ddf  --rules                                              print information regarding supported rules
   validate-ddf ../ddf-example --multidir                             validate `ddf-example` and all subdirectories under "ddf-example"
