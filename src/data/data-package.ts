@@ -1,13 +1,11 @@
 import {
   head,
+  cloneDeep,
   difference,
-  indexOf,
   drop,
   split,
   isArray,
   flatten,
-  first,
-  takeRight,
   last,
   includes,
   compact,
@@ -21,8 +19,7 @@ import {
   CONCEPT,
   ENTITY,
   DATA_POINT,
-  DDF_SEPARATOR,
-  DDF_DATAPOINT_SEPARATOR
+  DDF_SEPARATOR
 } from '../ddf-definitions/constants';
 import { Db } from '../data/db';
 import { Concept } from '../ddf-definitions/concept';
@@ -342,17 +339,30 @@ export class DataPackage {
     });
   }
 
-  write(onDataPackageFileReady) {
+  write(settings: any, existingDataPackage: any, onDataPackageFileReady: Function) {
     const dateLabel = new Date().toISOString().replace(/:/g, '');
-    const filePath = resolve(this.rootFolder, `${DATA_PACKAGE_FILE}.${dateLabel}`);
+    const isBasedOnCurrentDataPackage =
+      (existingDataPackage && (settings.updateDataPackageTranslations || settings.updateDataPackageContent)) ||
+      !existingDataPackage;
+    const fileName = isBasedOnCurrentDataPackage ? DATA_PACKAGE_FILE : `${DATA_PACKAGE_FILE}.${dateLabel}`;
+    const filePath = resolve(this.rootFolder, fileName);
 
     this.build(() => {
       getDdfSchema(this, (ddfSchema: any) => {
-        this.dataPackage.ddfSchema = ddfSchema;
+        const contentToOut = cloneDeep(isBasedOnCurrentDataPackage ? existingDataPackage : this.dataPackage);
+
+        if (settings.updateDataPackageTranslations) {
+          contentToOut.translations = this.dataPackage.translations;
+        }
+
+        if (settings.updateDataPackageContent) {
+          contentToOut.resources = this.dataPackage.resources;
+          contentToOut.ddfSchema = ddfSchema;
+        }
 
         writeFile(
           filePath,
-          JSON.stringify(this.dataPackage, null, 4),
+          JSON.stringify(contentToOut, null, 4),
           err => onDataPackageFileReady(err, filePath)
         );
       });
