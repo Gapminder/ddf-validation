@@ -1,3 +1,13 @@
+<a name="1.5.0"></a>
+# [1.5.0](https://github.com/Gapminder/ddf-validation/compare/v1.4.2...v1.5.0) (2017-05-22)
+
+
+### Features
+
+* **datapackage:** smart datapackage creation functionality ([de29e1d](https://github.com/Gapminder/ddf-validation/commit/de29e1d)), closes [#276](https://github.com/Gapminder/ddf-validation/issues/276)
+
+
+
 <a name="1.4.2"></a>
 ## [1.4.2](https://github.com/Gapminder/ddf-validation/compare/v1.4.1...v1.4.2) (2017-05-16)
 
