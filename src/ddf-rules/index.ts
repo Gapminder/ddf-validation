@@ -9,7 +9,8 @@ import { rule as invalidDrillUp } from './concept-rules/invalid-drill-up';
 
 import { rule as incorrectFile } from './data-package-rules/incorrect-file';
 import { rule as confusedFields } from './data-package-rules/confused-fields';
-import { rule as nonConceptPrimaryKey } from './data-package-rules/non-concept-primary-key';
+import { rule as nonConceptField } from './data-package-rules/non-concept-field';
+import { rule as incorrectPrimaryKey } from './data-package-rules/incorrect-primary-key';
 import { rule as nonUniqueResourceName } from './data-package-rules/non-unique-resource-name';
 import { rule as nonUniqueResourceFile } from './data-package-rules/non-unique-resource-file';
 import { rule as dataPointWithoutIndicator } from './data-package-rules/datapoint-without-indicator';
@@ -48,7 +49,8 @@ export const allRules = {
   [registry.INVALID_DRILL_UP]: invalidDrillUp,
   [registry.INCORRECT_FILE]: incorrectFile,
   [registry.DATAPACKAGE_CONFUSED_FIELDS]: confusedFields,
-  [registry.DATAPACKAGE_NON_CONCEPT_PRIMARY_KEY]: nonConceptPrimaryKey,
+  [registry.DATAPACKAGE_NON_CONCEPT_FIELD]: nonConceptField,
+  [registry.DATAPACKAGE_INCORRECT_PRIMARY_KEY]: incorrectPrimaryKey,
   [registry.DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME]: nonUniqueResourceName,
   [registry.DATAPACKAGE_NON_UNIQUE_RESOURCE_FILE]: nonUniqueResourceFile,
   [registry.DATA_POINT_WITHOUT_INDICATOR]: dataPointWithoutIndicator,

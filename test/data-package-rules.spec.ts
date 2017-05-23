@@ -1,16 +1,17 @@
 import * as chai from 'chai';
-import {head, endsWith, isEqual} from 'lodash';
+import { head, endsWith, isEqual } from 'lodash';
 import {
   INCORRECT_FILE,
   DATAPACKAGE_CONFUSED_FIELDS,
-  DATAPACKAGE_NON_CONCEPT_PRIMARY_KEY,
+  DATAPACKAGE_NON_CONCEPT_FIELD,
+  DATAPACKAGE_INCORRECT_PRIMARY_KEY,
   DATAPACKAGE_NON_UNIQUE_RESOURCE_FILE,
   DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME,
   DATA_POINT_WITHOUT_INDICATOR
 } from '../src/ddf-rules/registry';
-import {DdfDataSet} from '../src/ddf-definitions/ddf-data-set';
-import {Issue} from '../src/ddf-rules/issue';
-import {allRules} from '../src/ddf-rules';
+import { DdfDataSet } from '../src/ddf-definitions/ddf-data-set';
+import { Issue } from '../src/ddf-rules/issue';
+import { allRules } from '../src/ddf-rules';
 
 const expect = chai.expect;
 
@@ -122,39 +123,35 @@ describe('ddf datapackage.json validation', () => {
       });
     });
   });
-  describe('when DATAPACKAGE_NON_CONCEPT_PRIMARY_KEY', () => {
+  describe('when DATAPACKAGE_NON_CONCEPT_FIELD', () => {
     it('any issue should NOT be found for folder (fixtures/good-folder)', done => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
 
       ddfDataSet.load(() => {
-        expect(allRules[DATAPACKAGE_NON_CONCEPT_PRIMARY_KEY].rule(ddfDataSet).length).to.equal(0);
+        expect(allRules[DATAPACKAGE_NON_CONCEPT_FIELD].rule(ddfDataSet).length).to.equal(0);
 
         done();
       });
     });
-    it(`3 issues should be found for expected folder 
-    "fixtures/rules-cases/datapackage-non-concept-primary-key"`, done => {
-      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/datapackage-non-concept-primary-key', null);
+    it(`3 issues should be found for expected folder
+   "fixtures/rules-cases/datapackage-non-concept-field"`, done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/datapackage-non-concept-field', null);
 
       ddfDataSet.load(() => {
-        const EXPECTED_ISSUES_QUANTITY = 3;
-        const results: Array<Issue> = allRules[DATAPACKAGE_NON_CONCEPT_PRIMARY_KEY].rule(ddfDataSet);
-
-        expect(results.length).to.equal(EXPECTED_ISSUES_QUANTITY);
-
         const EXPECTED_DATA = [{
           path: 'ddf--concepts.csv',
           data: {nonConcepts: ['conceptfoo']}
-        }, {
-          path: 'ddf--datapoints--gas_production_bcf--by--geo--year.csv',
-          data: {nonConcepts: ['geo', 'year']}
         }, {
           path: 'ddf--entities--geo.csv',
           data: {nonConcepts: ['geofoo']}
         }];
 
+        const results: Issue[] = allRules[DATAPACKAGE_NON_CONCEPT_FIELD].rule(ddfDataSet);
+
+        expect(results.length).to.equal(EXPECTED_DATA.length);
+
         results.forEach((result, index) => {
-          expect(result.type).to.equal(DATAPACKAGE_NON_CONCEPT_PRIMARY_KEY);
+          expect(result.type).to.equal(DATAPACKAGE_NON_CONCEPT_FIELD);
           expect(endsWith(result.path, EXPECTED_DATA[index].path)).to.be.true;
           expect(isEqual(result.data, EXPECTED_DATA[index].data)).to.be.true;
         });
@@ -249,6 +246,57 @@ describe('ddf datapackage.json validation', () => {
 
         expect(result.type).to.equal(DATA_POINT_WITHOUT_INDICATOR);
         expect(result.path).to.equal(EXPECTED_FILE);
+
+        done();
+      });
+    });
+  });
+
+
+  describe('when DATAPACKAGE_INCORRECT_PRIMARY_KEY', () => {
+    it('any issue should NOT be found for folder (fixtures/good-folder)', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
+
+      ddfDataSet.load(() => {
+
+        expect(allRules[DATAPACKAGE_INCORRECT_PRIMARY_KEY].rule(ddfDataSet).length).to.equal(0);
+
+        done();
+      });
+    });
+    it(`3 issues should be found for expected folder
+    "fixtures/rules-cases/datapackage-non-concept-incorrect-primary-key"`, done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/datapackage-incorrect-primary-key', null);
+
+      ddfDataSet.load(() => {
+        const EXPECTED_DATA = [{
+          fields: [
+            'concept',
+            'concept_type',
+            'name'
+          ],
+          primaryKey: [
+            'conceptfoo'
+          ]
+        }, {
+          fields: [
+            'geo',
+            'geo_name'
+          ],
+          primaryKey: [
+            'geofoo'
+          ]
+        }];
+
+        const results: Issue[] = allRules[DATAPACKAGE_INCORRECT_PRIMARY_KEY].rule(ddfDataSet);
+
+        expect(results.length).to.equal(EXPECTED_DATA.length);
+
+        results.forEach((result, index) => {
+          expect(result.type).to.equal(DATAPACKAGE_INCORRECT_PRIMARY_KEY);
+          expect(isEqual(result.data.fields, EXPECTED_DATA[index].fields)).to.be.true;
+          expect(isEqual(result.data.primaryKey, EXPECTED_DATA[index].primaryKey)).to.be.true;
+        });
 
         done();
       });

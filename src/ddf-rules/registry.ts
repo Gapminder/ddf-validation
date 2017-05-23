@@ -19,7 +19,8 @@ export const NON_UNIQUE_ENTITY_VALUE = Symbol.for('NON_UNIQUE_ENTITY_VALUE');
 export const CONCEPT_MANDATORY_FIELD_NOT_FOUND = Symbol.for('CONCEPT_MANDATORY_FIELD_NOT_FOUND');
 export const CONCEPTS_NOT_FOUND = Symbol.for('CONCEPTS_NOT_FOUND');
 export const DATAPACKAGE_CONFUSED_FIELDS = Symbol.for('DATAPACKAGE_CONFUSED_FIELDS');
-export const DATAPACKAGE_NON_CONCEPT_PRIMARY_KEY = Symbol.for('DATAPACKAGE_NON_CONCEPT_PRIMARY_KEY');
+export const DATAPACKAGE_NON_CONCEPT_FIELD = Symbol.for('DATAPACKAGE_NON_CONCEPT_FIELD');
+export const DATAPACKAGE_INCORRECT_PRIMARY_KEY = Symbol.for('DATAPACKAGE_INCORRECT_PRIMARY_KEY');
 export const DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME = Symbol.for('DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME');
 export const DATAPACKAGE_NON_UNIQUE_RESOURCE_FILE = Symbol.for('DATAPACKAGE_NON_UNIQUE_RESOURCE_FILE');
 export const UNEXPECTED_TRANSLATION_HEADER = Symbol.for('UNEXPECTED_TRANSLATION_HEADER');
@@ -63,7 +64,8 @@ export const tags: any = {
   [CONCEPT_MANDATORY_FIELD_NOT_FOUND]: [],
   [CONCEPTS_NOT_FOUND]: [],
   [DATAPACKAGE_CONFUSED_FIELDS]: [],
-  [DATAPACKAGE_NON_CONCEPT_PRIMARY_KEY]: [],
+  [DATAPACKAGE_NON_CONCEPT_FIELD]: [],
+  [DATAPACKAGE_INCORRECT_PRIMARY_KEY]: [],
   [DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME]: [],
   [DATAPACKAGE_NON_UNIQUE_RESOURCE_FILE]: [],
   [UNEXPECTED_TRANSLATION_HEADER]: [TRANSLATION_TAG],
@@ -122,7 +124,8 @@ export const descriptions = {
   An issue according to this rule will be fired when concepts 
   will not be detected for current DDF dataset.`,
   [DATAPACKAGE_CONFUSED_FIELDS]: 'Confused fields in datapackage.json',
-  [DATAPACKAGE_NON_CONCEPT_PRIMARY_KEY]: 'Non concept primary key in datapackage.json',
+  [DATAPACKAGE_NON_CONCEPT_FIELD]: 'Non concept primary field in datapackage.json',
+  [DATAPACKAGE_INCORRECT_PRIMARY_KEY]: 'Fields section does not contain primary key',
   [DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME]: 'Non unique resource name in datapackage.json',
   [DATAPACKAGE_NON_UNIQUE_RESOURCE_FILE]: 'Non unique resource file in datapackage.json',
   [UNEXPECTED_TRANSLATION_HEADER]: 'Unexpected translation header',
