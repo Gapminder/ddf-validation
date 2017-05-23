@@ -1,7 +1,7 @@
-import {compact, flattenDeep, head, difference, isEmpty} from 'lodash';
-import {DATAPACKAGE_CONFUSED_FIELDS} from '../registry';
-import {DdfDataSet} from '../../ddf-definitions/ddf-data-set';
-import {Issue} from '../issue';
+import { compact, flattenDeep, head, difference, isEmpty } from 'lodash';
+import { DATAPACKAGE_CONFUSED_FIELDS } from '../registry';
+import { DdfDataSet } from '../../ddf-definitions/ddf-data-set';
+import { Issue } from '../issue';
 
 export const rule = {
   rule: (ddfDataSet: DdfDataSet) => compact(flattenDeep(
