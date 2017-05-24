@@ -360,6 +360,10 @@ export class DataPackage {
           contentToOut.ddfSchema = ddfSchema;
         }
 
+        if (!isBasedOnCurrentDataPackage) {
+          contentToOut.ddfSchema = ddfSchema;
+        }
+
         writeFile(
           filePath,
           JSON.stringify(contentToOut, null, 4),

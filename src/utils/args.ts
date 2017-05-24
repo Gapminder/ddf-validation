@@ -24,6 +24,10 @@ const argv = yargs
     'Get all kinds of issues except warnings')
   .example(`${myName} ../ddf-example --exclude-dirs "etl foo-dir"`,
     'validate "ddf-example" and its subdirectories except "etl" and "foo-dir"')
+  .example(`${myName} ../ddf-example --exclude-dirs "'dir1 with spaces' 'dir2 with spaces'"`,
+    'validate "ddf-example" and its subdirectories that contain spaces')
+  .example(`${myName} ../ddf-example --exclude-dirs '"dir1 with spaces" "dir2 with spaces"'`,
+    'validate "ddf-example" and its subdirectories that contain spaces: case 2')
   .describe('i', 'Generate datapackage.json file')
   .describe('translations', 'Rewrite "translations" section in existing datapackage.json')
   .describe('content', 'Rewrite "resources" and "ddfSchema" sections in existing datapackage.json')
@@ -69,7 +73,7 @@ export const getSettings = () => {
 
 function getExcludedDirs(settings: any) {
   if (settings && settings.excludeDirs) {
-    return split(settings.excludeDirs, ',');
+    return split(settings.excludeDirs, ',').map(dir => dir.replace(/["']/g, ''));
   }
 
   return [];
