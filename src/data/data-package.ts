@@ -1,3 +1,4 @@
+import * as path from 'path';
 import {
   head,
   cloneDeep,
@@ -23,7 +24,7 @@ import {
 } from '../ddf-definitions/constants';
 import { Db } from '../data/db';
 import { Concept } from '../ddf-definitions/concept';
-import { readDir, getFileLine, writeFile, fileExists } from '../utils/file';
+import { readDir, getFileLine, writeFile, fileExists, walkDir } from '../utils/file';
 import { getDdfSchema } from './ddf-schema';
 
 export interface IDdfFileDescriptor {
@@ -93,6 +94,28 @@ const getTypeByResource = (resource: any) => {
   }
 
   return ENTITY;
+};
+const getActualSubDirectories = (folder: string, onSubDirsReady: Function) => {
+  walkDir(folder, (err: any, folders: string[]) => {
+    if (err) {
+      onSubDirsReady(err);
+      return;
+    }
+
+    const actualFolders = folders.filter(folder => {
+      const folderDetails = folder.split(path.sep);
+
+      if (includes(folderDetails, '.git') || includes(folderDetails, 'etl')) {
+        return false;
+      }
+
+      return true;
+    });
+
+    actualFolders.push(folder);
+
+    onSubDirsReady(null, actualFolders);
+  })
 };
 
 export class DataPackage {
@@ -190,12 +213,25 @@ export class DataPackage {
   }
 
   getDdfFileDescriptors(folder: string, onDdfFileDescriptorsReady: Function) {
-    readDir(folder, (err: any, files: string[] = []) => {
-      const ddfFileDescriptors: IDdfFileDescriptor[] = files
-        .map(file => this.fillConstraints(parseDdfFile(folder, file)))
-        .filter(ddfFile => ddfFile.type);
+    getActualSubDirectories(folder, (dirErr: any, dirs: string[]) => {
+      if (dirErr) {
+        onDdfFileDescriptorsReady(dirErr);
+        return;
+      }
 
-      onDdfFileDescriptorsReady(err, ddfFileDescriptors);
+      const actions = dirs.map(dir => onDirRead => {
+        readDir(dir, (err: any, files: string[] = []) => {
+          const ddfFileDescriptors: IDdfFileDescriptor[] = files
+            .map(file => this.fillConstraints(parseDdfFile(dir, file)))
+            .filter(ddfFile => ddfFile.type);
+
+          onDirRead(err, ddfFileDescriptors);
+        });
+      });
+
+      parallelLimit(actions, PROCESS_LIMIT, (err, ddfFileDescriptors) => {
+        onDdfFileDescriptorsReady(err, flatten(ddfFileDescriptors));
+      });
     });
   }
 
@@ -245,6 +281,11 @@ export class DataPackage {
 
       return result;
     };
+    const getRelativeDir = (fullPath: string) => {
+      const relativeDir = path.relative(this.rootFolder, path.parse(fullPath).dir);
+
+      return isEmpty(relativeDir) ? '' : `${relativeDir}/`;
+    };
 
     return {
       name: packageName,
@@ -258,7 +299,7 @@ export class DataPackage {
       author: '',
       resources: this.fileDescriptors
         .map((fileDescriptor: IDdfFileDescriptor) => ({
-          path: fileDescriptor.filename,
+          path: `${getRelativeDir(fileDescriptor.fullPath)}${fileDescriptor.filename}`,
           name: fileDescriptor.name,
           schema: {
             fields: (fileDescriptor.headers || [])
@@ -342,35 +383,32 @@ export class DataPackage {
   write(settings: any, existingDataPackage: any, onDataPackageFileReady: Function) {
     const dateLabel = new Date().toISOString().replace(/:/g, '');
     const isBasedOnCurrentDataPackage =
-      (existingDataPackage && (settings.updateDataPackageTranslations || settings.updateDataPackageContent)) ||
-      !existingDataPackage;
-    const fileName = isBasedOnCurrentDataPackage ? DATA_PACKAGE_FILE : `${DATA_PACKAGE_FILE}.${dateLabel}`;
+      (existingDataPackage && (settings.updateDataPackageTranslations || settings.updateDataPackageContent));
+    const fileName = isBasedOnCurrentDataPackage || !existingDataPackage ? DATA_PACKAGE_FILE : `${DATA_PACKAGE_FILE}.${dateLabel}`;
     const filePath = resolve(this.rootFolder, fileName);
 
-    this.build(() => {
-      getDdfSchema(this, (ddfSchema: any) => {
-        const contentToOut = cloneDeep(isBasedOnCurrentDataPackage ? existingDataPackage : this.dataPackage);
+    getDdfSchema(this, (ddfSchema: any) => {
+      const contentToOut = cloneDeep(isBasedOnCurrentDataPackage ? existingDataPackage : this.dataPackage);
 
-        if (settings.updateDataPackageTranslations) {
-          contentToOut.translations = this.dataPackage.translations;
-        }
+      if (settings.updateDataPackageTranslations) {
+        contentToOut.translations = this.dataPackage.translations;
+      }
 
-        if (settings.updateDataPackageContent) {
-          contentToOut.resources = this.dataPackage.resources;
-          contentToOut.ddfSchema = ddfSchema;
-        }
+      if (settings.updateDataPackageContent) {
+        contentToOut.resources = this.dataPackage.resources;
+        contentToOut.ddfSchema = ddfSchema;
+      }
 
-        if (!isBasedOnCurrentDataPackage) {
-          contentToOut.ddfSchema = ddfSchema;
-        }
+      if (!isBasedOnCurrentDataPackage) {
+        contentToOut.ddfSchema = ddfSchema;
+      }
 
-        writeFile(
-          filePath,
-          JSON.stringify(contentToOut, null, 4),
-          err => onDataPackageFileReady(err, filePath)
-        );
-      });
-    });
+      writeFile(
+        filePath,
+        JSON.stringify(contentToOut, null, 4),
+        err => onDataPackageFileReady(err, filePath)
+      );
+    }, true);
   }
 
   read(onDataPackageReady) {
