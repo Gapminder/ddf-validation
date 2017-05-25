@@ -5,9 +5,32 @@ import { readFile } from '../utils/file';
 import { DataPackage } from '../data/data-package';
 import { DdfDataSet } from '../ddf-definitions/ddf-data-set';
 
-const loadData = (rootFolder, resources, onDataLoaded) => {
+const term = require('terminal-kit').terminal;
+const getProgressBar = (isProgressNeeded: boolean = false, config: any): any => {
+  return isProgressNeeded ? term.progressBar(config) : {
+    startItem: () => {
+    },
+    itemDone: () => {
+    }
+  };
+};
+
+const loadData = (rootFolder, resources, isProgressNeeded, onDataLoaded) => {
+  const tasks = resources.map(resource => resource.path.substr(resource.name.length - 19));
+  const progressBar = getProgressBar(isProgressNeeded, {
+    width: 80,
+    title: 'datapoints processing:',
+    percent: true,
+    items: tasks.length
+  });
   const actions = resources.map(resource => onResourceDataLoaded => {
+    const task = tasks.shift();
+
+    progressBar.startItem(task);
+
     readFile(path.resolve(rootFolder, resource.path), (err, data) => {
+      progressBar.itemDone(task);
+
       onResourceDataLoaded(err, {path: resource.path, content: data});
     });
   });
@@ -66,7 +89,7 @@ function addToSchema(schema, resourceSchema) {
   schema[hash].resources.add(resourceSchema.resource)
 }
 
-function getDdfSchema1(dataset: any) {
+function getDdfSchemaContent(dataset: any, isProgressNeeded) {
   const entityConcepts = {};
 
   // PREPARE
@@ -130,9 +153,21 @@ function getDdfSchema1(dataset: any) {
 
   const schema = {};
 
+  const tasks = dataset.resources.map(resource => resource.name);
+  const progressBar = getProgressBar(isProgressNeeded, {
+    width: 80,
+    title: 'resources hash processing:',
+    eta: true,
+    percent: true,
+    syncMode: true,
+    items: tasks.length
+  });
+
   // go through every file
   for (let resource of dataset.resources) {
+    const task = tasks.shift();
 
+    progressBar.startItem(task);
 
     // OPTIMIZATION
     let primaryKeyEntityConcepts = [];
@@ -193,6 +228,8 @@ function getDdfSchema1(dataset: any) {
         }
       }
     }
+
+    progressBar.itemDone(task);
   }
 
   // BUILD FINAL DDFSCHEMA OBJECT
@@ -216,8 +253,10 @@ function getDdfSchema1(dataset: any) {
   return ddfSchema;
 }
 
-export const getDdfSchema = (dataPackageDescriptor: DataPackage, onDdfSchemaReady: Function) => {
+export const getDdfSchema = (dataPackageDescriptor: DataPackage, onDdfSchemaReady: Function, isProgressNeeded: boolean = false) => {
   const ddfDataSet = new DdfDataSet(dataPackageDescriptor.rootFolder, {});
+
+  console.log('loading generic content...');
 
   ddfDataSet.load(() => {
     const resources = cloneDeep(dataPackageDescriptor.getResources()).map(resource => {
@@ -233,8 +272,17 @@ export const getDdfSchema = (dataPackageDescriptor: DataPackage, onDdfSchemaRead
     const conceptsResources = resources.filter(resource => head(resource.schema.primaryKey) === 'concept');
     const entitiesResources = resources.filter(resource => resource.schema.primaryKey.length === 1 && head(resource.schema.primaryKey) !== 'concept');
 
-    loadData(dataPackageDescriptor.rootFolder, resources, dataHash => {
-      const ddfSchema = getDdfSchema1({resources, conceptsResources, entitiesResources, dataHash});
+    console.log('loading datapoints content...');
+
+    loadData(dataPackageDescriptor.rootFolder, resources, isProgressNeeded, dataHash => {
+      console.log('\ngenerating ddfSchema...');
+
+      const ddfSchema = getDdfSchemaContent({
+        resources,
+        conceptsResources,
+        entitiesResources,
+        dataHash
+      }, isProgressNeeded);
 
       onDdfSchemaReady(ddfSchema);
     });

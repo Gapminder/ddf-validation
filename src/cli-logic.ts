@@ -26,7 +26,12 @@ if (settings.isDataPackageGenerationMode) {
 
   const dataPackage = new DataPackage(ddfPath);
 
+  console.log('datapackage creation started...');
+
   dataPackage.build(() => {
+
+    console.log('resources are ready');
+
     dataPackage.write(settings, dataPackageContent, (err: any, filePath: string) => {
       if (err) {
         logger.notice(`datapackage.json was NOT created: ${err}.`);

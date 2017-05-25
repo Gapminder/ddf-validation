@@ -1,7 +1,6 @@
-#! /usr/bin/env node
+#!/bin/sh
+":" //# comment; exec /usr/bin/env node --max-old-space-size=8192 "$0" "$@"
+
 'use strict';
 
-require('ts-node').register({
-  compilerOptions: {"target": "es6"}
-});
 require('../lib/cli-logic');
