@@ -1,6 +1,6 @@
 import * as path from 'path';
 import { parallelLimit } from 'async';
-import { cloneDeep, isArray, head, reduce, startsWith, keys, includes } from 'lodash';
+import { cloneDeep, isArray, head, startsWith, keys, includes } from 'lodash';
 import { readFile } from '../utils/file';
 import { DataPackage } from '../data/data-package';
 import { DdfDataSet } from '../ddf-definitions/ddf-data-set';
@@ -13,41 +13,6 @@ const getProgressBar = (isProgressNeeded: boolean = false, config: any): any => 
     itemDone: () => {
     }
   };
-};
-
-const loadData = (rootFolder, resources, isProgressNeeded, onDataLoaded) => {
-  const tasks = resources.map(resource => resource.path.substr(resource.name.length - 19));
-  const progressBar = getProgressBar(isProgressNeeded, {
-    width: 80,
-    title: 'datapoints processing:',
-    percent: true,
-    items: tasks.length
-  });
-  const actions = resources.map(resource => onResourceDataLoaded => {
-    const task = tasks.shift();
-
-    progressBar.startItem(task);
-
-    readFile(path.resolve(rootFolder, resource.path), (err, data) => {
-      progressBar.itemDone(task);
-
-      onResourceDataLoaded(err, {path: resource.path, content: data});
-    });
-  });
-
-  parallelLimit(actions, 10, (err, results) => {
-    if (err) {
-      throw err;
-    }
-
-    const dataHash: any[] = reduce(results, (hash: any, result: any) => {
-      hash[result.path] = result.content;
-
-      return hash;
-    }, {});
-
-    onDataLoaded(dataHash);
-  });
 };
 
 function recursivePermutation(pkSets) {
@@ -89,8 +54,22 @@ function addToSchema(schema, resourceSchema) {
   schema[hash].resources.add(resourceSchema.resource)
 }
 
-function getDdfSchemaContent(dataset: any, isProgressNeeded) {
+function getDdfSchemaContent(dataset: any, isProgressNeeded, onDdfSchemaReady) {
   const entityConcepts = {};
+  const conceptsContent = dataset.ddfDataSet.getConcept().getDataByFiles();
+  const conceptsFiles = keys(conceptsContent);
+  const entitiesContent = dataset.ddfDataSet.getEntity().getDataByFiles();
+  const entitiesFiles = keys(entitiesContent);
+
+  dataset.dataHash = {};
+
+  for (let conceptFile of conceptsFiles) {
+    dataset.dataHash[path.parse(conceptFile).base] = conceptsContent[conceptFile];
+  }
+
+  for (let entityFile of entitiesFiles) {
+    dataset.dataHash[path.parse(entityFile).base] = entitiesContent[entityFile];
+  }
 
   // PREPARE
 
@@ -159,98 +138,106 @@ function getDdfSchemaContent(dataset: any, isProgressNeeded) {
     title: 'resources hash processing:',
     eta: true,
     percent: true,
-    syncMode: true,
     items: tasks.length
   });
 
-  // go through every file
-  for (let resource of dataset.resources) {
+
+  const actions = dataset.resources.map(resource => onResourceProcessed => {
     const task = tasks.shift();
 
     progressBar.startItem(task);
 
-    // OPTIMIZATION
-    let primaryKeyEntityConcepts = [];
-    let primaryKeySetsStatic = [];
-
-    // get all entity headers for entities in primary key
-    for (let pkField of resource.schema.primaryKey) {
-      // save the concept if it's a entity concept
-      if (entityConcepts[pkField]) {
-        // find the domain of this entity concept (for lookup in the entities object)
-        const domain = entityConcepts[pkField].concept_type == 'entity_domain' ? pkField : entityConcepts[pkField].domain;
-
-        primaryKeyEntityConcepts.push({concept: pkField, domain: domain});
-      } else {
-        primaryKeySetsStatic.push(new Set([pkField]));
+    readFile(path.resolve(dataset.dataPackageDescriptor.rootFolder, resource.path), (err, dataPointContent) => {
+      if (err) {
+        onResourceProcessed(err);
+        return;
       }
-    }
 
-    if (primaryKeyEntityConcepts.length == 0) {
-      // no entity concepts found, no need to take entity multi-set membership into account
-      for (let field of resource.schema.fields) {
-        if (!includes(resource.schema.primaryKey, field)) {
-          addToSchema(schema, {
-            primaryKey: resource.schema.primaryKey,
-            value: field,
-            resource: resource.name
-          });
+      // OPTIMIZATION
+      let primaryKeyEntityConcepts = [];
+      let primaryKeySetsStatic = [];
+
+      // get all entity headers for entities in primary key
+      for (let pkField of resource.schema.primaryKey) {
+        // save the concept if it's a entity concept
+        if (entityConcepts[pkField]) {
+          // find the domain of this entity concept (for lookup in the entities object)
+          const domain = entityConcepts[pkField].concept_type == 'entity_domain' ? pkField : entityConcepts[pkField].domain;
+
+          primaryKeyEntityConcepts.push({concept: pkField, domain: domain});
+        } else {
+          primaryKeySetsStatic.push(new Set([pkField]));
         }
       }
 
-      // END OPTIMIZATION
-
-    } else {
-      // analyse every row to find what key-value pairs apply to it (can be multiple because an entity can be member in multiple entity sets)
-      for (let row of dataset.dataHash[resource.path]) {
-
-        const primaryKeySets = primaryKeySetsStatic.slice();
-
-        // get all entity headers for entities in primary key
-        for (const pkEntityConcept of primaryKeyEntityConcepts) {
-          primaryKeySets.push(entities[pkEntityConcept.domain][row[pkEntityConcept.concept]]);
-        }
-
-        // find all permutations of primary key
-        const primaryKeyPermutations = recursivePermutation(primaryKeySets);
-
-        // add a key-value pair to the schema for each schema this row fits to
+      if (primaryKeyEntityConcepts.length == 0) {
+        // no entity concepts found, no need to take entity multi-set membership into account
         for (let field of resource.schema.fields) {
-
-          if (!resource.schema.primaryKey.includes(field))
-            for (let pkPerm of primaryKeyPermutations) {
-              addToSchema(schema, {
-                primaryKey: pkPerm,
-                value: field,
-                resource: resource.name
-              });
-            }
+          if (!includes(resource.schema.primaryKey, field)) {
+            addToSchema(schema, {
+              primaryKey: resource.schema.primaryKey,
+              value: field,
+              resource: resource.name
+            });
+          }
         }
+
+        // END OPTIMIZATION
+
+      } else {
+        // analyse every row to find what key-value pairs apply to it (can be multiple because an entity can be member in multiple entity sets)
+        for (let row of dataPointContent) {
+
+          const primaryKeySets = primaryKeySetsStatic.slice();
+
+          // get all entity headers for entities in primary key
+          for (const pkEntityConcept of primaryKeyEntityConcepts) {
+            primaryKeySets.push(entities[pkEntityConcept.domain][row[pkEntityConcept.concept]]);
+          }
+
+          // find all permutations of primary key
+          const primaryKeyPermutations = recursivePermutation(primaryKeySets);
+
+          // add a key-value pair to the schema for each schema this row fits to
+          for (let field of resource.schema.fields) {
+
+            if (!resource.schema.primaryKey.includes(field))
+              for (let pkPerm of primaryKeyPermutations) {
+                addToSchema(schema, {
+                  primaryKey: pkPerm,
+                  value: field,
+                  resource: resource.name
+                });
+              }
+          }
+        }
+      }
+
+      progressBar.itemDone(task);
+
+      onResourceProcessed();
+    });
+  });
+
+  parallelLimit(actions, 10, (err) => {
+    const ddfSchema = {datapoints: [], entities: [], concepts: []};
+
+    for (let key of keys(schema)) {
+      const keyValueObject = schema[key];
+
+      keyValueObject.resources = Array.from(keyValueObject.resources);
+
+      if (keyValueObject.primaryKey.length > 1) {
+        ddfSchema.datapoints.push(keyValueObject);
+      } else if (keyValueObject.primaryKey[0] == "concept") {
+        ddfSchema.concepts.push(keyValueObject);
+      } else {
+        ddfSchema.entities.push(keyValueObject);
       }
     }
 
-    progressBar.itemDone(task);
-  }
-
-  // BUILD FINAL DDFSCHEMA OBJECT
-
-  const ddfSchema = {datapoints: [], entities: [], concepts: []};
-
-  for (let key of keys(schema)) {
-    const keyValueObject = schema[key];
-
-    keyValueObject.resources = Array.from(keyValueObject.resources);
-
-    if (keyValueObject.primaryKey.length > 1) {
-      ddfSchema.datapoints.push(keyValueObject);
-    } else if (keyValueObject.primaryKey[0] == "concept") {
-      ddfSchema.concepts.push(keyValueObject);
-    } else {
-      ddfSchema.entities.push(keyValueObject);
-    }
-  }
-
-  return ddfSchema;
+    onDdfSchemaReady(err, ddfSchema);
+  });
 }
 
 export const getDdfSchema = (dataPackageDescriptor: DataPackage, onDdfSchemaReady: Function, isProgressNeeded: boolean = false) => {
@@ -272,18 +259,15 @@ export const getDdfSchema = (dataPackageDescriptor: DataPackage, onDdfSchemaRead
     const conceptsResources = resources.filter(resource => head(resource.schema.primaryKey) === 'concept');
     const entitiesResources = resources.filter(resource => resource.schema.primaryKey.length === 1 && head(resource.schema.primaryKey) !== 'concept');
 
-    console.log('loading datapoints content...');
+    console.log('generating ddfSchema...');
 
-    loadData(dataPackageDescriptor.rootFolder, resources, isProgressNeeded, dataHash => {
-      console.log('\ngenerating ddfSchema...');
-
-      const ddfSchema = getDdfSchemaContent({
-        resources,
-        conceptsResources,
-        entitiesResources,
-        dataHash
-      }, isProgressNeeded);
-
+    getDdfSchemaContent({
+      resources,
+      conceptsResources,
+      entitiesResources,
+      ddfDataSet,
+      dataPackageDescriptor
+    }, isProgressNeeded, (err, ddfSchema) => {
       onDdfSchemaReady(ddfSchema);
     });
   });

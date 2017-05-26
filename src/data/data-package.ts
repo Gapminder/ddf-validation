@@ -105,7 +105,7 @@ const getActualSubDirectories = (folder: string, onSubDirsReady: Function) => {
     const actualFolders = folders.filter(folder => {
       const folderDetails = folder.split(path.sep);
 
-      if (includes(folderDetails, '.git') || includes(folderDetails, 'etl')) {
+      if (includes(folderDetails, '.git') || includes(folderDetails, 'etl') || includes(folderDetails, 'lang')) {
         return false;
       }
 
