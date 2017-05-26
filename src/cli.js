@@ -1,6 +1,4 @@
-#!/bin/sh
-":" //# comment; exec /usr/bin/env node --max-old-space-size=8192 "$0" "$@"
-
+#! /usr/bin/env node
 'use strict';
 
 require('../lib/cli-logic');
