@@ -24,14 +24,13 @@ Options:
   --content        Rewrite "resources" and "ddfSchema" sections in existing datapackage.json
   -j               Fix wrong JSONs
   --rules          print information regarding supported rules
-  --multidir       validate all subdirectories
   --datapointless  forget about datapoint validation
   --hidden         allow hidden folders validation
   --include-tags   Process only issues by selected tags
   --exclude-tags   Process all tags except selected
   --include-rules  Process only issues by selected rules
   --exclude-rules  Process all rules except selected
-  --exclude-dirs   Process all directories except selected. Truly only for `--multidir` mode
+  --exclude-dirs   Process all directories except selected.
 
 Examples:
   validate-ddf ../ddf-example                                        validate DDF datasets for the root
@@ -40,7 +39,6 @@ Examples:
   validate-ddf ../ddf-example -i --translations --content            rewrite "translations", "resources" and "ddfSchema" sections in datapackage.json
   validate-ddf ../ddf-example -j                                     fix JSONs for this DDF dataset
   validate-ddf  --rules                                              print information regarding supported rules
-  validate-ddf ../ddf-example --multidir                             validate `ddf-example` and all subdirectories under "ddf-example"
   validate-ddf ../ddf-example --datapointless                        forget about datapoint validation
   validate-ddf ../ddf-example --hidden                               allow hidden folders validation
   validate-ddf ../ddf-example --include-rules "INCORRECT_JSON_FIELD" validate only by  INCORRECT_JSON_FIELD rule
@@ -129,7 +127,6 @@ Also all validators supports validation parameters that corresponds with command
  * excludeRules              Process all rules except selected
  * isIndexGenerationMode     `-i` option
  * isJsonAutoCorrectionMode  `-j` option
- * multiDirMode              `--multidir` option
  * datapointlessMode         `--datapointless` option
  * isPrintRules              `--rules` option
  * isCheckHidden             `--hidden` option
@@ -141,8 +138,7 @@ const api = require('ddf-validation');
 const expectedRule = 'INCORRECT_FILE';
 const StreamValidator = api.StreamValidator;
 const streamValidator = new StreamValidator(path, {
-  includeRules: expectedRule,
-  multiDirMode: true
+  includeRules: expectedRule
 });
 
 streamValidator.on('issue', issue => {
