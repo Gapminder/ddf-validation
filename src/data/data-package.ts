@@ -2,15 +2,16 @@ import * as path from 'path';
 import {
   head,
   cloneDeep,
-  difference,
   drop,
   split,
   isArray,
+  indexOf,
   flatten,
   last,
   includes,
   compact,
   isEmpty,
+  takeRight,
   tail
 } from 'lodash';
 import { readFile } from 'fs';
@@ -20,7 +21,8 @@ import {
   CONCEPT,
   ENTITY,
   DATA_POINT,
-  DDF_SEPARATOR
+  DDF_SEPARATOR,
+  DDF_DATAPOINT_SEPARATOR
 } from '../ddf-definitions/constants';
 import { Db } from '../data/db';
 import { Concept } from '../ddf-definitions/concept';
@@ -262,9 +264,10 @@ export class DataPackage {
         }
 
         if (fileDescriptor.type === DATA_POINT) {
-          const measures = fileDescriptor.headers.filter(header => conceptTypeHash[header] === 'measure');
+          const ddfDataPointSeparatorPos = indexOf(fileDescriptor.parts, DDF_DATAPOINT_SEPARATOR);
+          const primaryKeyPartsCount = fileDescriptor.parts.length - ddfDataPointSeparatorPos - 1;
 
-          fileDescriptor.primaryKey = difference(fileDescriptor.headers, measures);
+          fileDescriptor.primaryKey = takeRight(fileDescriptor.parts, primaryKeyPartsCount);
         }
       });
   }
