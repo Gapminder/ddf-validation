@@ -114,7 +114,7 @@ function getDdfSchemaContent(dataset: any, isProgressNeeded, onDdfSchemaReady) {
       entities[domain][row[pk]].add(domain);
 
       for (let field of entity_set_fields) {
-        if (row[field]) {
+        if (row[field] === 'TRUE' || row[field] === 'true') {
           entities[domain][row[pk]].add(field.substring(4));
         }
       }
