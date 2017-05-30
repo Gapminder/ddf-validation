@@ -1,9 +1,10 @@
 import * as path from 'path';
 import { parallelLimit } from 'async';
-import { cloneDeep, isArray, head, startsWith, keys, includes } from 'lodash';
+import { cloneDeep, isArray, head, startsWith, keys, includes, isEqual } from 'lodash';
 import { readFile } from '../utils/file';
 import { DataPackage } from '../data/data-package';
 import { DdfDataSet } from '../ddf-definitions/ddf-data-set';
+import { getRelativePath } from './shared';
 
 const term = require('terminal-kit').terminal;
 const getProgressBar = (isProgressNeeded: boolean = false, config: any): any => {
@@ -64,11 +65,15 @@ function getDdfSchemaContent(dataset: any, isProgressNeeded, onDdfSchemaReady) {
   dataset.dataHash = {};
 
   for (let conceptFile of conceptsFiles) {
-    dataset.dataHash[path.parse(conceptFile).base] = conceptsContent[conceptFile];
+    const relativePath = getRelativePath(conceptFile, dataset.dataPackageDescriptor.rootFolder);
+
+    dataset.dataHash[relativePath] = conceptsContent[conceptFile];
   }
 
   for (let entityFile of entitiesFiles) {
-    dataset.dataHash[path.parse(entityFile).base] = entitiesContent[entityFile];
+    const relativePath = getRelativePath(entityFile, dataset.dataPackageDescriptor.rootFolder);
+
+    dataset.dataHash[relativePath] = entitiesContent[entityFile];
   }
 
   // PREPARE
@@ -248,10 +253,10 @@ function getDdfSchemaContent(dataset: any, isProgressNeeded, onDdfSchemaReady) {
 
       keyValueObject.resources = Array.from(keyValueObject.resources);
 
-      if (keyValueObject.primaryKey.length > 1) {
-        ddfSchema.datapoints.push(keyValueObject);
-      } else if (keyValueObject.primaryKey[0] == "concept") {
+      if (keyValueObject.primaryKey.length === 1 && keyValueObject.primaryKey[0] === 'concept') {
         ddfSchema.concepts.push(keyValueObject);
+      } else if (keyValueObject.primaryKey.length > 1) {
+        ddfSchema.datapoints.push(keyValueObject);
       } else {
         ddfSchema.entities.push(keyValueObject);
       }

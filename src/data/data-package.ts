@@ -28,6 +28,7 @@ import { Db } from '../data/db';
 import { Concept } from '../ddf-definitions/concept';
 import { readDir, getFileLine, writeFile, fileExists, walkDir } from '../utils/file';
 import { getDdfSchema } from './ddf-schema';
+import { isPathExpected } from './shared';
 
 export interface IDdfFileDescriptor {
   valid: boolean;
@@ -104,15 +105,7 @@ const getActualSubDirectories = (folder: string, onSubDirsReady: Function) => {
       return;
     }
 
-    const actualFolders = folders.filter(folder => {
-      const folderDetails = folder.split(path.sep);
-
-      if (includes(folderDetails, '.git') || includes(folderDetails, 'etl') || includes(folderDetails, 'lang')) {
-        return false;
-      }
-
-      return true;
-    });
+    const actualFolders = folders.filter(folder => isPathExpected(folder));
 
     actualFolders.push(folder);
 
@@ -303,7 +296,7 @@ export class DataPackage {
       resources: this.fileDescriptors
         .map((fileDescriptor: IDdfFileDescriptor) => ({
           path: `${getRelativeDir(fileDescriptor.fullPath)}${fileDescriptor.filename}`,
-          name: fileDescriptor.name,
+          name: `${getRelativeDir(fileDescriptor.fullPath)}${fileDescriptor.name}`,
           schema: {
             fields: (fileDescriptor.headers || [])
               .map(header => prepareField(header, fileDescriptor)),
