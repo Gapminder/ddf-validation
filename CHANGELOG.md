@@ -1,3 +1,14 @@
+<a name="1.5.18"></a>
+## [1.5.18](https://github.com/Gapminder/ddf-validation/compare/v1.5.17...v1.5.18) (2017-05-30)
+
+
+### Bug Fixes
+
+* **datapackage:** handle files with only primary key correctly ([c45fbe4](https://github.com/Gapminder/ddf-validation/commit/c45fbe4))
+* **tests:** avoid non print characters from tests ([9e6f53b](https://github.com/Gapminder/ddf-validation/commit/9e6f53b)), closes [#391](https://github.com/Gapminder/ddf-validation/issues/391)
+
+
+
 <a name="1.5.17"></a>
 ## [1.5.17](https://github.com/Gapminder/ddf-validation/compare/v1.5.16...v1.5.17) (2017-05-26)
 
