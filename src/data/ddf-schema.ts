@@ -177,13 +177,23 @@ function getDdfSchemaContent(dataset: any, isProgressNeeded, onDdfSchemaReady) {
 
       if (primaryKeyEntityConcepts.length == 0) {
         // no entity concepts found, no need to take entity multi-set membership into account
-        for (let field of resource.schema.fields) {
-          if (!includes(resource.schema.primaryKey, field)) {
-            addToSchema(schema, {
+
+        // special case when file only contains key column
+        if (resource.schema.primaryKey.length == resource.schema.fields.length) {
+          addToSchema(schema, {
               primaryKey: resource.schema.primaryKey,
-              value: field,
+              value: null,
               resource: resource.name
-            });
+          });  
+        } else {  
+          for (let field of resource.schema.fields) {
+            if (!includes(resource.schema.primaryKey, field)) {
+              addToSchema(schema, {
+                primaryKey: resource.schema.primaryKey,
+                value: field,
+                resource: resource.name
+              });
+            }
           }
         }
 
@@ -204,15 +214,26 @@ function getDdfSchemaContent(dataset: any, isProgressNeeded, onDdfSchemaReady) {
           const primaryKeyPermutations = recursivePermutation(primaryKeySets);
 
           // add a key-value pair to the schema for each schema this row fits to
-          for (let field of resource.schema.fields) {
-            if (!resource.schema.primaryKey.includes(field)) {
+
+          // special case when file only contains key column
+          if (resource.schema.primaryKey.length == resource.schema.fields.length) {
               for (let pkPerm of primaryKeyPermutations) {
-                addToSchema(schema, {
-                  primaryKey: pkPerm,
-                  value: field,
-                  resource: resource.name
-                });
+                  addToSchema(schema, {
+                      primaryKey: pkPerm,
+                      value: null,
+                      resource: resource.name
+                  });
               }
+          } else {  
+            for (let field of resource.schema.fields) {
+              if (!resource.schema.primaryKey.includes(field))
+                for (let pkPerm of primaryKeyPermutations) {
+                  addToSchema(schema, {
+                    primaryKey: pkPerm,
+                    value: field,
+                    resource: resource.name
+                  });
+                }
             }
           }
         }
