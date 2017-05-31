@@ -98,14 +98,14 @@ const getTypeByResource = (resource: any) => {
 
   return ENTITY;
 };
-const getActualSubDirectories = (folder: string, onSubDirsReady: Function) => {
+const getActualSubDirectories = (folder: string, settings: any, onSubDirsReady: Function) => {
   walkDir(folder, (err: any, folders: string[]) => {
     if (err) {
       onSubDirsReady(err);
       return;
     }
 
-    const actualFolders = folders.filter(folder => isPathExpected(folder));
+    const actualFolders = folders.filter(folder => isPathExpected(folder, settings.excludeDirs || []));
 
     actualFolders.push(folder);
 
@@ -121,8 +121,9 @@ export class DataPackage {
   public dataPackage: any;
   public translationFolders: any[];
   public db: Db;
+  public settings: any;
 
-  constructor(rootFolder: string) {
+  constructor(rootFolder: string, settings: any) {
     this.rootFolder = rootFolder;
     this.errors = [];
     this.warnings = [];
@@ -148,6 +149,7 @@ export class DataPackage {
 
             this.getDdfFileDescriptors(
               translationFullFolder,
+              this.settings,
               (folderErr: any, ddfTransFileDescriptors: any[] = []) => {
                 const transFileDescriptors = ddfTransFileDescriptors
                   .map(transFileDescriptor => {
@@ -207,8 +209,8 @@ export class DataPackage {
     return ddfFileDescriptor;
   }
 
-  getDdfFileDescriptors(folder: string, onDdfFileDescriptorsReady: Function) {
-    getActualSubDirectories(folder, (dirErr: any, dirs: string[]) => {
+  getDdfFileDescriptors(folder: string, settings: any, onDdfFileDescriptorsReady: Function) {
+    getActualSubDirectories(folder, settings, (dirErr: any, dirs: string[]) => {
       if (dirErr) {
         onDdfFileDescriptorsReady(dirErr);
         return;
@@ -320,7 +322,7 @@ export class DataPackage {
     this.warnings = [];
     this.fileDescriptors = [];
 
-    this.getDdfFileDescriptors(this.rootFolder, (ddfFileErr: any, ddfFileDescriptors: IDdfFileDescriptor[]) => {
+    this.getDdfFileDescriptors(this.rootFolder, this.settings, (ddfFileErr: any, ddfFileDescriptors: IDdfFileDescriptor[]) => {
       if (ddfFileErr) {
         this.errors.push({
           source: ddfFileErr,

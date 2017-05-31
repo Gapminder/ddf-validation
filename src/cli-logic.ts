@@ -24,7 +24,7 @@ if (settings.isDataPackageGenerationMode) {
     }
   }
 
-  const dataPackage = new DataPackage(ddfPath);
+  const dataPackage = new DataPackage(ddfPath, settings);
 
   console.log('datapackage creation started...');
 
