@@ -64,7 +64,7 @@
     "@types/deep-diff": "0.0.30",
     "@types/mocha": "2.2.41",
     "@types/node": "7.0.13",
-    "chai": "4.0.0",
+    "chai": "4.0.1",
     "codecov": "2.2.0",
     "compare-version": "0.1.2",
     "conventional-changelog": "1.1.3",
