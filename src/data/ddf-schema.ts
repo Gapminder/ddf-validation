@@ -43,7 +43,7 @@ function recursivePermutation(pkSets) {
 
 function addToSchema(schema, resourceSchema) {
   const key = resourceSchema.primaryKey.sort().join('-');
-  const hash = key + '--' + resourceSchema.value;
+  const hash = key + '--' + (resourceSchema.value || '-null-');
 
   if (!schema[hash]) {
     schema[hash] = {
