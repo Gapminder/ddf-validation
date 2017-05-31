@@ -266,8 +266,8 @@ function getDdfSchemaContent(dataset: any, isProgressNeeded, onDdfSchemaReady) {
   });
 }
 
-export const getDdfSchema = (dataPackageDescriptor: DataPackage, onDdfSchemaReady: Function, isProgressNeeded: boolean = false) => {
-  const ddfDataSet = new DdfDataSet(dataPackageDescriptor.rootFolder, {});
+export const getDdfSchema = (dataPackageDescriptor: DataPackage, settings: any, onDdfSchemaReady: Function, isProgressNeeded: boolean = false) => {
+  const ddfDataSet = new DdfDataSet(dataPackageDescriptor.rootFolder, settings);
 
   console.log('loading generic content...');
 

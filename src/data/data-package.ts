@@ -105,7 +105,8 @@ const getActualSubDirectories = (folder: string, settings: any, onSubDirsReady: 
       return;
     }
 
-    const actualFolders = folders.filter(folder => isPathExpected(folder, settings.excludeDirs || []));
+    const excludeDirs = settings ? settings.excludeDirs : [];
+    const actualFolders = folders.filter(folder => isPathExpected(folder, excludeDirs));
 
     actualFolders.push(folder);
 
@@ -125,6 +126,7 @@ export class DataPackage {
 
   constructor(rootFolder: string, settings: any) {
     this.rootFolder = rootFolder;
+    this.settings = settings;
     this.errors = [];
     this.warnings = [];
     this.fileDescriptors = [];
@@ -385,7 +387,7 @@ export class DataPackage {
     const fileName = isBasedOnCurrentDataPackage || !existingDataPackage ? DATA_PACKAGE_FILE : `${DATA_PACKAGE_FILE}.${dateLabel}`;
     const filePath = resolve(this.rootFolder, fileName);
 
-    getDdfSchema(this, (ddfSchema: any) => {
+    getDdfSchema(this, this.settings, (ddfSchema: any) => {
       const contentToOut = cloneDeep(isBasedOnCurrentDataPackage ? existingDataPackage : this.dataPackage);
 
       if (settings.updateDataPackageTranslations) {
