@@ -19,6 +19,7 @@ Commands:
   root  DDF Root directory. Current directory will be processed if DDF Root directory is undefined.
 
 Options:
+  -v               Print current version
   -i               Generate datapackage.json
   --translations   Rewrite "translations" section in existing datapackage.json
   --content        Rewrite "resources" and "ddfSchema" sections in existing datapackage.json

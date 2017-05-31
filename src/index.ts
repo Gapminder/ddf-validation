@@ -1,10 +1,10 @@
-import {EventEmitter} from 'events';
-import {parallelLimit} from 'async';
-import {isEmpty, flattenDeep, concat, compact, isArray} from 'lodash';
-import {DdfDataSet} from './ddf-definitions/ddf-data-set';
-import {allRules as ddfRules} from './ddf-rules';
-import {IssuesFilter} from './utils/issues-filter';
-import {Issue} from './ddf-rules/issue';
+import { EventEmitter } from 'events';
+import { parallelLimit } from 'async';
+import { isEmpty, flattenDeep, concat, compact, isArray } from 'lodash';
+import { DdfDataSet } from './ddf-definitions/ddf-data-set';
+import { allRules as ddfRules } from './ddf-rules';
+import { IssuesFilter } from './utils/issues-filter';
+import { Issue } from './ddf-rules/issue';
 
 const CONCURRENT_OPERATIONS_AMOUNT = 30;
 

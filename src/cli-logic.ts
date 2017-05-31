@@ -5,8 +5,17 @@ import { getRulesInformation } from './ddf-rules/registry';
 import { DataPackage } from './data/data-package';
 import { DdfJsonCorrector } from './ddf-definitions/ddf-json-corrector';
 import { StreamValidator, validate } from './index';
+import { checkLatestVersion } from './version';
+
+const localPackage = require('./package.json');
 
 let isValidationExpected: boolean = true;
+
+if (settings.versionShouldBePrinted) {
+  console.log(localPackage.version);
+
+  isValidationExpected = false;
+}
 
 if (settings.isDataPackageGenerationMode) {
   const ddfPath = path.resolve(ddfRootFolder || '.');
@@ -67,6 +76,10 @@ if (settings.isPrintRules) {
   isValidationExpected = false;
 }
 
+if (!isValidationExpected) {
+  checkLatestVersion(localPackage.version);
+}
+
 if (isValidationExpected) {
   const validator = new StreamValidator(ddfRootFolder, settings);
 
@@ -82,6 +95,8 @@ if (isValidationExpected) {
     }
 
     logger.notice('{}]\n');
+
+    checkLatestVersion(localPackage.version);
   });
 
   validate(validator);

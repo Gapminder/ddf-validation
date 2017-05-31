@@ -52,6 +52,7 @@ export const getSettings = () => {
     settings.isUI = false;
     settings.isDataPackageGenerationMode = !!argv.i;
     settings.isJsonAutoCorrectionMode = !!argv.j;
+    settings.versionShouldBePrinted = !!argv.v;
     settings.multiDirMode = !!argv.multidir;
     settings.datapointlessMode = !!argv.datapointless;
     settings.updateDataPackageTranslations = !!argv.translations;
