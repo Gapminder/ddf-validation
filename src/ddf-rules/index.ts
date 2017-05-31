@@ -64,7 +64,7 @@ export const allRules = {
   [registry.UNEXPECTED_DATA]: unexpectedData,
   [registry.NON_DDF_DATA_SET]: nonDdfDataset,
   [registry.NON_DDF_FOLDER]: nonDdfFolder,
-  [registry.WRONG_DATA_POINT_HEADER]: wrongDataPointHeader,
+  // [registry.WRONG_DATA_POINT_HEADER]: wrongDataPointHeader,
   [registry.INCORRECT_IDENTIFIER]: incorrectIdentifier,
   [registry.INCORRECT_JSON_FIELD]: incorrectJsonField,
   [registry.UNEXPECTED_TRANSLATION_HEADER]: unexpectedTranslationHeader,

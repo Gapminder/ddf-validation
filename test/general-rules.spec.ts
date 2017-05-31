@@ -1,6 +1,6 @@
 import * as chai from 'chai';
-import {head, endsWith, isEqual, isEmpty} from 'lodash';
-import {DdfDataSet} from '../src/ddf-definitions/ddf-data-set';
+import { head, endsWith, isEqual, isEmpty } from 'lodash';
+import { DdfDataSet } from '../src/ddf-definitions/ddf-data-set';
 import {
   NON_DDF_DATA_SET,
   NON_DDF_FOLDER,
@@ -8,8 +8,8 @@ import {
   INCORRECT_IDENTIFIER,
   WRONG_DATA_POINT_HEADER
 } from '../src/ddf-rules/registry';
-import {Issue} from '../src/ddf-rules/issue';
-import {allRules} from '../src/ddf-rules';
+import { Issue } from '../src/ddf-rules/issue';
+import { allRules } from '../src/ddf-rules';
 
 const expect = chai.expect;
 
@@ -196,34 +196,36 @@ describe('general rules', () => {
     });
   });
 
-  describe('when "WRONG_DATA_POINT_HEADER" rule', () => {
-    it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
-      const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
+  /*
+   describe('when "WRONG_DATA_POINT_HEADER" rule', () => {
+   it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
+   const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
 
-      ddfDataSet.load(() => {
-        expect(allRules[WRONG_DATA_POINT_HEADER].rule(ddfDataSet).length).to.equal(0);
+   ddfDataSet.load(() => {
+   expect(allRules[WRONG_DATA_POINT_HEADER].rule(ddfDataSet).length).to.equal(0);
 
-        done();
-      });
-    });
+   done();
+   });
+   });
 
-    it(`issues should be found for folder with the problem
-    (fixtures/rules-cases/wrong-data-point-header)`, done => {
-      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/wrong-data-point-header', null);
+   it(`issues should be found for folder with the problem
+   (fixtures/rules-cases/wrong-data-point-header)`, done => {
+   const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/wrong-data-point-header', null);
 
-      ddfDataSet.load(() => {
-        const results: Array<Issue> = allRules[WRONG_DATA_POINT_HEADER].rule(ddfDataSet);
-        const result = head(results);
-        const EXPECTED_ISSUES_QUANTITY = 1;
-        const EXPECTED_WRONG_CONCEPT = 'name';
+   ddfDataSet.load(() => {
+   const results: Array<Issue> = allRules[WRONG_DATA_POINT_HEADER].rule(ddfDataSet);
+   const result = head(results);
+   const EXPECTED_ISSUES_QUANTITY = 1;
+   const EXPECTED_WRONG_CONCEPT = 'name';
 
-        expect(results.length).to.equal(EXPECTED_ISSUES_QUANTITY);
-        expect(!!result.data).to.be.true;
-        expect(isEmpty(result.data.wrongConcepts)).to.be.false;
-        expect(head(result.data.wrongConcepts)).to.equal(EXPECTED_WRONG_CONCEPT);
+   expect(results.length).to.equal(EXPECTED_ISSUES_QUANTITY);
+   expect(!!result.data).to.be.true;
+   expect(isEmpty(result.data.wrongConcepts)).to.be.false;
+   expect(head(result.data.wrongConcepts)).to.equal(EXPECTED_WRONG_CONCEPT);
 
-        done();
-      });
-    });
-  });
+   done();
+   });
+   });
+   });
+   */
 });
