@@ -6,10 +6,10 @@ const expect = chai.expect;
 
 describe('ddf schema creation', () => {
   it('for dummy-companies', done => {
-    const dataPackage = new DataPackage('./test/fixtures/ddf-schema');
+    const dataPackage = new DataPackage('./test/fixtures/ddf-schema', {});
 
     dataPackage.take(() => {
-      getDdfSchema(dataPackage, (ddfSchema: any) => {
+      getDdfSchema(dataPackage, {}, (ddfSchema: any) => {
         expect(ddfSchema.concepts).to.not.be.null;
         expect(ddfSchema.concepts.length).to.be.gt(0);
 

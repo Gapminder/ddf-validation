@@ -386,8 +386,11 @@ export class DataPackage {
       (existingDataPackage && (settings.updateDataPackageTranslations || settings.updateDataPackageContent));
     const fileName = isBasedOnCurrentDataPackage || !existingDataPackage ? DATA_PACKAGE_FILE : `${DATA_PACKAGE_FILE}.${dateLabel}`;
     const filePath = resolve(this.rootFolder, fileName);
+    const commandLineSettings = cloneDeep(this.settings);
 
-    getDdfSchema(this, this.settings, (ddfSchema: any) => {
+    commandLineSettings.isProgressNeeded = true;
+
+    getDdfSchema(this, commandLineSettings, (ddfSchema: any) => {
       const contentToOut = cloneDeep(isBasedOnCurrentDataPackage ? existingDataPackage : this.dataPackage);
 
       if (settings.updateDataPackageTranslations) {
@@ -408,7 +411,7 @@ export class DataPackage {
         JSON.stringify(contentToOut, null, 4),
         err => onDataPackageFileReady(err, filePath)
       );
-    }, true);
+    });
   }
 
   read(onDataPackageReady) {

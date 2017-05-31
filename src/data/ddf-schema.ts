@@ -181,11 +181,11 @@ function getDdfSchemaContent(dataset: any, isProgressNeeded, onDdfSchemaReady) {
         // special case when file only contains key column
         if (resource.schema.primaryKey.length == resource.schema.fields.length) {
           addToSchema(schema, {
-              primaryKey: resource.schema.primaryKey,
-              value: null,
-              resource: resource.name
-          });  
-        } else {  
+            primaryKey: resource.schema.primaryKey,
+            value: null,
+            resource: resource.name
+          });
+        } else {
           for (let field of resource.schema.fields) {
             if (!includes(resource.schema.primaryKey, field)) {
               addToSchema(schema, {
@@ -217,14 +217,14 @@ function getDdfSchemaContent(dataset: any, isProgressNeeded, onDdfSchemaReady) {
 
           // special case when file only contains key column
           if (resource.schema.primaryKey.length == resource.schema.fields.length) {
-              for (let pkPerm of primaryKeyPermutations) {
-                  addToSchema(schema, {
-                      primaryKey: pkPerm,
-                      value: null,
-                      resource: resource.name
-                  });
-              }
-          } else {  
+            for (let pkPerm of primaryKeyPermutations) {
+              addToSchema(schema, {
+                primaryKey: pkPerm,
+                value: null,
+                resource: resource.name
+              });
+            }
+          } else {
             for (let field of resource.schema.fields) {
               if (!resource.schema.primaryKey.includes(field))
                 for (let pkPerm of primaryKeyPermutations) {
@@ -266,7 +266,7 @@ function getDdfSchemaContent(dataset: any, isProgressNeeded, onDdfSchemaReady) {
   });
 }
 
-export const getDdfSchema = (dataPackageDescriptor: DataPackage, settings: any, onDdfSchemaReady: Function, isProgressNeeded: boolean = false) => {
+export const getDdfSchema = (dataPackageDescriptor: DataPackage, settings: any, onDdfSchemaReady: Function) => {
   const ddfDataSet = new DdfDataSet(dataPackageDescriptor.rootFolder, settings);
 
   console.log('loading generic content...');
@@ -293,7 +293,7 @@ export const getDdfSchema = (dataPackageDescriptor: DataPackage, settings: any, 
       entitiesResources,
       ddfDataSet,
       dataPackageDescriptor
-    }, isProgressNeeded, (err, ddfSchema) => {
+    }, settings.isProgressNeeded, (err, ddfSchema) => {
       onDdfSchemaReady(ddfSchema);
     });
   });
