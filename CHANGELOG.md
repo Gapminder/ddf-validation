@@ -1,3 +1,13 @@
+<a name="1.5.20"></a>
+## [1.5.20](https://github.com/Gapminder/ddf-validation/compare/v1.5.19...v1.5.20) (2017-05-31)
+
+
+### Bug Fixes
+
+* **datapackage:** prevent ddfSchema hash collission for concept named 'null' ([bf7f6a6](https://github.com/Gapminder/ddf-validation/commit/bf7f6a6))
+
+
+
 <a name="1.5.19"></a>
 ## [1.5.19](https://github.com/Gapminder/ddf-validation/compare/v1.5.18...v1.5.19) (2017-05-31)
 
