@@ -42,6 +42,9 @@ export class DdfDataSet {
             }
 
             if (fileDescriptor.is([CONCEPT, ENTITY])) {
+
+              console.log(fileDescriptor);
+
               loaders.push(onFileLoaded => {
                 fileDescriptor.fillHeaders(() => {
                   this.db.fillCollection(

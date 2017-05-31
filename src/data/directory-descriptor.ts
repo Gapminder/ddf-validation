@@ -10,12 +10,13 @@ const PROCESS_LIMIT = 5;
 export class DirectoryDescriptor {
   public dataPackage: DataPackage;
   public dir: string;
+  public settings: any;
   public isEmpty: boolean;
   public isDDF: boolean;
   public fileDescriptors: Array<FileDescriptor>;
   public errors: Array<any>;
 
-  constructor(dir) {
+  constructor(dir: string, settings: any) {
     this.dir = dir;
     this.isEmpty = false;
     this.isDDF = true;
@@ -55,7 +56,7 @@ export class DirectoryDescriptor {
   }
 
   check(onDirectoryDescriptorReady) {
-    this.dataPackage = new DataPackage(this.dir);
+    this.dataPackage = new DataPackage(this.dir, this.settings);
     this.dataPackage.take(dataPackageObject => {
       if (!this.dataPackage.isValid() || isEmpty(this.dataPackage.fileDescriptors)) {
         this.isDDF = false;

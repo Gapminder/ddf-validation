@@ -25,7 +25,7 @@ export class DDFRoot {
 
       if (isNotExcludedDirectory) {
         actions.push(cb => {
-          const directoryDescriptor = new DirectoryDescriptor(dir);
+          const directoryDescriptor = new DirectoryDescriptor(dir, this.settings);
 
           directoryDescriptor.check(() => cb(null, directoryDescriptor));
         });
