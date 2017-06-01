@@ -1,12 +1,12 @@
-import {parallel} from 'async';
-import {compact, intersection} from 'lodash';
-import {DirectoryDescriptor} from '../data/directory-descriptor'
-import {CONCEPT, ENTITY, DATA_POINT} from './constants'
-import {Concept} from './concept';
-import {Entity} from './entity';
-import {DataPoint} from './data-point';
-import {Db} from '../data/db';
-import {DDFRoot} from '../data/ddf-root';
+import { parallel } from 'async';
+import { compact, intersection, isEmpty } from 'lodash';
+import { DirectoryDescriptor } from '../data/directory-descriptor'
+import { CONCEPT, ENTITY, DATA_POINT } from './constants'
+import { Concept } from './concept';
+import { Entity } from './entity';
+import { DataPoint } from './data-point';
+import { Db } from '../data/db';
+import { DDFRoot } from '../data/ddf-root';
 
 export class DdfDataSet {
   public db: Db;
@@ -14,9 +14,9 @@ export class DdfDataSet {
   public expectedClass: any;
   public definitions: any;
 
-  constructor(rootPath, settings) {
+  constructor(rootPath: string, settings: any, ignoreExistingDataPackage: boolean = false) {
     this.db = new Db();
-    this.ddfRoot = new DDFRoot(rootPath, settings);
+    this.ddfRoot = new DDFRoot(rootPath, settings, ignoreExistingDataPackage);
   }
 
   load(onDataSetLoaded) {
@@ -31,6 +31,7 @@ export class DdfDataSet {
 
       const processDirectoryDescriptor = (directoriesDescriptor: DirectoryDescriptor) => {
         directoriesDescriptor.fileDescriptors
+          .filter(fileDescriptor => isEmpty(fileDescriptor.issues))
           .forEach(fileDescriptor => {
             if (fileDescriptor.is(DATA_POINT)) {
               loaders.push(onFileLoaded => {

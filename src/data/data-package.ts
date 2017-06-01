@@ -462,11 +462,11 @@ export class DataPackage {
     return this.dataPackage.translations || [];
   }
 
-  take(onDataPackageReady) {
+  take(onDataPackageReady: Function, ignoreExistingDataPackage: boolean) {
     const filePath = resolve(this.rootFolder, DATA_PACKAGE_FILE);
 
     fileExists(filePath, (err, isExists) => {
-      if (err || !isExists) {
+      if (err || !isExists || ignoreExistingDataPackage) {
         this.build(dataPackage => onDataPackageReady(dataPackage));
         return;
       }

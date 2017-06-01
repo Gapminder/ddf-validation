@@ -1,4 +1,5 @@
 import { parallel } from 'async';
+import { isEmpty } from 'lodash';
 import { walkDir } from '../utils/file';
 import { DirectoryDescriptor } from './directory-descriptor';
 import { isPathExpected } from './shared';
@@ -8,13 +9,15 @@ export class DDFRoot {
   public settings: any;
   public errors: any[];
   public directoryDescriptors: DirectoryDescriptor[];
+  public ignoreExistingDataPackage: boolean;
 
-  constructor(path, settings) {
+  constructor(path, settings, ignoreExistingDataPackage: boolean = false) {
     this.path = path;
     this.settings = settings || {};
     this.settings.excludeDirs = this.settings.excludeDirs || [];
     this.errors = [];
     this.directoryDescriptors = [];
+    this.ignoreExistingDataPackage = ignoreExistingDataPackage;
   }
 
   getChecksMultiDir(dirs) {
@@ -27,7 +30,7 @@ export class DDFRoot {
         actions.push(cb => {
           const directoryDescriptor = new DirectoryDescriptor(dir, this.settings);
 
-          directoryDescriptor.check(() => cb(null, directoryDescriptor));
+          directoryDescriptor.check(this.ignoreExistingDataPackage, () => cb(null, directoryDescriptor));
         });
       }
     });
@@ -44,7 +47,16 @@ export class DDFRoot {
       }
 
       parallel(this.getChecksMultiDir(dirs), (checkErr: any, directoryDescriptors: DirectoryDescriptor[]) => {
-        this.directoryDescriptors = directoryDescriptors;
+        this.directoryDescriptors = directoryDescriptors.map(directoryDescriptor => {
+          const badFileDescriptors = directoryDescriptor.fileDescriptors.filter(fileDescriptor => !isEmpty(fileDescriptor.issues));
+
+          if (badFileDescriptors.length === directoryDescriptor.fileDescriptors.length) {
+            directoryDescriptor.isDDF = false;
+          }
+
+          return directoryDescriptor;
+        });
+
         if (checkErr) {
           this.errors.push(checkErr);
         }

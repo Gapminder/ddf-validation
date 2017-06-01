@@ -14,7 +14,7 @@ describe('datapackage validation', () => {
         expect(isEqual(dataPackageObject, dataPackageTemplate)).to.be.true;
 
         done();
-      });
+      }, true);
     });
   });
   describe('when "ddf--bubbles-3" dataset', () => {
@@ -28,7 +28,7 @@ describe('datapackage validation', () => {
         expect(dataPackageObject.resources.length).to.equal(EXPECTED_RESOURCES_LENGTH);
 
         done();
-      });
+      }, true);
     });
   });
 });
