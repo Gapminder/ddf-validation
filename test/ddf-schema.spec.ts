@@ -21,6 +21,6 @@ describe('ddf schema creation', () => {
 
         done();
       });
-    });
+    }, true);
   });
 });

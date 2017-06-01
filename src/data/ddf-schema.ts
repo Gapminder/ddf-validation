@@ -267,7 +267,7 @@ function getDdfSchemaContent(dataset: any, isProgressNeeded, onDdfSchemaReady) {
 }
 
 export const getDdfSchema = (dataPackageDescriptor: DataPackage, settings: any, onDdfSchemaReady: Function) => {
-  const ddfDataSet = new DdfDataSet(dataPackageDescriptor.rootFolder, settings);
+  const ddfDataSet = new DdfDataSet(dataPackageDescriptor.rootFolder, settings, true);
 
   console.log('loading generic content...');
 

@@ -1,9 +1,9 @@
-import {isEmpty, map} from 'lodash';
-import {parallelLimit} from 'async';
-import {resolve} from 'path';
-import {TRNSLATIONS_FOLDER} from '../ddf-definitions/constants';
-import {DataPackage} from '../data/data-package';
-import {FileDescriptor} from './file-descriptor';
+import { isEmpty } from 'lodash';
+import { parallelLimit } from 'async';
+import { resolve } from 'path';
+import { TRNSLATIONS_FOLDER } from '../ddf-definitions/constants';
+import { DataPackage } from '../data/data-package';
+import { FileDescriptor } from './file-descriptor';
 
 const PROCESS_LIMIT = 5;
 
@@ -13,14 +13,15 @@ export class DirectoryDescriptor {
   public settings: any;
   public isEmpty: boolean;
   public isDDF: boolean;
-  public fileDescriptors: Array<FileDescriptor>;
-  public errors: Array<any>;
+  public fileDescriptors: FileDescriptor[];
+  public errors: any[];
 
   constructor(dir: string, settings: any) {
     this.dir = dir;
     this.isEmpty = false;
     this.isDDF = true;
     this.fileDescriptors = [];
+    this.settings = settings;
     this.errors = [];
   }
 
@@ -55,7 +56,7 @@ export class DirectoryDescriptor {
     parallelLimit(transFileActions, PROCESS_LIMIT, onTranslationsReady);
   }
 
-  check(onDirectoryDescriptorReady) {
+  check(ignoreExistingDataPackage: boolean = false, onDirectoryDescriptorReady: Function) {
     this.dataPackage = new DataPackage(this.dir, this.settings);
     this.dataPackage.take(dataPackageObject => {
       if (!this.dataPackage.isValid() || isEmpty(this.dataPackage.fileDescriptors)) {
@@ -64,18 +65,13 @@ export class DirectoryDescriptor {
         return;
       }
 
-      this.fileDescriptors =
-        dataPackageObject.resources
-          .map(ddfResource => this.getFileDescriptor(this.dir, ddfResource));
+      this.fileDescriptors = dataPackageObject.resources.map(ddfResource =>
+        this.getFileDescriptor(this.dir, ddfResource));
 
-      const actionsCsv = this.fileDescriptors
-        .map(fileDescriptor =>
-          onFileChecked =>
-            fileDescriptor.csvChecker.check(onFileChecked));
-      const actionsForDescriptor = this.fileDescriptors
-        .map(fileDescriptor =>
-          onFileChecked =>
-            fileDescriptor.check(onFileChecked));
+      const actionsCsv = this.fileDescriptors.map(fileDescriptor => onFileChecked =>
+        fileDescriptor.csvChecker.check(onFileChecked));
+      const actionsForDescriptor = this.fileDescriptors.map(fileDescriptor =>
+        onFileChecked => fileDescriptor.check(onFileChecked));
 
       parallelLimit(
         actionsCsv.concat(actionsForDescriptor),
@@ -89,7 +85,7 @@ export class DirectoryDescriptor {
           this.getTranslations(onDirectoryDescriptorReady);
         }
       );
-    });
+    }, ignoreExistingDataPackage);
   }
 
   getFileDescriptor(dir, ddfResource) {

@@ -62,6 +62,7 @@
   "devDependencies": {
     "@types/chai": "3.5.1",
     "@types/deep-diff": "0.0.30",
+    "@types/es6-shim": "0.31.33",
     "@types/mocha": "2.2.41",
     "@types/node": "7.0.13",
     "chai": "4.0.0",
