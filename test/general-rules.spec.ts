@@ -1,5 +1,5 @@
 import * as chai from 'chai';
-import { head, endsWith, isEqual, isEmpty } from 'lodash';
+import { head, endsWith, isEqual } from 'lodash';
 import { DdfDataSet } from '../src/ddf-definitions/ddf-data-set';
 import {
   NON_DDF_DATA_SET,
@@ -196,36 +196,60 @@ describe('general rules', () => {
     });
   });
 
-  /*
-   describe('when "WRONG_DATA_POINT_HEADER" rule', () => {
-   it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
-   const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
+  describe('when "WRONG_DATA_POINT_HEADER" rule', () => {
+    it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
 
-   ddfDataSet.load(() => {
-   expect(allRules[WRONG_DATA_POINT_HEADER].rule(ddfDataSet).length).to.equal(0);
+      ddfDataSet.load(() => {
+        const results: Issue[] = allRules[WRONG_DATA_POINT_HEADER].rule(ddfDataSet);
 
-   done();
-   });
-   });
+        expect(results.length).to.equal(0);
 
-   it(`issues should be found for folder with the problem
+        done();
+      });
+    });
+
+    it(`issues should be found for folder with the problem
    (fixtures/rules-cases/wrong-data-point-header)`, done => {
-   const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/wrong-data-point-header', null);
+      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/wrong-data-point-header', null);
 
-   ddfDataSet.load(() => {
-   const results: Array<Issue> = allRules[WRONG_DATA_POINT_HEADER].rule(ddfDataSet);
-   const result = head(results);
-   const EXPECTED_ISSUES_QUANTITY = 1;
-   const EXPECTED_WRONG_CONCEPT = 'name';
+      ddfDataSet.load(() => {
+        const results: Issue[] = allRules[WRONG_DATA_POINT_HEADER].rule(ddfDataSet);
+        const EXPECTED_RESULTS = [
+          {
+            path: 'ddf--datapoints--pop--by--country--year.csv',
+            data: {
+              primaryKeyInvalidParts: [
+                'name'
+              ],
+              reason: 'some parts of the primary key have an incorrect type'
+            }
+          },
+          {
+            path: 'ddf--datapoints--pop--by--country--year.csv',
+            data: {
+              sharedHeaders: [
+                'country'
+              ],
+              primaryKey: [
+                'country',
+                'name'
+              ],
+              reason: 'primary from datapackage does not correspond with header from ddf file'
+            }
+          }
+        ];
 
-   expect(results.length).to.equal(EXPECTED_ISSUES_QUANTITY);
-   expect(!!result.data).to.be.true;
-   expect(isEmpty(result.data.wrongConcepts)).to.be.false;
-   expect(head(result.data.wrongConcepts)).to.equal(EXPECTED_WRONG_CONCEPT);
+        expect(results.length).to.equal(EXPECTED_RESULTS.length);
 
-   done();
-   });
-   });
-   });
-   */
+        results.forEach((result: Issue, index: number) => {
+          expect(endsWith(result.path, EXPECTED_RESULTS[index].path)).to.be.true;
+          expect(!!result.data).to.be.true;
+          expect(isEqual(result.data, EXPECTED_RESULTS[index].data)).to.be.true;
+        });
+
+        done();
+      });
+    });
+  });
 });

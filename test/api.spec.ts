@@ -1,6 +1,6 @@
 import * as chai from 'chai';
-import {head, isEmpty} from 'lodash';
-import {JSONValidator, StreamValidator, SimpleValidator, validate} from '../src/index';
+import { head, isEmpty } from 'lodash';
+import { JSONValidator, StreamValidator, SimpleValidator, validate } from '../src/index';
 
 const expect = chai.expect;
 
