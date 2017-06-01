@@ -36,7 +36,7 @@ export class DdfDataSet {
             if (fileDescriptor.is(DATA_POINT)) {
               loaders.push(onFileLoaded => {
                 fileDescriptor.fillHeaders(() => {
-                  this.expectedClass[fileDescriptor.type].addFileDescriptor(fileDescriptor);
+                  this.expectedClass[fileDescriptor.type].addDescriptors(fileDescriptor, directoriesDescriptor.dataPackage);
                   onFileLoaded();
                 });
               });
@@ -59,12 +59,11 @@ export class DdfDataSet {
           });
       };
 
-      this.ddfRoot.directoryDescriptors
-        .forEach(directoriesDescriptor => {
-          if (directoriesDescriptor.isDDF) {
-            processDirectoryDescriptor(directoriesDescriptor);
-          }
-        });
+      this.ddfRoot.directoryDescriptors.forEach(directoriesDescriptor => {
+        if (directoriesDescriptor.isDDF) {
+          processDirectoryDescriptor(directoriesDescriptor);
+        }
+      });
 
       parallel(loaders, (err, definitions) => {
         const allMeasures = this.getAllMeasures();

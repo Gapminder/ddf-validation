@@ -1,22 +1,26 @@
 import { walkFile, readFile as _readFile } from '../utils/file';
 import { FileDescriptor } from '../data/file-descriptor';
+import { DataPackage } from '../data/data-package';
 
 export class DataPoint {
-  public fileDescriptors: Array<FileDescriptor>;
+  public fileDescriptors: FileDescriptor[];
+  public dataPackageObjects: DataPackage[];
 
   constructor() {
     this.fileDescriptors = [];
+    this.dataPackageObjects = [];
   }
 
-  addFileDescriptor(fileDescriptor) {
+  addDescriptors(fileDescriptor: FileDescriptor, dataPackageObject: DataPackage) {
     this.fileDescriptors.push(fileDescriptor);
+    this.dataPackageObjects.push(dataPackageObject);
   }
 
-  loadFile(fileDescriptor, onLineRead, onFileRead) {
+  loadFile(fileDescriptor: FileDescriptor, onLineRead: Function, onFileRead: Function) {
     walkFile(fileDescriptor.fullPath, onLineRead, onFileRead);
   }
 
-  readFile(filename, onFileRead) {
+  readFile(filename: string, onFileRead: Function) {
     _readFile(filename, onFileRead);
   }
 }
