@@ -92,7 +92,7 @@ export const descriptions = {
   [EMPTY_CONCEPT_ID]: `Empty concept ID. An issue according to this rule will be fired 
   when concept ID ('concept' header) is empty`,
   [INCORRECT_IDENTIFIER]: `Incorrect identifier. 
-  Entity identifiers and concept identifiers can only contain lowercase alphanumeric 
+  Entity identifiers and concept identifiers can only containWRONG_DATA_POINT_HEADER lowercase alphanumeric 
   characters and underscores.`,
   [NON_CONCEPT_HEADER]: `Non concept header. 
   Each part of any header should be concept (is-- fields are excluded in this case)`,
@@ -102,8 +102,9 @@ export const descriptions = {
   [MEASURE_VALUE_NOT_NUMERIC]: 'Measure in data point has not numeric type',
   [DATA_POINT_UNEXPECTED_ENTITY_VALUE]: 'Unexpected entity value in the data point',
   [DATA_POINT_UNEXPECTED_TIME_VALUE]: 'Unexpected time value in the data point',
-  [WRONG_DATA_POINT_HEADER]: `Invalid concept in data point.
-  Raised when header contains a concept based on 'string' type`,
+  [WRONG_DATA_POINT_HEADER]: `Invalid part of data point header.
+  Raised when: some parts of the primary key have an incorrect type or primary from datapackage 
+  does not correspond with header from ddf file`,
   [WRONG_ENTITY_IS_HEADER]: `Wrong "is" header. An issue according to this rule 
   will be fired when 'is-header' in concept is defined and not valid: 
   not a concept with 'entity_set' type`,

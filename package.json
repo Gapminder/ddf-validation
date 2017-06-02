@@ -44,7 +44,7 @@
     "deep-diff": "0.3.4",
     "fast-csv": "2.4.0",
     "fs": "0.0.2",
-    "json2csv": "3.7.3",
+    "jsonexport": "^1.5.2",
     "levenshtein": "1.0.5",
     "lodash": "4.17.4",
     "md5": "2.2.1",

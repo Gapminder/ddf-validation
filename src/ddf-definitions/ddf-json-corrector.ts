@@ -1,12 +1,12 @@
-import {first, uniq} from 'lodash';
-import {parallelLimit} from 'async';
-import {DdfDataSet} from './ddf-data-set';
-import {LINE_NUM_INCLUDING_HEADER} from '../ddf-definitions/constants';
-import {allRules} from '../ddf-rules';
-import {INCORRECT_JSON_FIELD} from '../ddf-rules/registry';
-import {readFile, writeFile, backupFile} from '../utils/file';
+import { first, uniq } from 'lodash';
+import { parallelLimit } from 'async';
+import { DdfDataSet } from './ddf-data-set';
+import { LINE_NUM_INCLUDING_HEADER } from '../ddf-definitions/constants';
+import { allRules } from '../ddf-rules';
+import { INCORRECT_JSON_FIELD } from '../ddf-rules/registry';
+import { readFile, writeFile, backupFile } from '../utils/file';
 
-const json2csv = require('json2csv');
+const jsonExport = require('jsonexport');
 const PROCESS_LIMIT = 5;
 
 function correctFile(data, cb) {
@@ -31,14 +31,7 @@ function correctFile(data, cb) {
 }
 
 function jsonToCsv(data, onJsonReady) {
-  const concept = data.ddfDataSet.getConcept();
-  const entity = data.ddfDataSet.getEntity();
-  const expectedDetail =
-    concept.fileDescriptors.find(fileDescriptor => fileDescriptor.fullPath === data.file) ||
-    entity.fileDescriptors.find(fileDescriptor => fileDescriptor.fullPath === data.file);
-  const parameters: any = {data: data.content, fields: expectedDetail.header};
-
-  json2csv(parameters, onJsonReady);
+  jsonExport(data.content, onJsonReady);
 }
 
 export class DdfJsonCorrector {
