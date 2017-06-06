@@ -2,7 +2,7 @@ import { parallel } from 'async';
 import { isEmpty } from 'lodash';
 import { walkDir } from '../utils/file';
 import { DirectoryDescriptor } from './directory-descriptor';
-import { isPathExpected } from './shared';
+import { getExcludedDirs, isPathExpected } from './shared';
 
 export class DDFRoot {
   public path: string;
@@ -14,7 +14,7 @@ export class DDFRoot {
   constructor(path, settings, ignoreExistingDataPackage: boolean = false) {
     this.path = path;
     this.settings = settings || {};
-    this.settings.excludeDirs = this.settings.excludeDirs || [];
+    this.settings.excludeDirs = getExcludedDirs(this.settings);
     this.errors = [];
     this.directoryDescriptors = [];
     this.ignoreExistingDataPackage = ignoreExistingDataPackage;

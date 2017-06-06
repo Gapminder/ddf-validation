@@ -1,5 +1,5 @@
 import * as chai from 'chai';
-import { head, isEmpty } from 'lodash';
+import { head, isEmpty, isEqual } from 'lodash';
 import { JSONValidator, StreamValidator, SimpleValidator, validate } from '../src/index';
 
 const expect = chai.expect;
@@ -191,9 +191,8 @@ describe('api', () => {
 
     describe('and DDF dataset is correct', () => {
       it('should dataset is correct', done => {
-        const config = {indexlessMode: true};
         const issues = [];
-        const streamValidator = new StreamValidator('./test/fixtures/good-folder', config);
+        const streamValidator = new StreamValidator('./test/fixtures/good-folder', {});
 
         streamValidator.on('issue', issue => {
           issues.push(issue);
@@ -202,6 +201,58 @@ describe('api', () => {
         streamValidator.on('finish', err => {
           expect(!!err).to.be.false;
           expect(isEmpty(issues)).to.be.true;
+
+          done();
+        });
+
+        validate(streamValidator);
+      });
+
+      it('should custom settings be processed correctly (excludeDirs as string)', done => {
+        const issues = [];
+        const streamValidator = new StreamValidator('./test/fixtures/good-folder', {
+          excludeRules: 'WRONG_DATA_POINT_HEADER',
+          excludeDirs: '.gitingore, .git',
+          isCheckHidden: true
+        });
+        const EXPECTED_SETTINGS = {
+          excludeRules: 'WRONG_DATA_POINT_HEADER',
+          excludeDirs: ['.gitingore', '.git'],
+          isCheckHidden: true
+        };
+
+        streamValidator.on('issue', issue => {
+          issues.push(issue);
+        });
+
+        streamValidator.on('finish', err => {
+          expect(!!err).to.be.false;
+          expect(isEmpty(issues)).to.be.true;
+          expect(isEqual(streamValidator.settings, EXPECTED_SETTINGS));
+
+          done();
+        });
+
+        validate(streamValidator);
+      });
+
+      it('should custom settings be processed correctly (excludeDirs as array)', done => {
+        const issues = [];
+        const EXPECTED_SETTINGS = {
+          excludeRules: 'WRONG_DATA_POINT_HEADER',
+          excludeDirs: ['.gitingore', '.git'],
+          isCheckHidden: true
+        };
+        const streamValidator = new StreamValidator('./test/fixtures/good-folder', EXPECTED_SETTINGS);
+
+        streamValidator.on('issue', issue => {
+          issues.push(issue);
+        });
+
+        streamValidator.on('finish', err => {
+          expect(!!err).to.be.false;
+          expect(isEmpty(issues)).to.be.true;
+          expect(isEqual(streamValidator.settings, EXPECTED_SETTINGS));
 
           done();
         });
