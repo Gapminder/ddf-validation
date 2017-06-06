@@ -1,3 +1,13 @@
+<a name="1.5.21"></a>
+## [1.5.21](https://github.com/Gapminder/ddf-validation/compare/v1.5.20...v1.5.21) (2017-06-06)
+
+
+### Features
+
+* **general:** message about non actual version ([88ef4f2](https://github.com/Gapminder/ddf-validation/commit/88ef4f2)), closes [#380](https://github.com/Gapminder/ddf-validation/issues/380)
+
+
+
 <a name="1.5.20"></a>
 ## [1.5.20](https://github.com/Gapminder/ddf-validation/compare/v1.5.19...v1.5.20) (2017-05-31)
 
