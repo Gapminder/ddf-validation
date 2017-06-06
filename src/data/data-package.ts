@@ -28,7 +28,7 @@ import { Db } from '../data/db';
 import { Concept } from '../ddf-definitions/concept';
 import { readDir, getFileLine, writeFile, fileExists, walkDir } from '../utils/file';
 import { getDdfSchema } from './ddf-schema';
-import { isPathExpected } from './shared';
+import { getExcludedDirs, isPathExpected } from './shared';
 
 export interface IDdfFileDescriptor {
   valid: boolean;
@@ -105,7 +105,7 @@ const getActualSubDirectories = (folder: string, settings: any, onSubDirsReady: 
       return;
     }
 
-    const excludeDirs = settings ? settings.excludeDirs : [];
+    const excludeDirs = getExcludedDirs(settings);
     const actualFolders = folders.filter(folder => isPathExpected(folder, excludeDirs));
 
     actualFolders.push(folder);

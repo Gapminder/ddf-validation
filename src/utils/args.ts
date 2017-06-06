@@ -1,5 +1,6 @@
-import { camelCase, split, head } from 'lodash';
+import { camelCase, head } from 'lodash';
 import * as yargs from 'yargs';
+import { getExcludedDirs } from '../data/shared';
 
 declare var process: any;
 
@@ -22,11 +23,11 @@ const argv = yargs
     'Validate only by INCORRECT_JSON_FIELD rule')
   .example(`${myName} ../ddf-example --exclude-tags "WARNING_TAG"`,
     'Get all kinds of issues except warnings')
-  .example(`${myName} ../ddf-example --exclude-dirs "etl foo-dir"`,
+  .example(`${myName} ../ddf-example --exclude-dirs "etl,foo-dir"`,
     'validate "ddf-example" and its subdirectories except "etl" and "foo-dir"')
-  .example(`${myName} ../ddf-example --exclude-dirs "'dir1 with spaces' 'dir2 with spaces'"`,
+  .example(`${myName} ../ddf-example --exclude-dirs "'dir1 with spaces','dir2 with spaces'"`,
     'validate "ddf-example" and its subdirectories that contain spaces')
-  .example(`${myName} ../ddf-example --exclude-dirs '"dir1 with spaces" "dir2 with spaces"'`,
+  .example(`${myName} ../ddf-example --exclude-dirs '"dir1 with spaces","dir2 with spaces"'`,
     'validate "ddf-example" and its subdirectories that contain spaces: case 2')
   .describe('i', 'Generate datapackage.json file')
   .describe('translations', 'Rewrite "translations" section in existing datapackage.json')
@@ -41,7 +42,7 @@ const argv = yargs
   .describe('include-rules', 'Process only issues by selected rules')
   .describe('exclude-rules', 'Process all rules except selected')
   .describe('exclude-dirs',
-    'Process all directories except selected. Truly only for `--multidir` mode')
+    'Process all directories except selected. Directories should be separated via "," character')
   .argv;
 
 export const getDDFRootFolder = () => head(argv._) || process.cwd();
@@ -71,11 +72,3 @@ export const getSettings = () => {
 
   return settings;
 };
-
-function getExcludedDirs(settings: any) {
-  if (settings && settings.excludeDirs) {
-    return split(settings.excludeDirs, ',').map(dir => dir.replace(/["']/g, ''));
-  }
-
-  return [];
-}

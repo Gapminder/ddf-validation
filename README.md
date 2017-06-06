@@ -34,17 +34,19 @@ Options:
   --exclude-dirs   Process all directories except selected.
 
 Examples:
-  validate-ddf ../ddf-example                                        validate DDF datasets for the root
-  validate-ddf ../ddf-example -i                                     generate datapackage.json file
-  validate-ddf ../ddf-example -i --translations                      update only "translations" section in datapackage.json
-  validate-ddf ../ddf-example -i --translations --content            rewrite "translations", "resources" and "ddfSchema" sections in datapackage.json
-  validate-ddf ../ddf-example -j                                     fix JSONs for this DDF dataset
-  validate-ddf  --rules                                              print information regarding supported rules
-  validate-ddf ../ddf-example --datapointless                        forget about datapoint validation
-  validate-ddf ../ddf-example --hidden                               allow hidden folders validation
-  validate-ddf ../ddf-example --include-rules "INCORRECT_JSON_FIELD" validate only by  INCORRECT_JSON_FIELD rule
-  validate-ddf ../ddf-example --exclude-tags "WARNING"               get all kinds of issues except warnings
-  validate-ddf ../ddf-example --exclude-dirs "etl foo-dir"           validate "ddf-example" and its subdirectories except "etl" and "foo-dir"
+  validate-ddf ../ddf-example                                                        validate DDF datasets for the root
+  validate-ddf ../ddf-example -i                                                     generate datapackage.json file
+  validate-ddf ../ddf-example -i --translations                                      update only "translations" section in datapackage.json
+  validate-ddf ../ddf-example -i --translations --content                            rewrite "translations", "resources" and "ddfSchema" sections in datapackage.json
+  validate-ddf ../ddf-example -j                                                     fix JSONs for this DDF dataset
+  validate-ddf  --rules                                                              print information regarding supported rules
+  validate-ddf ../ddf-example --datapointless                                        forget about datapoint validation
+  validate-ddf ../ddf-example --hidden                                               allow hidden folders validation
+  validate-ddf ../ddf-example --include-rules "INCORRECT_JSON_FIELD"                 validate only by  INCORRECT_JSON_FIELD rule
+  validate-ddf ../ddf-example --exclude-tags "WARNING"                               get all kinds of issues except warnings
+  validate-ddf ../ddf-example --exclude-dirs "etl,foo-dir"                           validate "ddf-example" and its subdirectories except "etl" and "foo-dir"
+  validate-ddf ../ddf-example --exclude-dirs "'dir1 with spaces','dir2 with spaces'" validate "ddf-example" and its subdirectories that contain spaces
+  validate-ddf ../ddf-example --exclude-dirs '"dir1 with spaces","dir2 with spaces"' validate "ddf-example" and its subdirectories that contain spaces: case 2
 ```
 
 ## API usage
