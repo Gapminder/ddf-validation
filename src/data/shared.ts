@@ -4,7 +4,10 @@ import { includes, isEmpty, isString, split, trim } from 'lodash';
 export const isPathExpected = (folderPath: string, externalExcludedFolders: string[] = []): boolean => {
   const folders = folderPath.split(path.sep);
 
-  if (includes(folders, '.git') || includes(folders, 'etl') || includes(folders, 'lang')) {
+  if (includes(folders, '.git') ||
+    includes(folders, 'etl') ||
+    includes(folders, 'lang') ||
+    includes(folders, 'assets')) {
     return false;
   }
 

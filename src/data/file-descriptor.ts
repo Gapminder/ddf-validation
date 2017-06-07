@@ -1,9 +1,9 @@
-import {parallelLimit} from 'async';
-import {isArray, includes, compact, isEmpty} from 'lodash';
-import {stat} from 'fs';
-import {getFileLine} from '../utils/file';
-import {INCORRECT_FILE} from '../ddf-rules/registry';
-import {CsvChecker} from './csv-checker';
+import { parallelLimit } from 'async';
+import { isArray, includes, compact, isEmpty } from 'lodash';
+import { stat } from 'fs';
+import { getFileLine } from '../utils/file';
+import { INCORRECT_FILE } from '../ddf-rules/registry';
+import { CsvChecker } from './csv-checker';
 
 const PROCESS_LIMIT = 5;
 
@@ -29,7 +29,7 @@ function getIssueCases(fileDescriptor) {
           return;
         }
 
-        cb();
+        cb(null, {ok: true, stats});
       });
     }
   ];
@@ -39,16 +39,17 @@ export class FileDescriptor {
   public dir: string;
   public file: string;
   public type: any;
-  public primaryKey: Array<string>;
-  public headers: Array<string>;
-  public issues: Array<any>;
-  public transFileDescriptors: Array<FileDescriptor>;
+  public primaryKey: string[];
+  public headers: string[];
+  public issues: any[];
+  public transFileDescriptors: FileDescriptor[];
   public content: any;
-  public measures: Array<string>;
+  public measures: string[];
   public fullPath: string;
   public csvChecker: CsvChecker;
   public hasFirstLine: boolean;
   public isTranslation: boolean;
+  public size: number;
 
   constructor(data) {
     this.dir = data.dir;
@@ -91,8 +92,14 @@ export class FileDescriptor {
       }
 
       getFileLine(this.fullPath, 1, (lineErr, line) => {
+        const fileAttributesContainer: any = results.find((result: any) => result.ok);
+
         this.hasFirstLine = !lineErr && !!line;
-        this.issues = compact(results);
+        this.issues = compact(results.filter((result: any) => !result.ok));
+
+        if (fileAttributesContainer && fileAttributesContainer.stats) {
+          this.size = fileAttributesContainer.stats.size;
+        }
 
         if (isEmpty(this.issues)) {
           this.csvChecker.check(() => onFileDescriptorChecked());

@@ -1,4 +1,5 @@
 import * as chai from 'chai';
+import { parallel } from 'async';
 import { head, isEmpty, isEqual } from 'lodash';
 import { JSONValidator, StreamValidator, SimpleValidator, validate } from '../src/index';
 
@@ -276,6 +277,51 @@ describe('api', () => {
 
         validate(fundamentalValidator);
       });
+    });
+  });
+
+  describe('run validator under multi thread mode', () => {
+    const _JSONValidator = require('../lib/index').JSONValidator;
+
+    it('should result for generic and multi thread modes be same ', done => {
+      const EXPECTED_ISSUES_COUNT = 6;
+      const DATA_SET_PATH = './test/fixtures/rules-cases/data-point-constraint-violation';
+
+      parallel({
+          generic: onDataSetValidated => {
+            const jsonValidator = new _JSONValidator(DATA_SET_PATH, null);
+
+            jsonValidator.on('finish', onDataSetValidated);
+
+            validate(jsonValidator);
+          },
+          multithread: onDataSetValidated => {
+            const jsonValidator = new _JSONValidator(DATA_SET_PATH, {
+              isMultithread: true
+            });
+
+            jsonValidator.on('finish', onDataSetValidated);
+
+            validate(jsonValidator);
+          }
+        },
+        (err, results) => {
+          expect(!!err).to.be.false;
+          expect((<any[]>results.generic).length).to.equal(EXPECTED_ISSUES_COUNT);
+          expect((<any[]>results.generic).length).to.equal((<any[]>results.multithread).length);
+
+          for (let issueFromGeneric of <any[]>results.generic) {
+            const sameIssue = (<any[]>results.multithread).find(issue => isEqual(issueFromGeneric, issue));
+
+            expect(!!sameIssue).to.be.true;
+            expect(!!sameIssue.type).to.be.true;
+            expect(!!sameIssue.path).to.be.true;
+            expect(!!sameIssue.data).to.be.true;
+          }
+
+          done();
+        }
+      );
     });
   });
 });

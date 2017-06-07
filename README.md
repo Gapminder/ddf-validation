@@ -25,6 +25,7 @@ Options:
   --content        Rewrite "resources" and "ddfSchema" sections in existing datapackage.json
   -j               Fix wrong JSONs
   --rules          print information regarding supported rules
+  --multithread    validate datapoints in separate threads
   --datapointless  forget about datapoint validation
   --hidden         allow hidden folders validation
   --include-tags   Process only issues by selected tags
@@ -40,6 +41,7 @@ Examples:
   validate-ddf ../ddf-example -i --translations --content                            rewrite "translations", "resources" and "ddfSchema" sections in datapackage.json
   validate-ddf ../ddf-example -j                                                     fix JSONs for this DDF dataset
   validate-ddf  --rules                                                              print information regarding supported rules
+  validate-ddf ../ddf-example --multithread                                          validate datapoints for `ddf-example` in separate threads
   validate-ddf ../ddf-example --datapointless                                        forget about datapoint validation
   validate-ddf ../ddf-example --hidden                                               allow hidden folders validation
   validate-ddf ../ddf-example --include-rules "INCORRECT_JSON_FIELD"                 validate only by  INCORRECT_JSON_FIELD rule
@@ -85,7 +87,8 @@ And for this reason it's not suitable for huge DDF datasets.
 ```
 const api = require('ddf-validation');
 const StreamValidator = api.StreamValidator;
-const streamValidator = new StreamValidator('path to ddf dataset');
+const streamValidator = new StreamValidator('path to ddf dataset', custom parameters);
+// custom parameters should be explained a little bit later
 
 streamValidator.on('issue', issue => {
   // catch new issue here
@@ -110,7 +113,8 @@ This is the fastest validator among given here.
 ```
 const api = require('ddf-validation');
 const SimpleValidator = api.SimpleValidator;
-const simpleValidator = new SimpleValidator('./test/fixtures/good-folder-indexed');
+const simpleValidator = new SimpleValidator('./test/fixtures/good-folder-indexed', custom parameters);
+// custom parameters should be explained a little bit later
 
 simpleValidator.on('finish', (err, isDataSetCorrect) => {
   // isDataSetCorrect === true if DDF dataset is correct
@@ -120,32 +124,44 @@ simpleValidator.on('finish', (err, isDataSetCorrect) => {
 api.validate(simpleValidator);
 ```
 
-### Custom rules
+### Custom parameters
 
-Also all validators supports validation parameters that corresponds with command line:
+Also all validators supports validation parameters that corresponds with some parameters from command line:
 
- * includeTags               Process only issues by selected tags
- * excludeTags               Process all tags except selected
- * includeRules              Process only issues by selected rules
- * excludeRules              Process all rules except selected
- * isIndexGenerationMode     `-i` option
- * isJsonAutoCorrectionMode  `-j` option
- * datapointlessMode         `--datapointless` option
- * isPrintRules              `--rules` option
- * isCheckHidden             `--hidden` option
- 
+|     parameter     |    corresponds ...    |         JS type         |                    description                      |
+|-------------------|-----------------------|-------------------------|-----------------------------------------------------|
+| excludeDirs       | `exclude-dirs`        | array of strings(see 1) | list of folders should be ignored during validation |
+| includeTags       | `include-tags`        | string(see notes 2, 3)  | use only tags that specified in the list            |
+| excludeTags       | `exclude-tags`        | string(see notes 2, 3)  | exclude tags that specified in the list             |
+| includeRules      | `include-rules`       | string(see notes 2, 3)  | use only rules that specified in the list           |
+| excludeRules      | `exclude-rules`       | string(see notes 2, 3)  | exclude rules that specified in the list            |
+| datapointlessMode | `datapointless`       | boolean                 | don't validate datapoints                           |
+| isCheckHidden     | `hidden`              | boolean                 | allow to validate hidden (starts with '.') folders  |
+| isMultithread     | `multithread` (see 4) | boolean                 | validate datapoints in separate threads             |
+
+Notes.
+
+1. Apart from `array of string` you can use a string that contains expected folders split by ','.
+   If those folders contain spaces you can surround them by " or ' character.
+2. Separate tags or rules should be split by space character
+3. Full list of tags and rules you can see via `validate-ddf --rules` command
+4. Implemented only for `StreamValidator` and `JSONValidator`
+
+
 Here is an example:
 
 ```
 const api = require('ddf-validation');
-const expectedRule = 'INCORRECT_FILE';
+const expectedRules = 'INCORRECT_FILE CONCEPTS_NOT_FOUND';
 const StreamValidator = api.StreamValidator;
 const streamValidator = new StreamValidator(path, {
-  includeRules: expectedRule
+  includeRules,
+  excludeDirs: ['my cool assets', 'some-other-folder'],
+  isMultithread: true
 });
 
 streamValidator.on('issue', issue => {
-  // only one type of issue (INCORRECT_FILE) should be catched
+  // only one type of issue (INCORRECT_FILE and CONCEPTS_NOT_FOUND) should be catched
 });
 
 streamValidator.on('finish', err => {
@@ -154,12 +170,6 @@ streamValidator.on('finish', err => {
 
 api.validate(streamValidator);
 ```
-
-## index file creation
-
-`validate-ddf <folder with DDF data set> -i`
-
-Attention: existing `ddf--index.csv` file will be overwritten!
 
 ## Developer guide
 

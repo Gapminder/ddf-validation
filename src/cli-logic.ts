@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { isString } from 'lodash';
 import { logger, settings, ddfRootFolder } from './utils';
 import { getRulesInformation } from './ddf-rules/registry';
 import { DataPackage } from './data/data-package';
@@ -86,7 +87,13 @@ if (isValidationExpected) {
   logger.notice('[');
 
   validator.on('issue', (issue: any) => {
-    logger.notice(`${JSON.stringify(issue, null, 2)},\n`);
+    if (isString(issue)) {
+      logger.notice(issue + '\n');
+    }
+
+    if (!isString(issue)) {
+      logger.notice(`${JSON.stringify(issue, null, 2)},\n`);
+    }
   });
 
   validator.on('finish', (err: any) => {

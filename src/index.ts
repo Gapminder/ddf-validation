@@ -1,18 +1,26 @@
+import * as path from 'path';
 import { EventEmitter } from 'events';
 import { parallelLimit } from 'async';
-import { isEmpty, flattenDeep, concat, compact, isArray } from 'lodash';
+import { isEmpty, flattenDeep, concat, isArray } from 'lodash';
 import { DdfDataSet } from './ddf-definitions/ddf-data-set';
 import { allRules as ddfRules } from './ddf-rules';
 import { IssuesFilter } from './utils/issues-filter';
 import { Issue } from './ddf-rules/issue';
+import {
+  CONCURRENT_OPERATIONS_AMOUNT,
+  isSimpleRule,
+  isRecordRule,
+  isAggregativeRule,
+  sameTranslation,
+  noTranslation,
+  toArray,
+  getDataPointFileChunks,
+  createRecordBasedRulesProcessor
+} from './shared';
 
-const CONCURRENT_OPERATIONS_AMOUNT = 30;
-
-const isSimpleRule = ruleObject => !!ruleObject.rule;
-const isRecordRule = ruleObject => !!ruleObject.recordRule;
-const isAggregativeRule = ruleObject => !!ruleObject.aggregateRecord && !!ruleObject.aggregativeRule;
-const sameTranslation = (key, fileDescriptor) => fileDescriptor.isTranslation === ddfRules[key].isTranslation;
-const noTranslation = (key, fileDescriptor) => !fileDescriptor.isTranslation && !ddfRules[key].isTranslation;
+const child_process = require('child_process');
+const os = require('os');
+const cpuCount = os.cpus().length;
 
 function clearGlobalStates() {
   Object.getOwnPropertySymbols(ddfRules)
@@ -27,52 +35,6 @@ function processSimpleRules(context, onIssue) {
     .map(key => ddfRules[key].rule(context.ddfDataSet))
     .filter(issues => !isEmpty(issues))
     .forEach(issue => onIssue(issue));
-}
-
-/*eslint max-params: ["error", 4]*/
-function createRecordAggregationProcessor(context, ddfDataSet, fileDescriptor, resultHandler) {
-  return (record, line) => {
-    Object.getOwnPropertySymbols(ddfRules)
-      .filter(key => sameTranslation(key, fileDescriptor) || noTranslation(key, fileDescriptor))
-      .filter(key => isRecordRule(ddfRules[key]) || isAggregativeRule(ddfRules[key]))
-      .filter(key => context.issuesFilter.isAllowed(key))
-      .forEach(key => {
-        if (isRecordRule(ddfRules[key])) {
-          const issues = ddfRules[key].recordRule({ddfDataSet, fileDescriptor, record, line});
-
-          resultHandler(issues);
-        }
-
-        if (isAggregativeRule(ddfRules[key])) {
-          ddfRules[key].aggregateRecord({ddfDataSet, fileDescriptor, record, line}, key);
-        }
-      });
-  };
-}
-
-function processAggregation(context, ddfDataSet, fileDescriptor, resultHandler) {
-  Object.getOwnPropertySymbols(ddfRules)
-    .filter(key => sameTranslation(key, fileDescriptor) || noTranslation(key, fileDescriptor))
-    .filter(key => isAggregativeRule(ddfRules[key]))
-    .filter(key => context.issuesFilter.isAllowed(key))
-    .forEach(key => {
-      resultHandler(ddfRules[key].aggregativeRule({ddfDataSet, fileDescriptor}, key));
-    });
-}
-
-export function createRecordBasedRulesProcessor(context, fileDescriptor, resultHandler) {
-  const ddfDataSet = context.ddfDataSet;
-
-  return onDataPointReady => {
-    context.ddfDataSet.getDataPoint().loadFile(
-      fileDescriptor,
-      createRecordAggregationProcessor(context, ddfDataSet, fileDescriptor, resultHandler),
-      () => {
-        processAggregation(context, ddfDataSet, fileDescriptor, resultHandler);
-        onDataPointReady();
-      }
-    );
-  };
 }
 
 export function createRecordBasedRuleProcessor(context, fileDescriptor, resultHandler) {
@@ -127,15 +89,11 @@ function getValidationActions(context): Array<any> {
   return concat(dataPointActions, dataPointTransActions);
 }
 
-function toArray(value) {
-  return compact(isArray(value) ? value : [value]);
-}
-
 export class JSONValidator {
   public rootPath: string;
   public settings: any;
   public issueEmitter: EventEmitter;
-  public out: Array<any>;
+  public out: any[];
   public issuesFilter: IssuesFilter;
   public ddfDataSet: DdfDataSet;
 
@@ -157,6 +115,33 @@ export class JSONValidator {
 
   on(type, data) {
     return this.issueEmitter.on(type, data);
+  }
+
+  multiThreadProcessing() {
+    const fileChunks = getDataPointFileChunks(this.ddfDataSet, cpuCount);
+
+    let childProcessesFinished = 0;
+
+    for (let index = 0; index < cpuCount; index++) {
+      const childProcess = child_process.fork(path.resolve(__dirname, 'thread.js'));
+
+      childProcess.on('message', (message) => {
+        childProcessesFinished++;
+
+        this.out = this.out.concat(message.out);
+
+        if (childProcessesFinished === cpuCount) {
+          this.issueEmitter.emit('finish', message.err, this.out);
+        }
+      });
+
+      childProcess.send({
+        rootPath: this.rootPath,
+        settings: this.settings,
+        fileChunks: fileChunks[index],
+        isCollectResultMode: true
+      });
+    }
   }
 
   validate() {
@@ -184,9 +169,15 @@ export class JSONValidator {
         return;
       }
 
-      parallelLimit(getValidationActions(this), CONCURRENT_OPERATIONS_AMOUNT, err => {
-        this.issueEmitter.emit('finish', err, this.out);
-      });
+      if (this.settings.isMultithread) {
+        this.multiThreadProcessing();
+      }
+
+      if (!this.settings.isMultithread) {
+        parallelLimit(getValidationActions(this), CONCURRENT_OPERATIONS_AMOUNT, err => {
+          this.issueEmitter.emit('finish', err, this.out);
+        });
+      }
     });
   }
 }
@@ -218,6 +209,37 @@ export class StreamValidator {
     return this.issueEmitter.on(type, data);
   }
 
+  multiThreadProcessing() {
+    const fileChunks = getDataPointFileChunks(this.ddfDataSet, cpuCount);
+
+    let childProcessesFinished = 0;
+
+    for (let index = 0; index < cpuCount; index++) {
+      const childProcess = child_process.fork(path.resolve(__dirname, 'thread.js'));
+
+      childProcess.on('message', (message) => {
+        if (message.finish) {
+          childProcessesFinished++;
+        }
+
+        if (!message.finish && message.issue) {
+          this.issueEmitter.emit('issue', message.issue);
+        }
+
+        if (message.finish && childProcessesFinished === cpuCount) {
+          this.issueEmitter.emit('finish', message.err);
+        }
+      });
+
+      childProcess.send({
+        rootPath: this.rootPath,
+        settings: this.settings,
+        fileChunks: fileChunks[index],
+        isCollectResultMode: false
+      });
+    }
+  }
+
   validate() {
     clearGlobalStates();
     this.issuesFilter = new IssuesFilter(this.settings);
@@ -242,9 +264,16 @@ export class StreamValidator {
         return;
       }
 
-      parallelLimit(getValidationActions(this), CONCURRENT_OPERATIONS_AMOUNT, err => {
-        this.issueEmitter.emit('finish', err);
-      });
+
+      if (this.settings.isMultithread) {
+        this.multiThreadProcessing();
+      }
+
+      if (!this.settings.isMultithread) {
+        parallelLimit(getValidationActions(this), CONCURRENT_OPERATIONS_AMOUNT, err => {
+          this.issueEmitter.emit('finish', err);
+        });
+      }
     });
   }
 }
@@ -262,6 +291,13 @@ export class SimpleValidator {
     this.settings = settings || {};
     this.issueEmitter = new EventEmitter();
     this.isDataSetCorrect = true;
+
+    if (!this.settings.excludeTags) {
+      this.settings.excludeTags = '';
+    }
+
+    // SimpleValidator should ignore warnings
+    this.settings.excludeTags += ' WARNING ';
   }
 
   processRecordBasedRules(dataPointDetail) {
