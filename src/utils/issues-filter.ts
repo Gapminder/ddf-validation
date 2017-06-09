@@ -1,5 +1,5 @@
-import {intersection, includes, isEmpty} from 'lodash';
-import {tags} from '../ddf-rules/registry';
+import { intersection, includes, isEmpty } from 'lodash';
+import { tags } from '../ddf-rules/registry';
 
 export const WRONG_TAGS_COMBINATION_ERROR =
   new Error('Impossible combination of parameters: "include-tags" and "exclude-tags"');
@@ -7,12 +7,12 @@ export const WRONG_RULES_COMBINATION_ERROR =
   new Error('Impossible combination of parameters: "include-rules" and "exclude-rules"');
 
 export class IssuesFilter {
-  private includeTags: Array<string> = [];
-  private excludeTags: Array<string> = [];
-  private includeRules: Array<string> = [];
-  private excludeRules: Array<string> = [];
+  private includeTags: string[] = [];
+  private excludeTags: string[] = [];
+  private includeRules: string[] = [];
+  private excludeRules: string[] = [];
 
-  constructor(settings: any) {
+  constructor(settings: any = {}) {
     if (settings.includeTags) {
       this.includeTags = settings.includeTags.split(' ');
     }
@@ -32,6 +32,26 @@ export class IssuesFilter {
     this.checkIntegrity();
   }
 
+  serialize() {
+    return {
+      includeTags: this.includeTags,
+      excludeTags: this.excludeTags,
+      includeRules: this.includeRules,
+      excludeRules: this.excludeRules
+    };
+  }
+
+  static deserialize(content) {
+    const result = new IssuesFilter();
+
+    result.includeTags = content.includeTags;
+    result.excludeTags = content.excludeTags;
+    result.includeRules = content.includeRules;
+    result.excludeRules = content.excludeRules;
+
+    return result;
+  }
+
   checkIntegrity() {
     if (!isEmpty(this.includeTags) && !isEmpty(this.excludeTags)) {
       throw WRONG_TAGS_COMBINATION_ERROR;
@@ -45,16 +65,16 @@ export class IssuesFilter {
   isAllowedByTags(issueType) {
     if (!isEmpty(this.includeTags)) {
       return intersection(
-          this.includeTags,
-          tags[issueType].map(tag => Symbol.keyFor(tag))
-        ).length > 0;
+        this.includeTags,
+        tags[issueType].map(tag => Symbol.keyFor(tag))
+      ).length > 0;
     }
 
     if (!isEmpty(this.excludeTags)) {
       return intersection(
-          this.excludeTags,
-          tags[issueType].map(tag => Symbol.keyFor(tag))
-        ).length === 0;
+        this.excludeTags,
+        tags[issueType].map(tag => Symbol.keyFor(tag))
+      ).length === 0;
     }
 
     return true;

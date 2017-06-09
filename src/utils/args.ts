@@ -4,20 +4,18 @@ import { getExcludedDirs } from '../data/shared';
 
 declare var process: any;
 
-// const ROOT_PARAMETER_IS_REQUIRED = _.includes(process.argv, '--rules') ? 0 : 1;
 const myName = 'validate-ddf';
 const argv = yargs
   .usage(`Usage: ${myName} [root] [options]`)
   .command('root', 'DDF Root directory')
-  // .demand(ROOT_PARAMETER_IS_REQUIRED)
   .example(`${myName} ../ddf-example`, 'validate DDF datasets for the root')
   .example(`${myName} ../ddf-example -i`, 'generate datapackage.json file')
   .example(`${myName} ../ddf-example -i --translations`, 'update only "translations" section in datapackage.json')
   .example(`${myName} ../ddf-example -i --translations --content`, 'rewrite "translations", "resources" and "ddfSchema" sections in datapackage.json')
   .example(`${myName} ../ddf-example -j`, 'fix JSONs for this DDF dataset')
   .example(`${myName} --rules`, 'print information regarding supported rules')
-  .example(`${myName} ../ddf-example --multidir`,
-    'validate `ddf-example` and all subdirectories under "ddf-example"')
+  .example(`${myName} ../ddf-example --multithread`,
+    'validate datapoints for `ddf-example` in separate threads')
   .example(`${myName} ../ddf-example --hidden`, 'allow hidden folders validation')
   .example(`${myName} ../ddf-example --include-rules "INCORRECT_JSON_FIELD"`,
     'Validate only by INCORRECT_JSON_FIELD rule')
@@ -34,7 +32,7 @@ const argv = yargs
   .describe('content', 'Rewrite "resources" and "ddfSchema" sections in existing datapackage.json')
   .describe('j', 'Fix wrong JSONs')
   .describe('rules', 'print information regarding supported rules')
-  .describe('multidir', 'validate all subdirectories')
+  .describe('multithread', 'validate datapoints in separate threads')
   .describe('datapointless', 'forget about datapoint validation')
   .describe('hidden', 'allow hidden folders validation')
   .describe('include-tags', 'Process only issues by selected tags')
@@ -54,12 +52,12 @@ export const getSettings = () => {
     settings.isDataPackageGenerationMode = !!argv.i;
     settings.isJsonAutoCorrectionMode = !!argv.j;
     settings.versionShouldBePrinted = !!argv.v;
-    settings.multiDirMode = !!argv.multidir;
     settings.datapointlessMode = !!argv.datapointless;
     settings.updateDataPackageTranslations = !!argv.translations;
     settings.updateDataPackageContent = !!argv.content;
     settings.isPrintRules = !!argv.rules;
     settings.isCheckHidden = !!argv.hidden;
+    settings.isMultithread = !!argv.multithread;
   };
 
   setMiscSettings();
