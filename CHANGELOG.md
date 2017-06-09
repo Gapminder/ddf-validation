@@ -1,3 +1,13 @@
+<a name="1.6.0"></a>
+# [1.6.0](https://github.com/Gapminder/ddf-validation/compare/v1.5.21...v1.6.0) (2017-06-09)
+
+
+### Features
+
+* **general:** datapoint processing in different threads ([06d72e9](https://github.com/Gapminder/ddf-validation/commit/06d72e9)), closes [#157](https://github.com/Gapminder/ddf-validation/issues/157)
+
+
+
 <a name="1.5.21"></a>
 ## [1.5.21](https://github.com/Gapminder/ddf-validation/compare/v1.5.20...v1.5.21) (2017-06-06)
 
