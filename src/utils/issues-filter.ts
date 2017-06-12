@@ -32,26 +32,6 @@ export class IssuesFilter {
     this.checkIntegrity();
   }
 
-  serialize() {
-    return {
-      includeTags: this.includeTags,
-      excludeTags: this.excludeTags,
-      includeRules: this.includeRules,
-      excludeRules: this.excludeRules
-    };
-  }
-
-  static deserialize(content) {
-    const result = new IssuesFilter();
-
-    result.includeTags = content.includeTags;
-    result.excludeTags = content.excludeTags;
-    result.includeRules = content.includeRules;
-    result.excludeRules = content.excludeRules;
-
-    return result;
-  }
-
   checkIntegrity() {
     if (!isEmpty(this.includeTags) && !isEmpty(this.excludeTags)) {
       throw WRONG_TAGS_COMBINATION_ERROR;

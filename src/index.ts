@@ -77,7 +77,7 @@ export function createRecordBasedRuleProcessor(context, fileDescriptor, resultHa
   };
 }
 
-function getValidationActions(context): Array<any> {
+function getValidationActions(context): any[] {
   const dataPointActions = context.ddfDataSet.getDataPoint().fileDescriptors.map(fileDescriptor =>
     context.processRecordBasedRules(fileDescriptor));
   const dataPointTransActions = flattenDeep(

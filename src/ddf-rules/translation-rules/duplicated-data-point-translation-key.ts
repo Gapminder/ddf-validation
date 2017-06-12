@@ -1,22 +1,24 @@
-import {uniq, isEmpty} from 'lodash';
-import {DUPLICATED_DATA_POINT_TRANSLATION_KEY} from '../registry';
-import {Issue} from '../issue';
+import { uniq, isEmpty } from 'lodash';
+import { DUPLICATED_DATA_POINT_TRANSLATION_KEY } from '../registry';
+import { Issue } from '../issue';
 
 const md5 = require('md5');
 
-let storage = {};
+let storage: Map<string, any> = new Map();
 
 export const rule = {
   resetStorage: () => {
-    storage = {};
+    storage.clear();
   },
   isTranslation: true,
   aggregateRecord: (dataPointDescriptor, ruleKey) => {
-    if (!storage[ruleKey]) {
-      storage[ruleKey] = {
+    const ruleKeyString = Symbol.keyFor(ruleKey);
+
+    if (!storage.has(ruleKeyString)) {
+      storage.set(ruleKeyString, {
         hash: new Set(),
         duplicatedPrimaryKeys: []
-      };
+      });
     }
 
     const keyData = dataPointDescriptor.fileDescriptor.primaryKey
@@ -24,14 +26,15 @@ export const rule = {
       .join(',');
     const recordHash = md5(keyData);
 
-    if (storage[ruleKey].hash.has(recordHash)) {
-      storage[ruleKey].duplicatedPrimaryKeys.push(keyData);
+    if (storage.get(ruleKeyString).hash.has(recordHash)) {
+      storage.get(ruleKeyString).duplicatedPrimaryKeys.push(keyData);
     }
 
-    storage[ruleKey].hash.add(recordHash);
+    storage.get(ruleKeyString).hash.add(recordHash);
   },
   aggregativeRule: (dataPointDescriptor, ruleKey) => {
-    const duplicates = uniq(storage[ruleKey].duplicatedPrimaryKeys);
+    const ruleKeyString = Symbol.keyFor(ruleKey);
+    const duplicates = uniq(storage.get(ruleKeyString).duplicatedPrimaryKeys);
 
     let issue = null;
 
@@ -39,9 +42,9 @@ export const rule = {
       issue = new Issue(DUPLICATED_DATA_POINT_TRANSLATION_KEY)
         .setPath(dataPointDescriptor.fileDescriptor.fullPath)
         .setData(duplicates);
-
-      storage[ruleKey] = null;
     }
+
+    storage.delete(ruleKeyString);
 
     return issue;
   }
