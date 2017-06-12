@@ -1,3 +1,8 @@
+<a name="1.6.1"></a>
+## [1.6.1](https://github.com/Gapminder/ddf-validation/compare/v1.6.0...v1.6.1) (2017-06-12)
+
+
+
 <a name="1.6.0"></a>
 # [1.6.0](https://github.com/Gapminder/ddf-validation/compare/v1.5.21...v1.6.0) (2017-06-09)
 
