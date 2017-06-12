@@ -1,11 +1,12 @@
-import {join, resolve} from 'path';
-import {createReadStream, createWriteStream, readdir, stat, writeFile as writeFileFs} from 'fs';
+import { join, resolve } from 'path';
+import { createReadStream, createWriteStream, readdir, stat, writeFile as writeFileFs } from 'fs';
 
 const csv = require('fast-csv');
 const END_OF_LINE = require('os').EOL;
 
 /* eslint-disable */
 const homeFolder = process.platform === 'win32' ? process.env.USERPROFILE : process.env.HOME;
+
 /* eslint-disable */
 
 function copyFile(source, target, onFileCopied) {
@@ -131,28 +132,25 @@ export function getFileLine(filename, lineNo, callback) {
 }
 
 export function readFile(filePath, onFileRead) {
-  const fileStream = createReadStream(filePath);
   const content = [];
 
-  fileStream.on('error', err => onFileRead(err));
-
   csv
-    .fromStream(fileStream, {headers: true})
+    .fromPath(filePath, {headers: true})
     .on('data', ddfRecord => content.push(ddfRecord))
-    .on('end', () => onFileRead(null, content));
+    .on('end', () => {
+      onFileRead(null, content);
+    });
 }
 
 export function walkFile(filePath, onLineRead, onFileRead) {
-  const fileStream = createReadStream(filePath);
-
   let line = 0;
 
-  fileStream.on('error', err => onFileRead(err));
-
   csv
-    .fromStream(fileStream, {headers: true})
+    .fromPath(filePath, {headers: true})
     .on('data', ddfRecord => onLineRead(ddfRecord, line++))
-    .on('end', () => onFileRead());
+    .on('end', () => {
+      onFileRead();
+    });
 }
 
 export function backupFile(filePath, onBackupCreated) {

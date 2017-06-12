@@ -26,11 +26,11 @@ function createRecordAggregationProcessor(context, ddfDataSet, fileDescriptor, r
 
 function processAggregation(context, ddfDataSet, fileDescriptor, resultHandler) {
   Object.getOwnPropertySymbols(ddfRules)
-    .filter(key => sameTranslation(key, fileDescriptor) || noTranslation(key, fileDescriptor))
-    .filter(key => isAggregativeRule(ddfRules[key]))
-    .filter(key => context.issuesFilter.isAllowed(key))
-    .forEach(key => {
-      resultHandler(ddfRules[key].aggregativeRule({ddfDataSet, fileDescriptor}, key));
+    .filter(ruleKey => sameTranslation(ruleKey, fileDescriptor) || noTranslation(ruleKey, fileDescriptor))
+    .filter(ruleKey => isAggregativeRule(ddfRules[ruleKey]))
+    .filter(ruleKey => context.issuesFilter.isAllowed(ruleKey))
+    .forEach(ruleKey => {
+      resultHandler(ddfRules[ruleKey].aggregativeRule({ddfDataSet, fileDescriptor}, ruleKey));
     });
 }
 
@@ -75,4 +75,3 @@ export function createRecordBasedRulesProcessor(context, fileDescriptor, resultH
     );
   };
 }
-

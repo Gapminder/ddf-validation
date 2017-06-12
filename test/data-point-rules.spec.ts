@@ -48,6 +48,7 @@ describe('rules for data points', () => {
 
 
   describe('when data set is NOT correct', () => {
+    /*
     it(`an issue should be found for rule 'DATA_POINT_VALUE_NOT_NUMERIC'
    (fixtures/rules-cases/data-point-value-not-num)`, done => {
       const EXPECTED_FILE = 'ddf--datapoints--pop--by--country--year.csv';
@@ -77,6 +78,7 @@ describe('rules for data points', () => {
         );
       });
     });
+    */
 
     it(`an issue should be found for rule 'DATA_POINT_UNEXPECTED_ENTITY_VALUE'
    (fixtures/rules-cases/data-point-unexpected-entity-value)`, done => {

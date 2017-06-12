@@ -1,4 +1,4 @@
-import { compact, flattenDeep, head, difference, isEmpty } from 'lodash';
+import { compact, flattenDeep, head, difference, isEmpty, endsWith } from 'lodash';
 import { DATAPACKAGE_CONFUSED_FIELDS } from '../registry';
 import { DdfDataSet } from '../../ddf-definitions/ddf-data-set';
 import { Issue } from '../issue';
@@ -10,7 +10,7 @@ export const rule = {
         const dataPackageHeaders = resource.schema.fields.map(field => field.name);
         const relatedFileDescriptor = head(
           directoryDescriptor.dataPackage.fileDescriptors
-            .filter(fileDescriptor => fileDescriptor.filename === resource.path)
+            .filter(fileDescriptor => endsWith(resource.path, fileDescriptor.filename))
         );
         const realHeaders = relatedFileDescriptor.headers;
         const headersDifference = difference(dataPackageHeaders, realHeaders);

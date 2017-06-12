@@ -15,7 +15,7 @@ import { rule as nonUniqueResourceName } from './data-package-rules/non-unique-r
 import { rule as nonUniqueResourceFile } from './data-package-rules/non-unique-resource-file';
 import { rule as dataPointWithoutIndicator } from './data-package-rules/datapoint-without-indicator';
 
-import { rule as measureValueNotNumeric } from './data-point-rules/measure-value-not-numeric';
+// import { rule as measureValueNotNumeric } from './data-point-rules/measure-value-not-numeric';
 import { rule as unexpectedEntityValue } from './data-point-rules/unexpected-entity-value';
 import { rule as unexpectedTimeValue } from './data-point-rules/unexpected-time-value';
 import { rule as dataPointConstraintViolation } from './data-point-rules/constraint-violation';
@@ -54,7 +54,7 @@ export const allRules = {
   [registry.DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME]: nonUniqueResourceName,
   [registry.DATAPACKAGE_NON_UNIQUE_RESOURCE_FILE]: nonUniqueResourceFile,
   [registry.DATA_POINT_WITHOUT_INDICATOR]: dataPointWithoutIndicator,
-  [registry.MEASURE_VALUE_NOT_NUMERIC]: measureValueNotNumeric,
+  // [registry.MEASURE_VALUE_NOT_NUMERIC]: measureValueNotNumeric,
   [registry.DATA_POINT_UNEXPECTED_ENTITY_VALUE]: unexpectedEntityValue,
   [registry.DATA_POINT_UNEXPECTED_TIME_VALUE]: unexpectedTimeValue,
   [registry.WRONG_ENTITY_IS_HEADER]: wrongEntityIsHeader,
