@@ -18,7 +18,7 @@ function createRecordAggregationProcessor(context, ddfDataSet, fileDescriptor, r
         }
 
         if (isAggregativeRule(ddfRules[key])) {
-          ddfRules[key].aggregateRecord({ddfDataSet, fileDescriptor, record, line}, key);
+          ddfRules[key].aggregateRecord({ddfDataSet, fileDescriptor, record, line});
         }
       });
   };

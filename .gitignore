@@ -7,3 +7,4 @@ npm-debug.log
 coverage
 _results
 _results-test
+package-lock.json

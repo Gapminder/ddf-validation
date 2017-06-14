@@ -2,58 +2,54 @@ import { uniq, isEmpty, difference } from 'lodash';
 import { DUPLICATED_DATA_POINT_KEY } from '../registry';
 import { Issue } from '../issue';
 
-const md5 = require('md5');
+let storage: any;
 
-let storage: Map<string, any> = new Map();
-
-const initRuleInStorage = (ruleKey: string) => {
-  if (!storage.has(ruleKey)) {
-    storage.set(ruleKey, {
-      hash: new Set(),
-      duplicatedHashes: [],
-      content: {}
-    });
+const initStorage = () => {
+  if (storage && storage.hash) {
+    storage.hash.clear();
   }
+
+  storage = {
+    hash: new Set(),
+    duplicatedHashes: [],
+    content: {}
+  };
 };
+
+initStorage();
 
 export const rule = {
   resetStorage: () => {
-    storage.clear();
+    initStorage();
   },
-  aggregateRecord: (dataPointDescriptor, ruleKey) => {
-    const ruleKeyString = Symbol.keyFor(ruleKey);
+  aggregateRecord: (dataPointDescriptor) => {
+    const sortedPrimaryKey = dataPointDescriptor.fileDescriptor.primaryKey.sort();
+    const dimensionData = sortedPrimaryKey.map(keyPart => `${keyPart}:${dataPointDescriptor.record[keyPart]}`).join(',');
+    const indicatorName = difference(dataPointDescriptor.fileDescriptor.headers, dataPointDescriptor.fileDescriptor.primaryKey).join(',');
+    const recordHash = `${dimensionData}@${indicatorName}`;
 
-    initRuleInStorage(ruleKeyString);
-
-    const keyData = dataPointDescriptor.fileDescriptor.primaryKey.map(keyPart => dataPointDescriptor.record[keyPart]).join(',');
-    const indicatorKey = difference(dataPointDescriptor.fileDescriptor.headers, dataPointDescriptor.fileDescriptor.primaryKey).join(',');
-    const recordHash = `${keyData}@${indicatorKey}`;
-
-    if (storage.get(ruleKeyString).hash.has(recordHash)) {
-      storage.get(ruleKeyString).duplicatedHashes.push(recordHash);
+    if (storage.hash.has(recordHash)) {
+      storage.duplicatedHashes.push(recordHash);
     }
 
-    storage.get(ruleKeyString).hash.add(recordHash);
+    storage.hash.add(recordHash);
 
-    if (!storage.get(ruleKeyString).content[recordHash]) {
-      storage.get(ruleKeyString).content[recordHash] = [];
+    if (!storage.content[recordHash]) {
+      storage.content[recordHash] = [];
     }
 
-    storage.get(ruleKeyString).content[recordHash].push({
+    storage.content[recordHash].push({
+      file: dataPointDescriptor.fileDescriptor.file,
       record: dataPointDescriptor.record,
       line: dataPointDescriptor.line
     });
   },
-  aggregativeRule: (dataPointDescriptor, ruleKey) => {
-    const ruleKeyString = Symbol.keyFor(ruleKey);
-
-    initRuleInStorage(ruleKeyString);
-
-    const duplicates: string[] = <string[]>uniq(storage.get(ruleKeyString).duplicatedHashes);
+  aggregativeRule: (dataPointDescriptor) => {
+    const duplicates: string[] = <string[]>uniq(storage.duplicatedHashes);
     const data: any[] = [];
 
     for (const hash of duplicates) {
-      data.push(storage.get(ruleKeyString).content[hash]);
+      data.push(storage.content[hash]);
     }
 
     let issue = null;
@@ -62,7 +58,7 @@ export const rule = {
       issue = new Issue(DUPLICATED_DATA_POINT_KEY).setPath(dataPointDescriptor.fileDescriptor.fullPath).setData(data);
     }
 
-    storage.delete(ruleKeyString);
+    initStorage();
 
     return issue;
   }

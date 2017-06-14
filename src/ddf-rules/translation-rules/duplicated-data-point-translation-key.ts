@@ -1,40 +1,41 @@
-import { uniq, isEmpty } from 'lodash';
+import { difference, uniq, isEmpty } from 'lodash';
 import { DUPLICATED_DATA_POINT_TRANSLATION_KEY } from '../registry';
 import { Issue } from '../issue';
 
-const md5 = require('md5');
+let storage: any;
 
-let storage: Map<string, any> = new Map();
+const initStorage = () => {
+  if (storage && storage.hash) {
+    storage.hash.clear();
+  }
+
+  storage = {
+    hash: new Set(),
+    duplicatedPrimaryKeys: []
+  };
+};
+
+initStorage();
 
 export const rule = {
   resetStorage: () => {
-    storage.clear();
+    initStorage();
   },
   isTranslation: true,
-  aggregateRecord: (dataPointDescriptor, ruleKey) => {
-    const ruleKeyString = Symbol.keyFor(ruleKey);
+  aggregateRecord: (dataPointDescriptor) => {
+    const sortedPrimaryKey = dataPointDescriptor.fileDescriptor.primaryKey.sort();
+    const dimensionData = sortedPrimaryKey.map(keyPart => `${keyPart}:${dataPointDescriptor.record[keyPart]}`).join(',');
+    const indicatorName = difference(dataPointDescriptor.fileDescriptor.headers, dataPointDescriptor.fileDescriptor.primaryKey).join(',');
+    const recordHash = `${dimensionData}@${indicatorName}`;
 
-    if (!storage.has(ruleKeyString)) {
-      storage.set(ruleKeyString, {
-        hash: new Set(),
-        duplicatedPrimaryKeys: []
-      });
+    if (storage.hash.has(recordHash)) {
+      storage.duplicatedPrimaryKeys.push(recordHash);
     }
 
-    const keyData = dataPointDescriptor.fileDescriptor.primaryKey
-      .map(keyPart => dataPointDescriptor.record[keyPart])
-      .join(',');
-    const recordHash = md5(keyData);
-
-    if (storage.get(ruleKeyString).hash.has(recordHash)) {
-      storage.get(ruleKeyString).duplicatedPrimaryKeys.push(keyData);
-    }
-
-    storage.get(ruleKeyString).hash.add(recordHash);
+    storage.hash.add(recordHash);
   },
-  aggregativeRule: (dataPointDescriptor, ruleKey) => {
-    const ruleKeyString = Symbol.keyFor(ruleKey);
-    const duplicates = uniq(storage.get(ruleKeyString).duplicatedPrimaryKeys);
+  aggregativeRule: (dataPointDescriptor) => {
+    const duplicates = uniq(storage.duplicatedPrimaryKeys);
 
     let issue = null;
 
@@ -44,7 +45,7 @@ export const rule = {
         .setData(duplicates);
     }
 
-    storage.delete(ruleKeyString);
+    initStorage();
 
     return issue;
   }

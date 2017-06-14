@@ -1,8 +1,8 @@
 import * as chai from 'chai';
-import {endsWith, isEqual, head, flattenDeep, compact, isEmpty} from 'lodash';
-import {parallelLimit} from 'async';
-import {createRecordBasedRuleProcessor} from '../src/index';
-import {DdfDataSet} from '../src/ddf-definitions/ddf-data-set';
+import { endsWith, isEqual, head, flattenDeep, compact, isEmpty } from 'lodash';
+import { parallelLimit } from 'async';
+import { createRecordBasedRuleProcessor } from '../src/index';
+import { DdfDataSet } from '../src/ddf-definitions/ddf-data-set';
 import {
   UNEXPECTED_TRANSLATION_HEADER,
   UNEXPECTED_TRANSLATIONS_DATA,
@@ -10,8 +10,8 @@ import {
   DUPLICATED_DATA_POINT_TRANSLATION_KEY,
   DUPLICATED_TRANSLATION_KEY
 } from '../src/ddf-rules/registry';
-import {allRules} from '../src/ddf-rules';
-import {Issue} from '../src/ddf-rules/issue';
+import { allRules } from '../src/ddf-rules';
+import { Issue } from '../src/ddf-rules/issue';
 
 const CONCURRENT_OPERATIONS_AMOUNT = 30;
 const expect = chai.expect;
@@ -265,7 +265,7 @@ describe('translation rules', () => {
           const results = compact(tempResults);
           const EXPECTED_RESULT = {
             path: 'lang/nl-nl/ddf--datapoints--company_size_string--by--company--anno.csv',
-            data: ['mic,2016']
+            data: ['anno:2016,company:mic@company_size_string']
           };
 
           expect(results.length).to.equal(1);
