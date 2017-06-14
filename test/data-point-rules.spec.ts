@@ -214,6 +214,7 @@ describe('rules for data points', () => {
             data: [
               [
                 {
+                  file: 'ddf--datapoints--gas_production_bcf--by--geo--year.csv',
                   record: {
                     geo: 'algeria',
                     year: '1977',
@@ -222,6 +223,7 @@ describe('rules for data points', () => {
                   line: 7
                 },
                 {
+                  file: 'ddf--datapoints--gas_production_bcf--by--geo--year.csv',
                   record: {
                     geo: 'algeria',
                     year: '1977',

@@ -57,7 +57,7 @@ export function createRecordBasedRuleProcessor(context, fileDescriptor, resultHa
               fileDescriptor,
               record,
               line
-            }, context.ruleKey);
+            });
           }
         }
       },
