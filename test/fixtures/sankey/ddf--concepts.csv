@@ -1,0 +1,9 @@
+concept,name,concept_type,domain
+phase,phase,entity_domain,
+phase_from,phase_from,entity_set,phase
+phase_to,phase_to,entity_set,phase
+year,year,time,
+amount,amount,measure,
+name,,string,
+concept_type,,string,
+domain,,string,

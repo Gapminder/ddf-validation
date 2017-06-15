@@ -171,6 +171,26 @@ describe('api', () => {
 
         validate(streamValidator);
       });
+
+      it('should correctly validate "sankey" dataset', done => {
+        const path = './test/fixtures/sankey';
+        const streamValidator = new StreamValidator(path, {});
+
+        let issuesCount = 0;
+
+        streamValidator.on('issue', issue => {
+          issuesCount++;
+        });
+
+        streamValidator.on('finish', err => {
+          expect(!!err).to.be.false;
+          expect(issuesCount).to.equal(0);
+
+          done();
+        });
+
+        validate(streamValidator);
+      });
     });
   });
 
@@ -259,6 +279,19 @@ describe('api', () => {
         });
 
         validate(streamValidator);
+      });
+      it('should correctly validate "sankey" dataset via SimpleValidator', done => {
+        const path = './test/fixtures/sankey';
+        const fundamentalValidator = new SimpleValidator(path, {});
+
+        fundamentalValidator.on('finish', (err, isDataSetCorrect) => {
+          expect(!!err).to.be.false;
+          expect(isDataSetCorrect).to.be.true;
+
+          done();
+        });
+
+        validate(fundamentalValidator);
       });
     });
 
