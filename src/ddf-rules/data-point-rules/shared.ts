@@ -8,16 +8,22 @@ export interface IConstraintDescriptor {
   constraints: string[]
 }
 
-function constructEntityCondition(entity) {
-  const expectedKey = `is--${entity}`;
+function constructEntityCondition(ddfData, entity) {
+  const keyIsKind = `is--${entity}`;
+  const result: any = {$or: [{[keyIsKind]: {$in: ['TRUE', 'true']}}]};
+  const domain = ddfData.getConcept().getAllData().find(record => record.concept === entity).domain;
 
-  return {[expectedKey]: {$in: ['TRUE', 'true']}};
+  if (domain) {
+    result.$or.push({[domain]: {$exists: true}});
+  }
+
+  return result;
 }
 
 function getExpectedEntities(ddfData, entityId, conceptDomainDictionary) {
   return ddfData
     .getEntity()
-    .getDataBy(constructEntityCondition(entityId))
+    .getDataBy(constructEntityCondition(ddfData, entityId))
     .map(entity => entity[conceptDomainDictionary[entityId]] || entity[entityId]);
 }
 

@@ -1,0 +1,131 @@
+{
+    "name": "ddf--sankey",
+    "title": "ddf--sankey",
+    "description": "",
+    "version": "0.0.1",
+    "language": {
+        "id": "en",
+        "name": "English"
+    },
+    "translations": [],
+    "license": "",
+    "author": "",
+    "resources": [
+        {
+            "path": "ddf--concepts.csv",
+            "name": "ddf--concepts",
+            "schema": {
+                "fields": [
+                    {
+                        "name": "concept"
+                    },
+                    {
+                        "name": "name"
+                    },
+                    {
+                        "name": "concept_type"
+                    },
+                    {
+                        "name": "domain"
+                    }
+                ],
+                "primaryKey": "concept"
+            }
+        },
+        {
+            "path": "ddf--datapoints--amount--by--phase_from--phase_to--year.csv",
+            "name": "ddf--datapoints--amount--by--phase_from--phase_to--year",
+            "schema": {
+                "fields": [
+                    {
+                        "name": "phase_from"
+                    },
+                    {
+                        "name": "phase_to"
+                    },
+                    {
+                        "name": "year"
+                    },
+                    {
+                        "name": "amount"
+                    }
+                ],
+                "primaryKey": [
+                    "phase_from",
+                    "phase_to",
+                    "year"
+                ]
+            }
+        },
+        {
+            "path": "ddf--entities--phase.csv",
+            "name": "ddf--entities--phase",
+            "schema": {
+                "fields": [
+                    {
+                        "name": "phase"
+                    },
+                    {
+                        "name": "name"
+                    }
+                ],
+                "primaryKey": "phase"
+            }
+        }
+    ],
+    "ddfSchema": {
+        "datapoints": [
+            {
+                "primaryKey": [
+                    "phase",
+                    "phase",
+                    "year"
+                ],
+                "value": "amount",
+                "resources": [
+                    "ddf--datapoints--amount--by--phase_from--phase_to--year"
+                ]
+            }
+        ],
+        "entities": [
+            {
+                "primaryKey": [
+                    "phase"
+                ],
+                "value": "name",
+                "resources": [
+                    "ddf--entities--phase"
+                ]
+            }
+        ],
+        "concepts": [
+            {
+                "primaryKey": [
+                    "concept"
+                ],
+                "value": "name",
+                "resources": [
+                    "ddf--concepts"
+                ]
+            },
+            {
+                "primaryKey": [
+                    "concept"
+                ],
+                "value": "concept_type",
+                "resources": [
+                    "ddf--concepts"
+                ]
+            },
+            {
+                "primaryKey": [
+                    "concept"
+                ],
+                "value": "domain",
+                "resources": [
+                    "ddf--concepts"
+                ]
+            }
+        ]
+    }
+}

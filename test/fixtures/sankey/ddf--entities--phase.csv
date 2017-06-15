@@ -1,0 +1,24 @@
+phase,name
+coal_peat_and_oil_shale,"Coal, peat and oil shale"
+crude_ngl_and_feed_stocks,Crude Oil
+oil_products,Oil Products
+natural_gas,Natural Gas
+nuclear,Nuclear
+renewables_and_waste,Renewables and Waste
+electricity,Electricity
+heat,Heat
+fossil_fuels,Fossil Fuls
+renewable_sources,Renewable Resources
+chp_plants_ktoe,CHP Plants
+electricity_output_gwh,Electricity Output
+electricity_plants_ktoe,Electricity Plants
+exports_ktoe,Exports
+heat_plants_ktoe,Heat
+imports_ktoe,Imports
+industry_ktoe,Industry
+of_which_commerce_and_public_services_ktoe,Commerce
+of_which_residential_ktoe,Residential
+oil_refineries_transformation_ktoe,Oil Refineries
+other_ktoe,Other
+production_ktoe,Production
+transport_ktoe,Transport
