@@ -1,6 +1,6 @@
 import * as path from 'path';
 import { parallelLimit } from 'async';
-import { cloneDeep, isArray, head, startsWith, keys, includes, isEqual } from 'lodash';
+import { compact, cloneDeep, isArray, head, startsWith, keys, includes } from 'lodash';
 import { readFile } from '../utils/file';
 import { DataPackage } from '../data/data-package';
 import { DdfDataSet } from '../ddf-definitions/ddf-data-set';
@@ -18,7 +18,7 @@ const getProgressBar = (isProgressNeeded: boolean = false, config: any): any => 
 
 function recursivePermutation(pkSets) {
   // end of recursion
-  if (pkSets.length == 0) {
+  if (pkSets.length === 0) {
     return [[]];
   }
 
@@ -30,7 +30,7 @@ function recursivePermutation(pkSets) {
 
   let allPermutations = [];
   // each possible value of current primary key field
-  for (let pkConcept of pkSet) {
+  for (let pkConcept of <Set<string>>pkSet) {
     // create new permutation by adding the current value on top of each previous permutation
     for (let prevPerm of prevPermutations) {
       let newPermutation = prevPerm.slice();
@@ -211,7 +211,7 @@ function getDdfSchemaContent(dataset: any, isProgressNeeded, onDdfSchemaReady) {
           }
 
           // find all permutations of primary key
-          const primaryKeyPermutations = recursivePermutation(primaryKeySets);
+          const primaryKeyPermutations = recursivePermutation(compact(primaryKeySets));
 
           // add a key-value pair to the schema for each schema this row fits to
 
