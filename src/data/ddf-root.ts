@@ -1,76 +1,110 @@
-import { parallel } from 'async';
+import { getExcludedDirs } from './shared';
 import { isEmpty } from 'lodash';
-import { walkDir } from '../utils/file';
-import { DirectoryDescriptor } from './directory-descriptor';
-import { getExcludedDirs, isPathExpected } from './shared';
+import { parallelLimit } from 'async';
+import { resolve } from 'path';
+import { TRNSLATIONS_FOLDER } from '../ddf-definitions/constants';
+import { DataPackage } from './data-package';
+import { FileDescriptor } from './file-descriptor';
+
+const PROCESS_LIMIT = 30;
 
 export class DDFRoot {
   public path: string;
   public settings: any;
   public errors: any[];
-  public directoryDescriptors: DirectoryDescriptor[];
   public ignoreExistingDataPackage: boolean;
+  public dataPackageDescriptor: DataPackage;
+  public isEmpty: boolean;
+  public isDDF: boolean;
+  public fileDescriptors: FileDescriptor[];
+
 
   constructor(path, settings, ignoreExistingDataPackage: boolean = false) {
     this.path = path;
     this.settings = settings || {};
     this.settings.excludeDirs = getExcludedDirs(this.settings);
     this.errors = [];
-    this.directoryDescriptors = [];
     this.ignoreExistingDataPackage = ignoreExistingDataPackage;
+    this.isEmpty = false;
+    this.isDDF = true;
+    this.fileDescriptors = [];
   }
 
-  getChecksMultiDir(dirs) {
-    const actions = [];
+  getTranslations(onTranslationsReady) {
+    if (isEmpty(this.dataPackageDescriptor.getTranslations())) {
+      onTranslationsReady();
+      return;
+    }
 
-    dirs.concat(this.path).forEach(dir => {
-      const isNotExcludedDirectory = isPathExpected(dir, this.settings.excludeDirs);
+    const translationsIds = this.dataPackageDescriptor.getTranslations().map(translation => translation.id);
 
-      if (isNotExcludedDirectory) {
-        actions.push(cb => {
-          const directoryDescriptor = new DirectoryDescriptor(dir, this.settings);
+    this.fileDescriptors.forEach(fileDescriptor => {
+      const translationFolder = resolve(this.path, TRNSLATIONS_FOLDER);
 
-          directoryDescriptor.check(this.ignoreExistingDataPackage, () => cb(null, directoryDescriptor));
-        });
-      }
+      fileDescriptor.transFileDescriptors = translationsIds
+        .map(translationsId =>
+          new FileDescriptor({
+            dir: resolve(translationFolder, translationsId),
+            file: fileDescriptor.file,
+            type: fileDescriptor.type,
+            primaryKey: fileDescriptor.primaryKey,
+            fullPath: resolve(translationFolder, translationsId, fileDescriptor.file),
+            isTranslation: true
+          }));
     });
 
-    return actions;
+    const transFileActions = this.fileDescriptors
+      .map(fileDescriptor =>
+        onTransFileReady =>
+          fileDescriptor.checkTranslations(onTransFileReady));
+
+    parallelLimit(transFileActions, PROCESS_LIMIT, onTranslationsReady);
   }
 
-  checkMultiDir(onMultiDirChecked) {
-    walkDir(this.path, (err, dirs) => {
-      if (err) {
-        this.errors.push(err);
-        onMultiDirChecked();
+  check(onDirectoryDescriptorReady: Function) {
+    this.dataPackageDescriptor = new DataPackage(this.path, this.settings);
+    this.dataPackageDescriptor.take(dataPackageObject => {
+      if (!this.dataPackageDescriptor.isValid() || isEmpty(this.dataPackageDescriptor.fileDescriptors)) {
+        this.isDDF = false;
+        onDirectoryDescriptorReady();
         return;
       }
 
-      parallel(this.getChecksMultiDir(dirs), (checkErr: any, directoryDescriptors: DirectoryDescriptor[]) => {
-        this.directoryDescriptors = directoryDescriptors.map(directoryDescriptor => {
-          const badFileDescriptors = directoryDescriptor.fileDescriptors.filter(fileDescriptor => !isEmpty(fileDescriptor.issues));
+      this.fileDescriptors = dataPackageObject.resources.map(ddfResource =>
+        this.getFileDescriptor(this.path, ddfResource));
 
-          if (badFileDescriptors.length === directoryDescriptor.fileDescriptors.length) {
-            directoryDescriptor.isDDF = false;
+      const actionsCsv = this.fileDescriptors.map(fileDescriptor => onFileChecked =>
+        fileDescriptor.csvChecker.check(onFileChecked));
+      const actionsForDescriptor = this.fileDescriptors.map(fileDescriptor =>
+        onFileChecked => fileDescriptor.check(onFileChecked));
+
+      parallelLimit(
+        actionsCsv.concat(actionsForDescriptor),
+        PROCESS_LIMIT,
+        checkErr => {
+          if (checkErr) {
+            onDirectoryDescriptorReady(checkErr);
+            return;
           }
 
-          return directoryDescriptor;
-        });
-
-        if (checkErr) {
-          this.errors.push(checkErr);
+          this.getTranslations(onDirectoryDescriptorReady);
         }
+      );
+    }, this.ignoreExistingDataPackage);
+  }
 
-        onMultiDirChecked();
-      });
+  getFileDescriptor(dir, ddfResource) {
+    return new FileDescriptor({
+      dir,
+      file: ddfResource.path,
+      type: this.dataPackageDescriptor.getType(ddfResource.path),
+      headers: ddfResource.schema.fields,
+      primaryKey: ddfResource.schema.primaryKey,
+      fullPath: resolve(dir, ddfResource.path)
     });
   }
 
-  check(onChecked) {
-    this.checkMultiDir(onChecked);
-  }
-
-  getDirectoriesDescriptors() {
-    return this.directoryDescriptors.filter(desc => desc.isDDF);
+  getDataPackageResources() {
+    return this.dataPackageDescriptor.getResources();
   }
 }

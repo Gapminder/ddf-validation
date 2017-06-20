@@ -2,6 +2,10 @@ import * as path from 'path';
 import { includes, isEmpty, isString, split, trim } from 'lodash';
 
 export const isPathExpected = (folderPath: string, externalExcludedFolders: string[] = []): boolean => {
+  if (!folderPath) {
+    return false;
+  }
+
   const folders = folderPath.split(path.sep);
 
   if (includes(folders, '.git') ||

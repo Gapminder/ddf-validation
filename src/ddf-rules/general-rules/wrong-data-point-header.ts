@@ -13,7 +13,7 @@ export const rule = {
       conceptRecord.concept_type === 'time').map(conceptRecord => conceptRecord.concept);
 
     ddfDataSet.getDataPoint().fileDescriptors.forEach((fileDescriptor: FileDescriptor, index: number) => {
-      const dataPackage = ddfDataSet.getDataPoint().dataPackageObjects[index].dataPackage;
+      const dataPackage = ddfDataSet.getDataPoint().dataPackageObjects[index].dataPackageContent;
 
       const expectedDataPackageResource = dataPackage.resources
         .find(resource => resource.path === fileDescriptor.file);

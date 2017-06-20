@@ -1,7 +1,6 @@
 export const UNEXPECTED_DATA = Symbol.for('UNEXPECTED_DATA');
 export const EMPTY_DATA = Symbol.for('EMPTY_DATA');
 export const NON_DDF_DATA_SET = Symbol.for('NON_DDF_DATA_SET');
-export const NON_DDF_FOLDER = Symbol.for('NON_DDF_FOLDER');
 export const INCORRECT_FILE = Symbol.for('INCORRECT_FILE');
 export const INCORRECT_JSON_FIELD = Symbol.for('INCORRECT_JSON_FIELD');
 export const CONCEPT_ID_IS_NOT_UNIQUE = Symbol.for('CONCEPT_ID_IS_NOT_UNIQUE');
@@ -18,7 +17,7 @@ export const WRONG_ENTITY_IS_VALUE = Symbol.for('WRONG_ENTITY_IS_VALUE');
 export const NON_UNIQUE_ENTITY_VALUE = Symbol.for('NON_UNIQUE_ENTITY_VALUE');
 export const CONCEPT_MANDATORY_FIELD_NOT_FOUND = Symbol.for('CONCEPT_MANDATORY_FIELD_NOT_FOUND');
 export const CONCEPTS_NOT_FOUND = Symbol.for('CONCEPTS_NOT_FOUND');
-export const DATAPACKAGE_CONFUSED_FIELDS = Symbol.for('DATAPACKAGE_CONFUSED_FIELDS');
+export const DATAPACKAGE_INCORRECT_FIELDS = Symbol.for('DATAPACKAGE_INCORRECT_FIELDS');
 export const DATAPACKAGE_NON_CONCEPT_FIELD = Symbol.for('DATAPACKAGE_NON_CONCEPT_FIELD');
 export const DATAPACKAGE_INCORRECT_PRIMARY_KEY = Symbol.for('DATAPACKAGE_INCORRECT_PRIMARY_KEY');
 export const DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME = Symbol.for('DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME');
@@ -46,7 +45,6 @@ export const tags: any = {
   [UNEXPECTED_DATA]: [FILE_SYSTEM_TAG],
   [EMPTY_DATA]: [WARNING_TAG],
   [NON_DDF_DATA_SET]: [FILE_SYSTEM_TAG],
-  [NON_DDF_FOLDER]: [WARNING_TAG, FILE_SYSTEM_TAG],
   [INCORRECT_FILE]: [FILE_SYSTEM_TAG],
   [INCORRECT_JSON_FIELD]: [WARNING_TAG],
   [CONCEPT_ID_IS_NOT_UNIQUE]: [],
@@ -63,7 +61,7 @@ export const tags: any = {
   [NON_UNIQUE_ENTITY_VALUE]: [],
   [CONCEPT_MANDATORY_FIELD_NOT_FOUND]: [],
   [CONCEPTS_NOT_FOUND]: [],
-  [DATAPACKAGE_CONFUSED_FIELDS]: [],
+  [DATAPACKAGE_INCORRECT_FIELDS]: [],
   [DATAPACKAGE_NON_CONCEPT_FIELD]: [],
   [DATAPACKAGE_INCORRECT_PRIMARY_KEY]: [],
   [DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME]: [],
@@ -85,7 +83,6 @@ export const descriptions = {
   [EMPTY_DATA]: `Empty data. An issue according to this rule will be fired when file with true name 
   and header does not contain any data under the header.`,
   [NON_DDF_DATA_SET]: 'This data set is not DDF',
-  [NON_DDF_FOLDER]: 'This folder is not DDF',
   [INCORRECT_FILE]: 'Incorrect file',
   [INCORRECT_JSON_FIELD]: 'Incorrect JSON field',
   [CONCEPT_ID_IS_NOT_UNIQUE]: 'Concept Id is not unique',
@@ -124,7 +121,7 @@ export const descriptions = {
   [CONCEPTS_NOT_FOUND]: `Concepts are not found. 
   An issue according to this rule will be fired when concepts 
   will not be detected for current DDF dataset.`,
-  [DATAPACKAGE_CONFUSED_FIELDS]: 'Confused fields in datapackage.json',
+  [DATAPACKAGE_INCORRECT_FIELDS]: 'Incorrect fields in datapackage.json',
   [DATAPACKAGE_NON_CONCEPT_FIELD]: 'Non concept primary field in datapackage.json',
   [DATAPACKAGE_INCORRECT_PRIMARY_KEY]: 'Fields section does not contain primary key',
   [DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME]: 'Non unique resource name in datapackage.json',

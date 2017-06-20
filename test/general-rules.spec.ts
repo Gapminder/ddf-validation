@@ -3,7 +3,6 @@ import { head, endsWith, isEqual } from 'lodash';
 import { DdfDataSet } from '../src/ddf-definitions/ddf-data-set';
 import {
   NON_DDF_DATA_SET,
-  NON_DDF_FOLDER,
   INCORRECT_JSON_FIELD,
   INCORRECT_IDENTIFIER,
   WRONG_DATA_POINT_HEADER
@@ -20,18 +19,6 @@ describe('general rules', () => {
 
       ddfDataSet.load(() => {
         const result = allRules[NON_DDF_DATA_SET].rule(ddfDataSet);
-
-        expect(result.length).to.equal(0);
-
-        done();
-      });
-    });
-
-    it('there should be no issues for "NON_DDF_FOLDER" rule', done => {
-      const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
-
-      ddfDataSet.load(() => {
-        const result = allRules[NON_DDF_FOLDER].rule(ddfDataSet);
 
         expect(result.length).to.equal(0);
 
@@ -66,7 +53,7 @@ describe('general rules', () => {
 
   describe('when DDF folder is NOT correct (fixtures/bad-folder)', () => {
     const folder = './test/fixtures/bad-folder';
-    const expectedRules = [NON_DDF_DATA_SET, NON_DDF_FOLDER];
+    const expectedRules = [NON_DDF_DATA_SET];
 
     expectedRules.forEach(generalRuleKey => {
       it(`one issue should be detected for "${Symbol.keyFor(generalRuleKey)}" rule`, done => {

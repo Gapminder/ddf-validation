@@ -2,7 +2,7 @@ import * as chai from 'chai';
 import { head, endsWith, isEqual } from 'lodash';
 import {
   INCORRECT_FILE,
-  DATAPACKAGE_CONFUSED_FIELDS,
+  DATAPACKAGE_INCORRECT_FIELDS,
   DATAPACKAGE_NON_CONCEPT_FIELD,
   DATAPACKAGE_INCORRECT_PRIMARY_KEY,
   DATAPACKAGE_NON_UNIQUE_RESOURCE_FILE,
@@ -79,7 +79,7 @@ describe('ddf datapackage.json validation', () => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
 
       ddfDataSet.load(() => {
-        expect(allRules[DATAPACKAGE_CONFUSED_FIELDS].rule(ddfDataSet).length).to.equal(0);
+        expect(allRules[DATAPACKAGE_INCORRECT_FIELDS].rule(ddfDataSet).length).to.equal(0);
 
         done();
       });
@@ -89,7 +89,7 @@ describe('ddf datapackage.json validation', () => {
 
       ddfDataSet.load(() => {
         const EXPECTED_ISSUES_QUANTITY = 3;
-        const results: Array<Issue> = allRules[DATAPACKAGE_CONFUSED_FIELDS].rule(ddfDataSet);
+        const results: Array<Issue> = allRules[DATAPACKAGE_INCORRECT_FIELDS].rule(ddfDataSet);
 
         expect(results.length).to.equal(EXPECTED_ISSUES_QUANTITY);
 
@@ -117,7 +117,7 @@ describe('ddf datapackage.json validation', () => {
         }];
 
         results.forEach((result, index) => {
-          expect(result.type).to.equal(DATAPACKAGE_CONFUSED_FIELDS);
+          expect(result.type).to.equal(DATAPACKAGE_INCORRECT_FIELDS);
           expect(endsWith(result.path, EXPECTED_DATA[index].path)).to.be.true;
           expect(isEqual(result.data, EXPECTED_DATA[index].data)).to.be.true;
         });
