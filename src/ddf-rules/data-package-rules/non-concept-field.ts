@@ -7,28 +7,26 @@ import { Issue } from '../issue';
 
 export const rule = {
   rule: (ddfDataSet: DdfDataSet) => compact(flattenDeep(
-    ddfDataSet.ddfRoot.directoryDescriptors.map(directoryDescriptor =>
-      directoryDescriptor.dataPackage.getResources().map(resource => {
-        const dataPackageFields = resource.schema.fields.map(field => field.name.replace(/^is--/, ''));
-        const allConceptsIds = ddfDataSet.getConcept().getIds().concat(PREDEFINED_CONCEPTS);
-        const nonConcepts = dataPackageFields.filter(header => !includes(allConceptsIds, header));
+    ddfDataSet.getDataPackageResources().map(resource => {
+      const dataPackageFields = resource.schema.fields.map(field => field.name.replace(/^is--/, ''));
+      const allConceptsIds = ddfDataSet.getConcept().getIds().concat(PREDEFINED_CONCEPTS);
+      const nonConcepts = dataPackageFields.filter(header => !includes(allConceptsIds, header));
 
-        let issue = null;
+      let issue = null;
 
-        if (isEmpty(dataPackageFields)) {
-          issue = new Issue(DATAPACKAGE_NON_CONCEPT_FIELD)
-            .setPath(resolve(directoryDescriptor.dir, resource.path))
-            .setData({reason: 'fields section in datapackage is empty'});
-        }
+      if (isEmpty(dataPackageFields)) {
+        issue = new Issue(DATAPACKAGE_NON_CONCEPT_FIELD)
+          .setPath(resolve(ddfDataSet.ddfRoot.path, resource.path))
+          .setData({reason: 'fields section in datapackage is empty'});
+      }
 
-        if (!isEmpty(nonConcepts) && !issue) {
-          issue = new Issue(DATAPACKAGE_NON_CONCEPT_FIELD)
-            .setPath(resolve(directoryDescriptor.dir, resource.path))
-            .setData({nonConcepts});
-        }
+      if (!isEmpty(nonConcepts) && !issue) {
+        issue = new Issue(DATAPACKAGE_NON_CONCEPT_FIELD)
+          .setPath(resolve(ddfDataSet.ddfRoot.path, resource.path))
+          .setData({nonConcepts});
+      }
 
-        return issue;
-      })
-    )
+      return issue;
+    })
   ))
 };

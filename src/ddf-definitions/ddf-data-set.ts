@@ -1,12 +1,12 @@
-import { parallel } from 'async';
+import { parallelLimit } from 'async';
 import { compact, intersection, isEmpty } from 'lodash';
-import { DirectoryDescriptor } from '../data/directory-descriptor'
 import { CONCEPT, ENTITY, DATA_POINT } from './constants'
 import { Concept } from './concept';
 import { Entity } from './entity';
 import { DataPoint } from './data-point';
 import { Db } from '../data/db';
 import { DDFRoot } from '../data/ddf-root';
+import { DataPackage } from '../data/data-package';
 
 export class DdfDataSet {
   public db: Db;
@@ -29,14 +29,14 @@ export class DdfDataSet {
         [DATA_POINT]: new DataPoint()
       };
 
-      const processDirectoryDescriptor = (directoriesDescriptor: DirectoryDescriptor) => {
-        directoriesDescriptor.fileDescriptors
+      const processFileDescriptors = (ddfRoot: DDFRoot) => {
+        ddfRoot.fileDescriptors
           .filter(fileDescriptor => isEmpty(fileDescriptor.issues))
           .forEach(fileDescriptor => {
             if (fileDescriptor.is(DATA_POINT)) {
               loaders.push(onFileLoaded => {
                 fileDescriptor.fillHeaders(() => {
-                  this.expectedClass[fileDescriptor.type].addDescriptors(fileDescriptor, directoriesDescriptor.dataPackage);
+                  this.expectedClass[fileDescriptor.type].addDescriptors(fileDescriptor, ddfRoot.dataPackageDescriptor);
                   onFileLoaded();
                 });
               });
@@ -59,20 +59,16 @@ export class DdfDataSet {
           });
       };
 
-      this.ddfRoot.directoryDescriptors.forEach(directoriesDescriptor => {
-        if (directoriesDescriptor.isDDF) {
-          processDirectoryDescriptor(directoriesDescriptor);
-        }
-      });
+      if (this.ddfRoot.isDDF) {
+        processFileDescriptors(this.ddfRoot);
+      }
 
-      parallel(loaders, (err, definitions) => {
+      parallelLimit(loaders, 30, (err, definitions) => {
         const allMeasures = this.getAllMeasures();
 
         this.definitions = compact(definitions);
-        this.ddfRoot.directoryDescriptors.forEach(directoryDescriptor => {
-          directoryDescriptor.fileDescriptors.forEach(fileDescriptor => {
-            fileDescriptor.measures = intersection(allMeasures, fileDescriptor.headers);
-          });
+        this.ddfRoot.fileDescriptors.forEach(fileDescriptor => {
+          fileDescriptor.measures = intersection(allMeasures, fileDescriptor.headers);
         });
 
         onDataSetLoaded(err, this.definitions);
@@ -96,5 +92,13 @@ export class DdfDataSet {
     return this.getConcept().getAllData()
       .filter(record => record.concept_type === 'measure')
       .map(record => record.concept);
+  }
+
+  getDataPackageResources() {
+    return this.ddfRoot.getDataPackageResources();
+  }
+
+  getDataPackageDescriptor(): DataPackage {
+    return this.ddfRoot.dataPackageDescriptor;
   }
 }

@@ -1,5 +1,4 @@
 import { compact, flattenDeep } from 'lodash';
-import { DirectoryDescriptor } from '../../data/directory-descriptor';
 
 export interface IConstraintDescriptor {
   fullPath: string;
@@ -89,16 +88,16 @@ export const cacheFor = {
     const key = `${dataPointDescriptor.ddfDataSet.ddfRoot.path}@Constraints@${dataPointDescriptor.fileDescriptor.file}`;
 
     if (!cache[key]) {
+      const dataPackageDescriptor = dataPointDescriptor.ddfDataSet.getDataPackageDescriptor();
+
       cache[key] = compact(flattenDeep(
-        dataPointDescriptor.ddfDataSet.ddfRoot.directoryDescriptors.map((directoryDescriptor: DirectoryDescriptor) =>
-          directoryDescriptor.dataPackage.fileDescriptors.filter(forExpectedFile).map((fileDescriptor: any) =>
-            getSchemaFields(fileDescriptor).filter(hasConstraints).map((field: any) => ({
-              fullPath: dataPointDescriptor.fileDescriptor.fullPath,
-              file: dataPointDescriptor.fileDescriptor.file,
-              fieldName: field.name,
-              constraints: field.constraints.enum
-            }))
-          )
+        dataPackageDescriptor.fileDescriptors.filter(forExpectedFile).map((fileDescriptor: any) =>
+          getSchemaFields(fileDescriptor).filter(hasConstraints).map((field: any) => ({
+            fullPath: dataPointDescriptor.fileDescriptor.fullPath,
+            file: dataPointDescriptor.fileDescriptor.file,
+            fieldName: field.name,
+            constraints: field.constraints.enum
+          }))
         )
       ));
     }

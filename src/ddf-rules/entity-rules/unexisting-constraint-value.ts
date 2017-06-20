@@ -1,7 +1,6 @@
 import { compact, flattenDeep, get as getValue } from 'lodash';
 import { UNEXISTING_CONSTRAINT_VALUE } from '../registry';
 import { DdfDataSet } from '../../ddf-definitions/ddf-data-set';
-import { DirectoryDescriptor } from '../../data/directory-descriptor';
 import { DATA_POINT } from '../../ddf-definitions/constants';
 import { Issue } from '../issue';
 
@@ -25,17 +24,19 @@ const getSchemaFields = (fileDescriptor: any) => getValue<any | any[]>(fileDescr
 
 export const rule = {
   rule: (ddfDataSet: DdfDataSet) => {
-    const issues = ddfDataSet.ddfRoot.directoryDescriptors.map((directoryDescriptor: DirectoryDescriptor) =>
-      directoryDescriptor.dataPackage.fileDescriptors.filter(forDataPointType).map((fileDescriptor: any) => {
-        const constrainedSchemaFields = getSchemaFields(fileDescriptor).filter(constraintsAreExists);
+    const dataPackageObject = ddfDataSet.ddfRoot.dataPackageDescriptor;
 
-        return constrainedSchemaFields.map((field: any) => {
-          const issuesSource = getConstraintsByField(field).filter(value => constraintValueAreNotPresentInEntities(ddfDataSet, field.name, value));
+    const issues = dataPackageObject.fileDescriptors.filter(forDataPointType).map((fileDescriptor: any) => {
+      const constrainedSchemaFields = getSchemaFields(fileDescriptor).filter(constraintsAreExists);
 
-          return issuesSource.map(value =>
-            new Issue(UNEXISTING_CONSTRAINT_VALUE).setPath(fileDescriptor.fullPath).setData({constraintEntityValue: value}));
-        });
-      }));
+      return constrainedSchemaFields.map((field: any) => {
+        const issuesSource = getConstraintsByField(field).filter(value =>
+          constraintValueAreNotPresentInEntities(ddfDataSet, field.name, value));
+
+        return issuesSource.map(value =>
+          new Issue(UNEXISTING_CONSTRAINT_VALUE).setPath(fileDescriptor.fullPath).setData({constraintEntityValue: value}));
+      });
+    });
 
     return compact(flattenDeep(issues));
   }

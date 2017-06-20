@@ -1,5 +1,6 @@
 import { join, resolve } from 'path';
 import { createReadStream, createWriteStream, readdir, stat, writeFile as writeFileFs } from 'fs';
+import { isPathExpected } from '../data/shared';
 
 const csv = require('fast-csv');
 const END_OF_LINE = require('os').EOL;
@@ -56,11 +57,12 @@ export function walkDir(_dir, done) {
   let results = [];
 
   readdir(dir, (err, list) => {
-    if (err) {
-      return done(err);
+    if (err || !isPathExpected(dir)) {
+      return done(err, []);
     }
 
     let pending = list.length;
+
     if (!pending) {
       return done(null, results);
     }
@@ -118,6 +120,7 @@ export function getFileLine(filename, lineNo, callback) {
 
     if (lines.length >= +lineNo) {
       stream.destroy();
+      stream.close();
       callback(null, lines[+lineNo]);
     }
   });
@@ -127,6 +130,7 @@ export function getFileLine(filename, lineNo, callback) {
   });
 
   stream.on('end', () => {
+    stream.close();
     callback('File end reached without finding line', null);
   });
 }

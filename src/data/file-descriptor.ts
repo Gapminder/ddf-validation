@@ -5,7 +5,7 @@ import { getFileLine } from '../utils/file';
 import { INCORRECT_FILE } from '../ddf-rules/registry';
 import { CsvChecker } from './csv-checker';
 
-const PROCESS_LIMIT = 5;
+const PROCESS_LIMIT = 30;
 
 function getIssueCases(fileDescriptor) {
   return [

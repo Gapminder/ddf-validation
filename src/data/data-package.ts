@@ -119,7 +119,7 @@ export class DataPackage {
   public errors: any[];
   public warnings: any[];
   public fileDescriptors: IDdfFileDescriptor[];
-  public dataPackage: any;
+  public dataPackageContent: any;
   public translationFolders: any[];
   public db: Db;
   public settings: any;
@@ -130,7 +130,7 @@ export class DataPackage {
     this.errors = [];
     this.warnings = [];
     this.fileDescriptors = [];
-    this.dataPackage = null;
+    this.dataPackageContent = {};
   }
 
   getTranslationFileDescriptors(onTranslationsFileDescriptorsReady: Function) {
@@ -370,9 +370,9 @@ export class DataPackage {
               const conceptTypeHash = concept.getDictionary(null, 'concept_type');
 
               this.fillPrimaryKeys(conceptTypeHash);
-              this.dataPackage = this.getDataPackageObject();
+              this.dataPackageContent = this.getDataPackageObject();
 
-              onDataPackageReady(this.dataPackage);
+              onDataPackageReady(this.dataPackageContent);
             });
           });
         }
@@ -391,14 +391,14 @@ export class DataPackage {
     commandLineSettings.isProgressNeeded = true;
 
     getDdfSchema(this, commandLineSettings, (ddfSchema: any) => {
-      const contentToOut = cloneDeep(isBasedOnCurrentDataPackage ? existingDataPackage : this.dataPackage);
+      const contentToOut = cloneDeep(isBasedOnCurrentDataPackage ? existingDataPackage : this.dataPackageContent);
 
       if (settings.updateDataPackageTranslations) {
-        contentToOut.translations = this.dataPackage.translations;
+        contentToOut.translations = this.dataPackageContent.translations;
       }
 
       if (settings.updateDataPackageContent) {
-        contentToOut.resources = this.dataPackage.resources;
+        contentToOut.resources = this.dataPackageContent.resources;
         contentToOut.ddfSchema = ddfSchema;
       }
 
@@ -431,7 +431,7 @@ export class DataPackage {
         }
 
         try {
-          this.dataPackage = JSON.parse(content);
+          this.dataPackageContent = JSON.parse(content);
           this.getTranslationFileDescriptors(
             (translationsErr, translationFolders) => {
               this.warnings.push({
@@ -441,7 +441,7 @@ export class DataPackage {
 
               this.translationFolders = translationFolders || [];
 
-              onDataPackageReady(this.dataPackage);
+              onDataPackageReady(this.dataPackageContent);
             });
         } catch (contentErr) {
           this.errors.push({
@@ -455,11 +455,11 @@ export class DataPackage {
   }
 
   getResources() {
-    return this.dataPackage.resources;
+    return this.dataPackageContent.resources;
   }
 
   getTranslations() {
-    return this.dataPackage.translations || [];
+    return this.dataPackageContent.translations || [];
   }
 
   take(onDataPackageReady: Function, ignoreExistingDataPackage: boolean) {

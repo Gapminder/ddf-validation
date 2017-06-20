@@ -8,7 +8,7 @@ import { rule as conceptsNotFound } from './concept-rules/concepts-not-found';
 import { rule as invalidDrillUp } from './concept-rules/invalid-drill-up';
 
 import { rule as incorrectFile } from './data-package-rules/incorrect-file';
-import { rule as confusedFields } from './data-package-rules/confused-fields';
+import { rule as incorrectFields } from './data-package-rules/incorrect-fields';
 import { rule as nonConceptField } from './data-package-rules/non-concept-field';
 import { rule as incorrectPrimaryKey } from './data-package-rules/incorrect-primary-key';
 import { rule as nonUniqueResourceName } from './data-package-rules/non-unique-resource-name';
@@ -31,7 +31,6 @@ import { rule as unexpectedData } from './general-rules/unexpected-data';
 import { rule as wrongDataPointHeader } from './general-rules/wrong-data-point-header';
 import { rule as incorrectIdentifier } from './general-rules/incorrect-identifier';
 import { rule as incorrectJsonField } from './general-rules/incorrect-json-field';
-import { rule as nonDdfFolder } from './general-rules/non-ddf-folder';
 import { rule as nonDdfDataset } from './general-rules/non-ddf-dataset';
 
 import { rule as unexpectedTranslationHeader } from './translation-rules/unexpected-translation-header';
@@ -48,7 +47,7 @@ export const allRules = {
   [registry.CONCEPTS_NOT_FOUND]: conceptsNotFound,
   [registry.INVALID_DRILL_UP]: invalidDrillUp,
   [registry.INCORRECT_FILE]: incorrectFile,
-  [registry.DATAPACKAGE_CONFUSED_FIELDS]: confusedFields,
+  [registry.DATAPACKAGE_INCORRECT_FIELDS]: incorrectFields,
   [registry.DATAPACKAGE_NON_CONCEPT_FIELD]: nonConceptField,
   [registry.DATAPACKAGE_INCORRECT_PRIMARY_KEY]: incorrectPrimaryKey,
   [registry.DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME]: nonUniqueResourceName,
@@ -63,7 +62,6 @@ export const allRules = {
   [registry.EMPTY_DATA]: emptyData,
   [registry.UNEXPECTED_DATA]: unexpectedData,
   [registry.NON_DDF_DATA_SET]: nonDdfDataset,
-  [registry.NON_DDF_FOLDER]: nonDdfFolder,
   [registry.WRONG_DATA_POINT_HEADER]: wrongDataPointHeader,
   [registry.INCORRECT_IDENTIFIER]: incorrectIdentifier,
   [registry.INCORRECT_JSON_FIELD]: incorrectJsonField,
