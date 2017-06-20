@@ -18,7 +18,7 @@ if (settings.versionShouldBePrinted) {
   isValidationExpected = false;
 }
 
-if (settings.isDataPackageGenerationMode && !isValidationExpected) {
+if (settings.isDataPackageGenerationMode && !settings.versionShouldBePrinted) {
   const ddfPath = path.resolve(ddfRootFolder || '.');
   const dataPackagePath = path.resolve(ddfPath, 'datapackage.json');
   const isDataPackageExists = fs.existsSync(dataPackagePath);
@@ -55,7 +55,7 @@ if (settings.isDataPackageGenerationMode && !isValidationExpected) {
   isValidationExpected = false;
 }
 
-if (settings.isJsonAutoCorrectionMode && !isValidationExpected) {
+if (settings.isJsonAutoCorrectionMode && !settings.versionShouldBePrinted) {
   const ddfJsonCorrector = new DdfJsonCorrector(ddfRootFolder);
 
   ddfJsonCorrector.correct((correctorError: any, csvFileDescriptors: any) => {
@@ -72,7 +72,7 @@ if (settings.isJsonAutoCorrectionMode && !isValidationExpected) {
   isValidationExpected = false;
 }
 
-if (settings.isPrintRules) {
+if (settings.isPrintRules && !settings.versionShouldBePrinted) {
   logger.notice(getRulesInformation());
   isValidationExpected = false;
 }
