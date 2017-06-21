@@ -40,6 +40,7 @@ export interface IDdfFileDescriptor {
   constraints?: any;
   headers?: string[];
   primaryKey?: string | string[];
+  directoryIndex?: number
 }
 
 const PROCESS_LIMIT = 5;
@@ -78,11 +79,13 @@ const parseDdfFile = (folder: string, filename: string): IDdfFileDescriptor => {
     return {valid: false};
   }
 
+  const fullPath = resolve(folder, filename);
+
   return {
     valid: true,
     filename,
     name: head(partsByPoint),
-    fullPath: resolve(folder, filename),
+    fullPath,
     type,
     parts: drop(ddfParts)
   };
@@ -114,6 +117,10 @@ const getActualSubDirectories = (folder: string, settings: any, onSubDirsReady: 
   })
 };
 
+let directoryIndex = 0;
+let currentDir = null;
+let prevDir = null;
+
 export class DataPackage {
   public rootFolder: string;
   public errors: any[];
@@ -131,6 +138,10 @@ export class DataPackage {
     this.warnings = [];
     this.fileDescriptors = [];
     this.dataPackageContent = {};
+
+    directoryIndex = 0;
+    currentDir = null;
+    prevDir = null;
   }
 
   getTranslationFileDescriptors(onTranslationsFileDescriptorsReady: Function) {
@@ -229,7 +240,20 @@ export class DataPackage {
       });
 
       parallelLimit(actions, PROCESS_LIMIT, (err, ddfFileDescriptors) => {
-        onDdfFileDescriptorsReady(err, flatten(ddfFileDescriptors));
+        const _ddfFileDescriptors: IDdfFileDescriptor[] = <IDdfFileDescriptor[]>compact(flatten(ddfFileDescriptors));
+
+        for (let ddfFileDescriptor of _ddfFileDescriptors) {
+          currentDir = path.dirname(ddfFileDescriptor.fullPath);
+
+          if (directoryIndex === 0 || currentDir !== prevDir) {
+            directoryIndex++;
+          }
+
+          prevDir = currentDir;
+          ddfFileDescriptor.directoryIndex = directoryIndex;
+        }
+
+        onDdfFileDescriptorsReady(err, _ddfFileDescriptors);
       });
     });
   }
@@ -286,6 +310,8 @@ export class DataPackage {
 
       return isEmpty(relativeDir) ? '' : `${relativeDir}/`;
     };
+    const stripDdfPrefix = filename => filename.replace(/ddf--(entities|datapoints)--/, '');
+    const getNameSuffix = currentDirectoryIndex => currentDirectoryIndex === 1 ? '' : `-${currentDirectoryIndex}`;
 
     return {
       name: packageName,
@@ -300,7 +326,7 @@ export class DataPackage {
       resources: this.fileDescriptors
         .map((fileDescriptor: IDdfFileDescriptor) => ({
           path: `${getRelativeDir(fileDescriptor.fullPath)}${fileDescriptor.filename}`,
-          name: `${getRelativeDir(fileDescriptor.fullPath)}${fileDescriptor.name}`,
+          name: `${stripDdfPrefix(fileDescriptor.name)}${getNameSuffix(fileDescriptor.directoryIndex)}`,
           schema: {
             fields: (fileDescriptor.headers || [])
               .map(header => prepareField(header, fileDescriptor)),
@@ -313,7 +339,7 @@ export class DataPackage {
   getType(filename) {
     return head(
       this.fileDescriptors
-        .filter(fileDescriptor => fileDescriptor.filename === filename)
+        .filter(fileDescriptor => path.relative(this.rootFolder, fileDescriptor.fullPath) === filename)
         .map(fileDescriptor => fileDescriptor.type)
     );
   }
@@ -406,11 +432,10 @@ export class DataPackage {
         contentToOut.ddfSchema = ddfSchema;
       }
 
-      writeFile(
-        filePath,
-        JSON.stringify(contentToOut, null, 4),
-        err => onDataPackageFileReady(err, filePath)
-      );
+      const content = settings.compressDatapackage ?
+        JSON.stringify(contentToOut) : JSON.stringify(contentToOut, null, 2);
+
+      writeFile(filePath, content, err => onDataPackageFileReady(err, filePath));
     });
   }
 

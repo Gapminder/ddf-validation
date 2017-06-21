@@ -31,7 +31,7 @@
     },
     {
       "path": "ddf--datapoints--population--by--country_code-900--year--age.csv",
-      "name": "ddf--datapoints--population--by--country_code-900--year--age",
+      "name": "population--by--country_code-900--year--age",
       "schema": {
         "fields": [
           {
@@ -61,7 +61,7 @@
     },
     {
       "path": "ddf--datapoints--population--by--country_code-900--year--gender--age.csv",
-      "name": "ddf--datapoints--population--by--country_code-900--year--gender--age",
+      "name": "population--by--country_code-900--year--gender--age",
       "schema": {
         "fields": [
           {
@@ -95,7 +95,7 @@
     },
     {
       "path": "ddf--datapoints--population--by--country_code-903--year--age.csv",
-      "name": "ddf--datapoints--population--by--country_code-903--year--age",
+      "name": "population--by--country_code-903--year--age",
       "schema": {
         "fields": [
           {
@@ -125,7 +125,7 @@
     },
     {
       "path": "ddf--datapoints--population--by--country_code-903--year--gender--age.csv",
-      "name": "ddf--datapoints--population--by--country_code-903--year--gender--age",
+      "name": "population--by--country_code-903--year--gender--age",
       "schema": {
         "fields": [
           {
@@ -159,7 +159,7 @@
     },
     {
       "path": "ddf--datapoints--population--by--country_code-904--year--age.csv",
-      "name": "ddf--datapoints--population--by--country_code-904--year--age",
+      "name": "population--by--country_code-904--year--age",
       "schema": {
         "fields": [
           {
@@ -189,7 +189,7 @@
     },
     {
       "path": "ddf--datapoints--population--by--country_code-904--year--gender--age.csv",
-      "name": "ddf--datapoints--population--by--country_code-904--year--gender--age",
+      "name": "population--by--country_code-904--year--gender--age",
       "schema": {
         "fields": [
           {
@@ -223,7 +223,7 @@
     },
     {
       "path": "ddf--datapoints--population--by--country_code-905--year--age.csv",
-      "name": "ddf--datapoints--population--by--country_code-905--year--age",
+      "name": "population--by--country_code-905--year--age",
       "schema": {
         "fields": [
           {
@@ -253,7 +253,7 @@
     },
     {
       "path": "ddf--datapoints--population--by--country_code-905--year--gender--age.csv",
-      "name": "ddf--datapoints--population--by--country_code-905--year--gender--age",
+      "name": "population--by--country_code-905--year--gender--age",
       "schema": {
         "fields": [
           {
@@ -287,7 +287,7 @@
     },
     {
       "path": "ddf--datapoints--population--by--country_code-908--year--age.csv",
-      "name": "ddf--datapoints--population--by--country_code-908--year--age",
+      "name": "population--by--country_code-908--year--age",
       "schema": {
         "fields": [
           {
@@ -317,7 +317,7 @@
     },
     {
       "path": "ddf--datapoints--population--by--country_code-908--year--gender--age.csv",
-      "name": "ddf--datapoints--population--by--country_code-908--year--gender--age",
+      "name": "population--by--country_code-908--year--gender--age",
       "schema": {
         "fields": [
           {
@@ -351,7 +351,7 @@
     },
     {
       "path": "ddf--datapoints--population--by--country_code-909--year--age.csv",
-      "name": "ddf--datapoints--population--by--country_code-909--year--age",
+      "name": "population--by--country_code-909--year--age",
       "schema": {
         "fields": [
           {
@@ -381,7 +381,7 @@
     },
     {
       "path": "ddf--datapoints--population--by--country_code-909--year--gender--age.csv",
-      "name": "ddf--datapoints--population--by--country_code-909--year--gender--age",
+      "name": "population--by--country_code-909--year--gender--age",
       "schema": {
         "fields": [
           {
@@ -415,7 +415,7 @@
     },
     {
       "path": "ddf--datapoints--population--by--country_code-935--year--age.csv",
-      "name": "ddf--datapoints--population--by--country_code-935--year--age",
+      "name": "population--by--country_code-935--year--age",
       "schema": {
         "fields": [
           {
@@ -445,7 +445,7 @@
     },
     {
       "path": "ddf--datapoints--population--by--country_code-935--year--gender--age.csv",
-      "name": "ddf--datapoints--population--by--country_code-935--year--gender--age",
+      "name": "population--by--country_code-935--year--gender--age",
       "schema": {
         "fields": [
           {
@@ -479,7 +479,7 @@
     },
     {
       "path": "ddf--entities--age.csv",
-      "name": "ddf--entities--age",
+      "name": "age",
       "schema": {
         "fields": [
           {
@@ -494,7 +494,7 @@
     },
     {
       "path": "ddf--entities--country_code.csv",
-      "name": "ddf--entities--country_code",
+      "name": "country_code",
       "schema": {
         "fields": [
           {
@@ -509,7 +509,7 @@
     },
     {
       "path": "ddf--entities--gender.csv",
-      "name": "ddf--entities--gender",
+      "name": "gender",
       "schema": {
         "fields": [
           {

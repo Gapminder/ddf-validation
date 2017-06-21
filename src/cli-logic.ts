@@ -1,3 +1,4 @@
+import * as v8 from 'v8';
 import * as fs from 'fs';
 import * as path from 'path';
 import { isString } from 'lodash';
@@ -16,6 +17,10 @@ if (settings.versionShouldBePrinted) {
   console.log(localPackage.version);
 
   isValidationExpected = false;
+}
+
+if (settings.heap) {
+  v8.setFlagsFromString(`--max-old-space-size=${settings.heap}`);
 }
 
 if (settings.isDataPackageGenerationMode && !settings.versionShouldBePrinted) {

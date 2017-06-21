@@ -27,7 +27,9 @@ const argv = yargs
     'validate "ddf-example" and its subdirectories that contain spaces')
   .example(`${myName} ../ddf-example --exclude-dirs '"dir1 with spaces","dir2 with spaces"'`,
     'validate "ddf-example" and its subdirectories that contain spaces: case 2')
+  .example(`${myName} ../ddf-example -i --compress-datapackage --heap 4096`,'Create compressed datapackage.json via 4Gb heap')
   .describe('i', 'Generate datapackage.json file')
+  .describe('compress-datapackage','Compress datapackage.json file')
   .describe('translations', 'Rewrite "translations" section in existing datapackage.json')
   .describe('content', 'Rewrite "resources" and "ddfSchema" sections in existing datapackage.json')
   .describe('j', 'Fix wrong JSONs')
@@ -41,12 +43,13 @@ const argv = yargs
   .describe('exclude-rules', 'Process all rules except selected')
   .describe('exclude-dirs',
     'Process all directories except selected. Directories should be separated via "," character')
+  .describe('heap','Set custom heap size')
   .argv;
 
 export const getDDFRootFolder = () => head(argv._) || process.cwd();
 export const getSettings = () => {
   const settings: any = {};
-  const options = ['include-tags', 'exclude-tags', 'include-rules', 'exclude-rules', 'exclude-dirs'];
+  const options = ['include-tags', 'exclude-tags', 'include-rules', 'exclude-rules', 'exclude-dirs', 'heap'];
   const setMiscSettings = () => {
     settings.isUI = false;
     settings.isDataPackageGenerationMode = !!argv.i;
@@ -58,6 +61,7 @@ export const getSettings = () => {
     settings.isPrintRules = !!argv.rules;
     settings.isCheckHidden = !!argv.hidden;
     settings.isMultithread = !!argv.multithread;
+    settings.compressDatapackage =  argv['compress-datapackage'];
   };
 
   setMiscSettings();
