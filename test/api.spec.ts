@@ -317,7 +317,7 @@ describe('api', () => {
     const _JSONValidator = require('../lib/index').JSONValidator;
 
     it('should result for generic and multi thread modes be same ', done => {
-      const EXPECTED_ISSUES_COUNT = 6;
+      const EXPECTED_ISSUES_COUNT = 8;
       const DATA_SET_PATH = './test/fixtures/rules-cases/data-point-constraint-violation';
 
       parallel({

@@ -142,6 +142,37 @@ describe('rules for data points', () => {
       });
     });
 
+    it(`an issue should be found for rule 'DATA_POINT_UNEXPECTED_ENTITY_VALUE'
+   (fixtures/rules-cases/data-point-unexpected-entity-value-2)`, done => {
+      const EXPECTED_FILE = 'ddf--datapoints--pop--by--geo--year.csv';
+
+      ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-unexpected-entity-value-2', null);
+      ddfDataSet.load(() => {
+        const dataPointUnexpectedConceptRule = allRules[DATA_POINT_UNEXPECTED_ENTITY_VALUE].recordRule;
+        const fileDescriptor = head(ddfDataSet.getDataPoint().fileDescriptors.filter(descriptor => descriptor.file === EXPECTED_FILE));
+        const expectedConcept = 'geo';
+        const expectedLine = 2;
+        const expectedValue = 'Afg';
+
+        ddfDataSet.getDataPoint().loadFile(
+          fileDescriptor,
+          (record, line) => {
+            const issues: Array<Issue> = dataPointUnexpectedConceptRule({ddfDataSet, fileDescriptor, record, line});
+            const issue = head(issues);
+
+            expect(issues.length).to.equal(1);
+            expect(issue.type).to.equal(DATA_POINT_UNEXPECTED_ENTITY_VALUE);
+            expect(issue.path.endsWith(EXPECTED_FILE)).to.be.true;
+            expect(!!issue.data).to.be.true;
+            expect(issue.data.concept).to.equal(expectedConcept);
+            expect(issue.data.line).to.equal(expectedLine);
+            expect(issue.data.value).to.equal(expectedValue);
+          },
+          () => done()
+        );
+      });
+    });
+
     it(`an issue should be found for rule 'DATA_POINT_CONSTRAINT_VIOLATION'
    (fixtures/rules-cases/data-point-constraint-violation)`, done => {
       const EXPECTED_FILE = 'ddf--datapoints--population--by--country_code-900--year--age.csv';
