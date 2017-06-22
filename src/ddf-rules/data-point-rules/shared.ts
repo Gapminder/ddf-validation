@@ -9,7 +9,7 @@ export interface IConstraintDescriptor {
 
 function constructEntityCondition(ddfData, entity) {
   const keyIsKind = `is--${entity}`;
-  const result: any = {$or: [{[keyIsKind]: {$in: ['TRUE', 'true']}}]};
+  const result: any = {$or: [{[keyIsKind]: {$in: ['TRUE', 'true']}}, {[entity]: {$exists: true}}]};
   const domain = ddfData.getConcept().getAllData().find(record => record.concept === entity).domain;
 
   if (domain) {
@@ -54,8 +54,10 @@ export const cacheFor = {
 
     if (!cache[key]) {
       const conceptTypeDictionary = cacheFor.conceptTypeDictionary(dataPointDescriptor);
+      const isEntity = concept =>
+        conceptTypeDictionary[concept] === 'entity_set' || conceptTypeDictionary[concept] === 'entity_domain';
       const entities = dataPointDescriptor.fileDescriptor.headers
-        .filter(concept => conceptTypeDictionary[concept] === 'entity_set');
+        .filter(concept => isEntity(concept));
       const conceptDomainDictionary = cacheFor.conceptDomainDictionary(dataPointDescriptor);
       const entityValueHash = {};
 
