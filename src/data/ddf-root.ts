@@ -1,5 +1,5 @@
 import { getExcludedDirs } from './shared';
-import { isEmpty } from 'lodash';
+import { isEmpty, isArray } from 'lodash';
 import { parallelLimit } from 'async';
 import { resolve } from 'path';
 import { TRNSLATIONS_FOLDER } from '../ddf-definitions/constants';
@@ -70,8 +70,10 @@ export class DDFRoot {
         return;
       }
 
-      this.fileDescriptors = dataPackageObject.resources.map(ddfResource =>
-        this.getFileDescriptor(this.path, ddfResource));
+      const expectedResources = !this.settings.datapointlessMode ? dataPackageObject.resources :
+        dataPackageObject.resources.filter(ddfResource => !isArray(ddfResource.schema.primaryKey));
+
+      this.fileDescriptors = expectedResources.map(ddfResource => this.getFileDescriptor(this.path, ddfResource));
 
       const actionsCsv = this.fileDescriptors.map(fileDescriptor => onFileChecked =>
         fileDescriptor.csvChecker.check(onFileChecked));

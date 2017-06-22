@@ -89,7 +89,7 @@ export const descriptions = {
   [EMPTY_CONCEPT_ID]: `Empty concept ID. An issue according to this rule will be fired 
   when concept ID ('concept' header) is empty`,
   [INCORRECT_IDENTIFIER]: `Incorrect identifier. 
-  Entity identifiers and concept identifiers can only containWRONG_DATA_POINT_HEADER lowercase alphanumeric 
+  Entity identifiers and concept identifiers can only contain lowercase alphanumeric 
   characters and underscores.`,
   [NON_CONCEPT_HEADER]: `Non concept header. 
   Each part of any header should be concept (is-- fields are excluded in this case)`,
