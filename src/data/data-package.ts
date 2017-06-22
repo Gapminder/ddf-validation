@@ -337,9 +337,11 @@ export class DataPackage {
   }
 
   getType(filename) {
+    const normalizedFileName = path.resolve(this.rootFolder, filename);
+
     return head(
       this.fileDescriptors
-        .filter(fileDescriptor => path.relative(this.rootFolder, fileDescriptor.fullPath) === filename)
+        .filter(fileDescriptor => path.resolve(this.rootFolder, fileDescriptor.fullPath) === normalizedFileName)
         .map(fileDescriptor => fileDescriptor.type)
     );
   }

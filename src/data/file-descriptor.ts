@@ -71,7 +71,7 @@ export class FileDescriptor {
         return;
       }
 
-      this.headers = line.split(',');
+      this.headers = line.split(',').map(header => header.trim());
 
       onHeadersReady();
     });
