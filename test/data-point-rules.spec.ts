@@ -3,7 +3,6 @@ import { head, flattenDeep, compact, isEqual, endsWith } from 'lodash';
 import { parallelLimit } from 'async';
 import { DdfDataSet } from '../src/ddf-definitions/ddf-data-set';
 import {
-  MEASURE_VALUE_NOT_NUMERIC,
   DATA_POINT_UNEXPECTED_ENTITY_VALUE,
   DATA_POINT_UNEXPECTED_TIME_VALUE,
   DATA_POINT_CONSTRAINT_VIOLATION,
@@ -17,21 +16,24 @@ const expect = chai.expect;
 const CONCURRENT_OPERATIONS_AMOUNT = 30;
 
 describe('rules for data points', () => {
-  let ddfDataSet = null;
-
   describe(`when data set is correct ('fixtures/good-folder')`, () => {
-    ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
+    const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
 
     Object.getOwnPropertySymbols(allRules).forEach(dataPointRuleKey => {
       it(`any issue should NOT be found for rule ${Symbol.keyFor(dataPointRuleKey)}`, done => {
         ddfDataSet.load(() => {
           const fileDescriptor = head(ddfDataSet.getDataPoint().fileDescriptors);
+          const rule = allRules[dataPointRuleKey];
+
+          if (rule.resetStorage) {
+            rule.resetStorage();
+          }
 
           ddfDataSet.getDataPoint().loadFile(
             fileDescriptor,
             (record, line) => {
-              if (allRules[dataPointRuleKey].isDataPoint && allRules[dataPointRuleKey].recordRule) {
-                expect(allRules[dataPointRuleKey].recordRule({
+              if (rule.isDataPoint && rule.recordRule) {
+                expect(rule.recordRule({
                   ddfDataSet,
                   fileDescriptor,
                   record,
@@ -46,67 +48,42 @@ describe('rules for data points', () => {
     });
   });
 
-
   describe('when data set is NOT correct', () => {
-    /*
-    it(`an issue should be found for rule 'DATA_POINT_VALUE_NOT_NUMERIC'
-   (fixtures/rules-cases/data-point-value-not-num)`, done => {
-      const EXPECTED_FILE = 'ddf--datapoints--pop--by--country--year.csv';
-
-      ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-value-not-num', null);
-      ddfDataSet.load(() => {
-        const dataPointValueNotNumRule = allRules[MEASURE_VALUE_NOT_NUMERIC].recordRule;
-        const fileDescriptor = head(ddfDataSet.getDataPoint().fileDescriptors.filter(descriptor => descriptor.file === EXPECTED_FILE));
-        const expectedMeasure = 'pop';
-        const expectedLine = 2;
-        const expectedValue = 'huge';
-
-        ddfDataSet.getDataPoint().loadFile(fileDescriptor,
-          (record, line) => {
-            const issues: Array<Issue> = dataPointValueNotNumRule({ddfDataSet, fileDescriptor, record, line});
-            const issue = head(issues);
-
-            expect(issues.length).to.equal(1);
-            expect(issue.type).to.equal(MEASURE_VALUE_NOT_NUMERIC);
-            expect(issue.path.endsWith(EXPECTED_FILE)).to.be.true;
-            expect(!!issue.data).to.be.true;
-            expect(issue.data.measure).to.equal(expectedMeasure);
-            expect(issue.data.line).to.equal(expectedLine);
-            expect(issue.data.value).to.equal(expectedValue);
-          },
-          () => done()
-        );
-      });
-    });
-    */
-
     it(`an issue should be found for rule 'DATA_POINT_UNEXPECTED_ENTITY_VALUE'
    (fixtures/rules-cases/data-point-unexpected-entity-value)`, done => {
       const EXPECTED_FILE = 'ddf--datapoints--pop--by--country--year.csv';
-
-      ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-unexpected-entity-value', null);
+      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-unexpected-entity-value', null);
       ddfDataSet.load(() => {
-        const dataPointUnexpectedConceptRule = allRules[DATA_POINT_UNEXPECTED_ENTITY_VALUE].recordRule;
+        const rule = allRules[DATA_POINT_UNEXPECTED_ENTITY_VALUE];
+        const ruleStarter = rule.recordRule;
         const fileDescriptor = head(ddfDataSet.getDataPoint().fileDescriptors.filter(descriptor => descriptor.file === EXPECTED_FILE));
         const expectedConcept = 'country';
         const expectedLine = 2;
         const expectedValue = 'non-usa';
+        const allIssues = [];
+
+        rule.resetStorage();
 
         ddfDataSet.getDataPoint().loadFile(
           fileDescriptor,
           (record, line) => {
-            const issues: Array<Issue> = dataPointUnexpectedConceptRule({ddfDataSet, fileDescriptor, record, line});
-            const issue = head(issues);
+            const issues: Issue[] = ruleStarter({ddfDataSet, fileDescriptor, record, line});
 
-            expect(issues.length).to.equal(1);
+            allIssues.push(...issues);
+          },
+          () => {
+            const issue = head(allIssues);
+
+            expect(allIssues.length).to.equal(1);
             expect(issue.type).to.equal(DATA_POINT_UNEXPECTED_ENTITY_VALUE);
             expect(issue.path.endsWith(EXPECTED_FILE)).to.be.true;
             expect(!!issue.data).to.be.true;
             expect(issue.data.concept).to.equal(expectedConcept);
             expect(issue.data.line).to.equal(expectedLine);
             expect(issue.data.value).to.equal(expectedValue);
-          },
-          () => done()
+
+            done();
+          }
         );
       });
     });
@@ -114,30 +91,38 @@ describe('rules for data points', () => {
     it(`an issue should be found for rule 'DATA_POINT_UNEXPECTED_TIME_VALUE'
    (fixtures/rules-cases/data-point-unexpected-time-value)`, done => {
       const EXPECTED_FILE = 'ddf--datapoints--pop--by--country--year.csv';
-
-      ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-unexpected-time-value', null);
+      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-unexpected-time-value', null);
       ddfDataSet.load(() => {
-        const dataPointUnexpectedTimeRule = allRules[DATA_POINT_UNEXPECTED_TIME_VALUE].recordRule;
+        const rule = allRules[DATA_POINT_UNEXPECTED_TIME_VALUE];
+        const ruleStarter = rule.recordRule;
         const fileDescriptor = head(ddfDataSet.getDataPoint().fileDescriptors.filter(descriptor => descriptor.file === EXPECTED_FILE));
         const expectedConcept = 'year';
         const expectedLine = 2;
         const expectedValue = '1960wfoo';
+        const allIssues = [];
+
+        rule.resetStorage();
 
         ddfDataSet.getDataPoint().loadFile(
           fileDescriptor,
           (record, line) => {
-            const issues: Array<Issue> = dataPointUnexpectedTimeRule({ddfDataSet, fileDescriptor, record, line});
-            const issue = head(issues);
+            const issues: Issue[] = ruleStarter({ddfDataSet, fileDescriptor, record, line});
 
-            expect(issues.length).to.equal(1);
+            allIssues.push(...issues);
+          },
+          () => {
+            const issue = head(allIssues);
+
+            expect(allIssues.length).to.equal(1);
             expect(issue.type).to.equal(DATA_POINT_UNEXPECTED_TIME_VALUE);
             expect(issue.path.endsWith(EXPECTED_FILE)).to.be.true;
             expect(!!issue.data).to.be.true;
             expect(issue.data.concept).to.equal(expectedConcept);
             expect(issue.data.line).to.equal(expectedLine);
             expect(issue.data.value).to.equal(expectedValue);
-          },
-          () => done()
+
+            done();
+          }
         );
       });
     });
@@ -145,30 +130,38 @@ describe('rules for data points', () => {
     it(`an issue should be found for rule 'DATA_POINT_UNEXPECTED_ENTITY_VALUE'
    (fixtures/rules-cases/data-point-unexpected-entity-value-2)`, done => {
       const EXPECTED_FILE = 'ddf--datapoints--pop--by--geo--year.csv';
-
-      ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-unexpected-entity-value-2', null);
+      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-unexpected-entity-value-2', null);
       ddfDataSet.load(() => {
-        const dataPointUnexpectedConceptRule = allRules[DATA_POINT_UNEXPECTED_ENTITY_VALUE].recordRule;
+        const rule = allRules[DATA_POINT_UNEXPECTED_ENTITY_VALUE];
+        const ruleStarter = rule.recordRule;
         const fileDescriptor = head(ddfDataSet.getDataPoint().fileDescriptors.filter(descriptor => descriptor.file === EXPECTED_FILE));
         const expectedConcept = 'geo';
         const expectedLine = 2;
         const expectedValue = 'Afg';
+        const allIssues = [];
+
+        rule.resetStorage();
 
         ddfDataSet.getDataPoint().loadFile(
           fileDescriptor,
           (record, line) => {
-            const issues: Array<Issue> = dataPointUnexpectedConceptRule({ddfDataSet, fileDescriptor, record, line});
-            const issue = head(issues);
+            const issues: Issue[] = ruleStarter({ddfDataSet, fileDescriptor, record, line});
 
-            expect(issues.length).to.equal(1);
+            allIssues.push(...issues);
+          },
+          () => {
+            const issue = head(allIssues);
+
+            expect(allIssues.length).to.equal(1);
             expect(issue.type).to.equal(DATA_POINT_UNEXPECTED_ENTITY_VALUE);
             expect(issue.path.endsWith(EXPECTED_FILE)).to.be.true;
             expect(!!issue.data).to.be.true;
             expect(issue.data.concept).to.equal(expectedConcept);
             expect(issue.data.line).to.equal(expectedLine);
             expect(issue.data.value).to.equal(expectedValue);
-          },
-          () => done()
+
+            done();
+          }
         );
       });
     });
@@ -176,10 +169,10 @@ describe('rules for data points', () => {
     it(`an issue should be found for rule 'DATA_POINT_CONSTRAINT_VIOLATION'
    (fixtures/rules-cases/data-point-constraint-violation)`, done => {
       const EXPECTED_FILE = 'ddf--datapoints--population--by--country_code-900--year--age.csv';
-
-      ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-constraint-violation', null);
+      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-constraint-violation', null);
       ddfDataSet.load(() => {
-        const dataPointConstraintViolationRule = allRules[DATA_POINT_CONSTRAINT_VIOLATION].recordRule;
+        const rule = allRules[DATA_POINT_CONSTRAINT_VIOLATION];
+        const ruleStarter = rule.recordRule;
         const fileDescriptor = head(ddfDataSet.getDataPoint().fileDescriptors.filter(descriptor => descriptor.file === EXPECTED_FILE));
         const issuesStorage = [];
         const EXPECTED_ISSUES_QUANTITY = 2;
@@ -191,9 +184,11 @@ describe('rules for data points', () => {
           data: {constraints: ['900'], fieldName: 'country_code', fieldValue: '901', line: 3}
         }];
 
+        rule.resetStorage();
+
         ddfDataSet.getDataPoint().loadFile(fileDescriptor,
           (record, line) => {
-            issuesStorage.push(dataPointConstraintViolationRule({ddfDataSet, fileDescriptor, record, line}));
+            issuesStorage.push(ruleStarter({ddfDataSet, fileDescriptor, record, line}));
           },
           () => {
             const issues = compact(flattenDeep(issuesStorage));

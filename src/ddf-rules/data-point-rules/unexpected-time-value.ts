@@ -1,12 +1,15 @@
 import {DATA_POINT_UNEXPECTED_TIME_VALUE} from '../registry';
 import {LINE_NUM_INCLUDING_HEADER} from '../../ddf-definitions/constants';
-import {cacheFor} from './shared';
+import {cacheFor, resetCache} from './shared';
 import {Issue} from '../issue';
 
 const ddfTimeUtils = require('ddf-time-utils');
 
 export const rule = {
   isDataPoint: true,
+  resetStorage: () => {
+    resetCache();
+  },
   recordRule: dataPointDescriptor =>
     cacheFor.keysByType(dataPointDescriptor, 'time')
       .filter(timeKey => !ddfTimeUtils.detectTimeType(dataPointDescriptor.record[timeKey]))

@@ -1,24 +1,24 @@
-phase,name
-coal_peat_and_oil_shale,"Coal, peat and oil shale"
-crude_ngl_and_feed_stocks,Crude Oil
-oil_products,Oil Products
-natural_gas,Natural Gas
-nuclear,Nuclear
-renewables_and_waste,Renewables and Waste
-electricity,Electricity
-heat,Heat
-fossil_fuels,Fossil Fuls
-renewable_sources,Renewable Resources
-chp_plants_ktoe,CHP Plants
-electricity_output_gwh,Electricity Output
-electricity_plants_ktoe,Electricity Plants
-exports_ktoe,Exports
-heat_plants_ktoe,Heat
-imports_ktoe,Imports
-industry_ktoe,Industry
-of_which_commerce_and_public_services_ktoe,Commerce
-of_which_residential_ktoe,Residential
-oil_refineries_transformation_ktoe,Oil Refineries
-other_ktoe,Other
-production_ktoe,Production
-transport_ktoe,Transport
+phase,name,is--phase_from,is--phase_to
+coal_peat_and_oil_shale,"Coal, peat and oil shale",TRUE,TRUE
+crude_ngl_and_feed_stocks,Crude Oil,TRUE,TRUE
+oil_products,Oil Products,TRUE,TRUE
+natural_gas,Natural Gas,TRUE,TRUE
+nuclear,Nuclear,TRUE,TRUE
+renewables_and_waste,Renewables and Waste,TRUE,TRUE
+electricity,Electricity,TRUE,TRUE
+heat,Heat,TRUE,TRUE
+fossil_fuels,Fossil Fuls,TRUE,TRUE
+renewable_sources,Renewable Resources,TRUE,TRUE
+chp_plants_ktoe,CHP Plants,TRUE,TRUE
+electricity_output_gwh,Electricity Output,TRUE,TRUE
+electricity_plants_ktoe,Electricity Plants,TRUE,TRUE
+exports_ktoe,Exports,TRUE,TRUE
+heat_plants_ktoe,Heat,TRUE,TRUE
+imports_ktoe,Imports,TRUE,TRUE
+industry_ktoe,Industry,TRUE,TRUE
+of_which_commerce_and_public_services_ktoe,Commerce,TRUE,TRUE
+of_which_residential_ktoe,Residential,TRUE,TRUE
+oil_refineries_transformation_ktoe,Oil Refineries,TRUE,TRUE
+other_ktoe,Other,TRUE,TRUE
+production_ktoe,Production,TRUE,TRUE
+transport_ktoe,Transport,TRUE,TRUE
