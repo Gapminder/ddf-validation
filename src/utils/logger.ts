@@ -1,45 +1,123 @@
-import {Logger, Transport} from 'winston';
+import * as fs from 'fs';
+import { Logger, Transport } from 'winston';
+import { terminal as term } from 'terminal-kit';
+import { getSettings } from '../utils/args';
 
-const util = require('util');
-const CONSOLE_MODE = Symbol.for('CONSOLE_MODE');
-const UI_MODE = Symbol.for('UI_MODE');
-const profiles = {
-  [CONSOLE_MODE]: class {
-    notice(level: any, msg: any, meta: any, callback: Function) {
-      console.log(msg);
-      callback(null, true);
+const settings = getSettings();
+
+export class Progress {
+  public title: string;
+  public isEnabled: boolean;
+  public progressBar;
+  public step: number;
+  public progressValue: number;
+
+  constructor(title: string, totalSteps: number) {
+    this.title = title;
+    this.isEnabled = +totalSteps > 1;
+
+    if (this.isEnabled) {
+      this.step = (100 / (+totalSteps)) / 100;
+      this.progressValue = 0;
+      this.progressBar = term.progressBar({
+        title: title,
+        percent: true,
+        inline: false,
+        syncMode: true
+      });
+    }
+
+    if (!this.isEnabled && this.progressBar) {
+      this.resume();
     }
   }
-};
+
+  update() {
+    if (this.isEnabled) {
+      this.progressValue += this.step;
+      this.progressBar.update(this.progressValue);
+    }
+  }
+
+  resume() {
+    if (this.progressBar) {
+      this.progressBar.stop();
+    }
+  }
+}
+
+export class ValidationTransport extends Transport {
+  public name: string;
+  public level: string;
+  public progress: Progress;
+  public file: string;
+
+  constructor() {
+    super();
+
+    this.name = 'InfoTransport';
+    this.level = 'notice';
+
+    if (settings.progress) {
+      const dateLabel = new Date().toISOString().replace(/:/g, '');
+
+      this.file = `validation-${dateLabel}.log`;
+    }
+  }
+
+  log(level: string, msg: string, meta: any, callback: Function) {
+    if (level === 'progressInit' && settings.progress) {
+      if (this.progress) {
+        this.progress.resume();
+      }
+
+      this.progress = new Progress(msg, meta.total as number);
+    }
+
+    if (level === 'progress' && settings.progress) {
+      this.progress.update();
+    }
+
+    if (level === 'notice') {
+      if (!settings.progress) {
+        console.log(msg);
+      }
+
+      if (settings.progress) {
+        fs.appendFile(this.file, msg, (err) => {
+          if (err) {
+            return callback(err)
+          }
+
+          callback(null, true);
+        });
+      }
+    }
+  }
+}
+
+export const validationTransport = new ValidationTransport();
+
+
+let logger;
 
 export const getLogger: Function = () => {
-  const mode = CONSOLE_MODE;
-
-  class CustomTransport extends Transport {
-    public name: string;
-    public level: string;
-
-    constructor() {
-      super();
-
-      this.name = 'CustomTransport';
-      this.level = 'error';
-    }
-
-    log(level: any, msg: any, meta: any, callback: Function) {
-      const expectedProfile = new profiles[mode]();
-
-      expectedProfile.notice(level, msg, meta, callback);
-    }
+  if (!logger) {
+    logger = new Logger({
+      levels: {
+        trace: 0,
+        progressInit: 1,
+        progress: 2,
+        notice: 3,
+        warning: 4,
+        error: 5
+      },
+      level: 'notice',
+      transports: [
+        validationTransport
+      ]
+    });
   }
 
-  const customTransport = new CustomTransport();
-  const options: any = {
-    levels: {trace: 0, results: 1, notice: 2, warning: 3, error: 4},
-    transports: [
-      customTransport
-    ]
-  };
-
-  return new Logger(options);
+  return logger;
 };

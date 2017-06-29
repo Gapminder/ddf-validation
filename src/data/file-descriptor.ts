@@ -4,6 +4,7 @@ import { stat } from 'fs';
 import { getFileLine } from '../utils/file';
 import { INCORRECT_FILE } from '../ddf-rules/registry';
 import { CsvChecker } from './csv-checker';
+import { logger } from '../utils';
 
 const PROCESS_LIMIT = 30;
 
@@ -102,10 +103,15 @@ export class FileDescriptor {
         }
 
         if (isEmpty(this.issues)) {
-          this.csvChecker.check(() => onFileDescriptorChecked());
+          this.csvChecker.check(() => {
+            logger.progress();
+            onFileDescriptorChecked();
+          });
 
           return;
         }
+
+        logger.progress();
 
         onFileDescriptorChecked(this.issues);
       });

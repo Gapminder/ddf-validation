@@ -7,6 +7,7 @@ import { DataPoint } from './data-point';
 import { Db } from '../data/db';
 import { DDFRoot } from '../data/ddf-root';
 import { DataPackage } from '../data/data-package';
+import { logger } from '../utils';
 
 export class DdfDataSet {
   public db: Db;
@@ -30,33 +31,39 @@ export class DdfDataSet {
       };
 
       const processFileDescriptors = (ddfRoot: DDFRoot) => {
-        ddfRoot.fileDescriptors
-          .filter(fileDescriptor => isEmpty(fileDescriptor.issues))
-          .forEach(fileDescriptor => {
-            if (fileDescriptor.is(DATA_POINT)) {
-              loaders.push(onFileLoaded => {
-                fileDescriptor.fillHeaders(() => {
-                  this.expectedClass[fileDescriptor.type].addDescriptors(fileDescriptor, ddfRoot.dataPackageDescriptor);
-                  onFileLoaded();
-                });
-              });
-            }
+        const expectedFileDescriptors = ddfRoot.fileDescriptors.filter(fileDescriptor => isEmpty(fileDescriptor.issues));
 
-            if (fileDescriptor.is([CONCEPT, ENTITY])) {
-              loaders.push(onFileLoaded => {
-                fileDescriptor.fillHeaders(() => {
-                  this.db.fillCollection(
-                    Symbol.keyFor(fileDescriptor.type),
-                    fileDescriptor.fullPath,
-                    fileErr => {
-                      this.expectedClass[fileDescriptor.type].addFileDescriptor(fileDescriptor);
-                      this.expectedClass[fileDescriptor.type].getTranslationsData(translationsErr =>
-                        onFileLoaded(fileErr || translationsErr));
-                    }, false);
-                });
+        logger.progressInit('dataset loading', {total: expectedFileDescriptors.length});
+
+        expectedFileDescriptors.forEach(fileDescriptor => {
+          if (fileDescriptor.is(DATA_POINT)) {
+            loaders.push(onFileLoaded => {
+              fileDescriptor.fillHeaders(() => {
+                this.expectedClass[fileDescriptor.type].addDescriptors(fileDescriptor, ddfRoot.dataPackageDescriptor);
+
+                logger.progress();
+
+                onFileLoaded();
               });
-            }
-          });
+            });
+          }
+
+          if (fileDescriptor.is([CONCEPT, ENTITY])) {
+            loaders.push(onFileLoaded => {
+              fileDescriptor.fillHeaders(() => {
+                this.db.fillCollection(
+                  Symbol.keyFor(fileDescriptor.type),
+                  fileDescriptor.fullPath,
+                  fileErr => {
+                    this.expectedClass[fileDescriptor.type].addFileDescriptor(fileDescriptor);
+                    this.expectedClass[fileDescriptor.type].getTranslationsData(translationsErr => onFileLoaded(fileErr || translationsErr));
+
+                    logger.progress();
+                  }, false);
+              });
+            });
+          }
+        });
       };
 
       if (this.ddfRoot.isDDF) {

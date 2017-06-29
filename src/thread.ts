@@ -23,15 +23,19 @@ class RecordProcessor {
 
       if (!isEmpty(result)) {
         result.forEach(issue => {
-          if (!this.isCollectResultMode) {
-            process.send({issue: JSON.stringify(issue.view(), null, 2)});
-          }
+          if (issue) {
+            if (!this.isCollectResultMode) {
+              process.send({issue: JSON.stringify(issue.view(), null, 2)});
+            }
 
-          if (this.isCollectResultMode) {
-            this.out = this.out.concat(result.map(issue => issue.view()));
+            if (this.isCollectResultMode) {
+              this.out = this.out.concat(result.map(issue => issue.view()));
+            }
           }
         });
       }
+    }, () => {
+      process.send({progress: true});
     });
   }
 }
@@ -42,6 +46,11 @@ process.on('message', (message: any) => {
     issuesFilter: new IssuesFilter(message.settings),
     ddfDataSet: new DdfDataSet(message.rootPath, message.settings)
   };
+
+  if (isEmpty(message.fileChunks)) {
+    process.send({err: null, out: [], finish: true});
+    process.exit();
+  }
 
   threadContext.ddfDataSet.load(() => {
     const validationActions = [];

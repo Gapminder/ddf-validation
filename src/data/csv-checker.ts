@@ -14,7 +14,7 @@ const getErrors = parsedCsv => parsedCsv.errors
 export class CsvChecker {
   public filePath: string;
   public error: any;
-  public errors: Array<any> = [];
+  public errors: any[] = [];
 
   constructor(filePath) {
     this.filePath = filePath;

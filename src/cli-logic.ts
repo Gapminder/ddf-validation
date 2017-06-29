@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { isString } from 'lodash';
 import { logger, settings, ddfRootFolder } from './utils';
+import { validationTransport } from './utils/logger';
 import { getRulesInformation } from './ddf-rules/registry';
 import { DataPackage } from './data/data-package';
 import { DdfJsonCorrector } from './ddf-definitions/ddf-json-corrector';
@@ -89,9 +90,11 @@ if (!isValidationExpected) {
 if (isValidationExpected) {
   const validator = new StreamValidator(ddfRootFolder, settings);
 
-  logger.notice('[');
+  let hasIssue = false;
 
   validator.on('issue', (issue: any) => {
+    hasIssue = true;
+
     if (isString(issue)) {
       logger.notice(issue + '\n');
     }
@@ -106,7 +109,13 @@ if (isValidationExpected) {
       throw err;
     }
 
-    logger.notice('{}]\n');
+    if (settings.progress && hasIssue) {
+      console.log(`\nValidation was finished with issues. Details are here: ${validationTransport.file}.`);
+    }
+
+    if (settings.progress && !hasIssue) {
+      console.log('\nValidation was finished successfully.');
+    }
 
     checkLatestVersion(localPackage.version);
   });

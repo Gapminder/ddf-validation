@@ -126,6 +126,7 @@ export class DataPackage {
   public errors: any[];
   public warnings: any[];
   public fileDescriptors: IDdfFileDescriptor[];
+  public fileDescriptorsHash: Map<string, IDdfFileDescriptor>;
   public dataPackageContent: any;
   public translationFolders: any[];
   public db: Db;
@@ -328,8 +329,7 @@ export class DataPackage {
           path: `${getRelativeDir(fileDescriptor.fullPath)}${fileDescriptor.filename}`,
           name: `${stripDdfPrefix(fileDescriptor.name)}${getNameSuffix(fileDescriptor.directoryIndex)}`,
           schema: {
-            fields: (fileDescriptor.headers || [])
-              .map(header => prepareField(header, fileDescriptor)),
+            fields: (fileDescriptor.headers || []).map(header => prepareField(header, fileDescriptor)),
             primaryKey: fileDescriptor.primaryKey
           }
         }))
@@ -339,11 +339,15 @@ export class DataPackage {
   getType(filename) {
     const normalizedFileName = path.resolve(this.rootFolder, filename);
 
-    return head(
-      this.fileDescriptors
-        .filter(fileDescriptor => path.resolve(this.rootFolder, fileDescriptor.fullPath) === normalizedFileName)
-        .map(fileDescriptor => fileDescriptor.type)
-    );
+    if (!this.fileDescriptorsHash) {
+      this.fileDescriptorsHash = new Map<string, IDdfFileDescriptor>();
+
+      this.fileDescriptors.forEach(fileDescriptor => {
+        this.fileDescriptorsHash.set(path.resolve(this.rootFolder, fileDescriptor.fullPath), fileDescriptor);
+      });
+    }
+
+    return this.fileDescriptorsHash.get(normalizedFileName).type;
   }
 
   build(onDataPackageReady) {
