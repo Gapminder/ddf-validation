@@ -1,4 +1,4 @@
-import { compact, isArray, sortBy } from 'lodash';
+import { compact, isArray, sortBy, flattenDeep } from 'lodash';
 import { allRules as ddfRules } from './ddf-rules';
 import { FileDescriptor } from './data/file-descriptor';
 import { DdfDataSet } from './ddf-definitions/ddf-data-set';
@@ -43,7 +43,13 @@ export const noTranslation = (key, fileDescriptor) => !fileDescriptor.isTranslat
 export const toArray = value => compact(isArray(value) ? value : [value]);
 export const getDataPointFileChunks = (ddfDataSet: DdfDataSet, cpuCount: number): string[] => {
   const fileChunks = [];
-  const filesSortedBySize = sortBy(ddfDataSet.getDataPoint().fileDescriptors, ['size'])
+  const expectedFileDescriptors = ddfDataSet.getDataPoint().fileDescriptors;
+  const translationFileDescriptors = flattenDeep(ddfDataSet.getDataPoint().fileDescriptors.map(fileDescriptor =>
+    fileDescriptor.getExistingTranslationDescriptors()));
+
+  expectedFileDescriptors.push(...translationFileDescriptors);
+
+  const filesSortedBySize = sortBy(expectedFileDescriptors, ['size'])
     .map((fileDescriptor: FileDescriptor) => fileDescriptor.fullPath);
 
   for (let index = 0; index < cpuCount; index++) {
@@ -61,7 +67,7 @@ export const getDataPointFileChunks = (ddfDataSet: DdfDataSet, cpuCount: number)
   return fileChunks;
 };
 
-export function createRecordBasedRulesProcessor(context, fileDescriptor, resultHandler) {
+export function createRecordBasedRulesProcessor(context, fileDescriptor, resultHandler, progressHandler?) {
   const ddfDataSet = context.ddfDataSet;
 
   return onDataPointReady => {
@@ -70,6 +76,11 @@ export function createRecordBasedRulesProcessor(context, fileDescriptor, resultH
       createRecordAggregationProcessor(context, ddfDataSet, fileDescriptor, resultHandler),
       () => {
         processAggregation(context, ddfDataSet, fileDescriptor, resultHandler);
+
+        if (progressHandler) {
+          progressHandler();
+        }
+
         onDataPointReady();
       }
     );

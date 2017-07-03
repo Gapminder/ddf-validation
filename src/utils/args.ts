@@ -36,6 +36,7 @@ const argv = yargs
   .describe('rules', 'print information regarding supported rules')
   .describe('multithread', 'validate datapoints in separate threads')
   .describe('datapointless', 'forget about datapoint validation')
+  .describe('progress', 'show progress of validation and save result to a file')
   .describe('hidden', 'allow hidden folders validation')
   .describe('include-tags', 'Process only issues by selected tags')
   .describe('exclude-tags', 'Process all tags except selected')
@@ -51,11 +52,11 @@ export const getSettings = () => {
   const settings: any = {};
   const options = ['include-tags', 'exclude-tags', 'include-rules', 'exclude-rules', 'exclude-dirs', 'heap'];
   const setMiscSettings = () => {
-    settings.isUI = false;
     settings.isDataPackageGenerationMode = !!argv.i;
     settings.isJsonAutoCorrectionMode = !!argv.j;
     settings.versionShouldBePrinted = !!argv.v;
     settings.datapointlessMode = !!argv.datapointless;
+    settings.progress = !!argv.progress;
     settings.updateDataPackageTranslations = !!argv.translations;
     settings.updateDataPackageContent = !!argv.content;
     settings.isPrintRules = !!argv.rules;

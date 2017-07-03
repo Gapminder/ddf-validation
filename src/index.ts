@@ -1,7 +1,7 @@
 import * as path from 'path';
 import { EventEmitter } from 'events';
 import { parallelLimit } from 'async';
-import { isEmpty, flattenDeep, concat, isArray } from 'lodash';
+import { isEmpty, flattenDeep, concat, isArray, compact } from 'lodash';
 import { DdfDataSet } from './ddf-definitions/ddf-data-set';
 import { allRules as ddfRules } from './ddf-rules';
 import { IssuesFilter } from './utils/issues-filter';
@@ -17,6 +17,7 @@ import {
   getDataPointFileChunks,
   createRecordBasedRulesProcessor
 } from './shared';
+import { logger } from './utils';
 
 const child_process = require('child_process');
 const os = require('os');
@@ -29,12 +30,21 @@ function clearGlobalStates() {
 }
 
 function processSimpleRules(context, onIssue) {
-  Object.getOwnPropertySymbols(ddfRules)
-    .filter(key => isSimpleRule(ddfRules[key]))
-    .filter(key => context.issuesFilter.isAllowed(key))
-    .map(key => ddfRules[key].rule(context.ddfDataSet))
-    .filter(issues => !isEmpty(issues))
-    .forEach(issue => onIssue(issue));
+  const rulesKeys = Object.getOwnPropertySymbols(ddfRules).filter(key => isSimpleRule(ddfRules[key]) && context.issuesFilter.isAllowed(key));
+
+  for (let key of rulesKeys) {
+    const issues = ddfRules[key].rule(context.ddfDataSet);
+
+    if (!isEmpty(issues)) {
+      if (isArray(issues)) {
+        issues.forEach(issue => onIssue(issue));
+      }
+
+      if (!isArray(issues)) {
+        onIssue(issues)
+      }
+    }
+  }
 }
 
 export function createRecordBasedRuleProcessor(context, fileDescriptor, resultHandler) {
@@ -128,7 +138,7 @@ export class JSONValidator {
       childProcess.on('message', (message) => {
         childProcessesFinished++;
 
-        this.out = this.out.concat(message.out);
+        this.out = compact(this.out.concat(message.out));
 
         if (childProcessesFinished === cpuCount) {
           this.issueEmitter.emit('finish', message.err, this.out);
@@ -174,7 +184,9 @@ export class JSONValidator {
       }
 
       if (!this.settings.isMultithread) {
-        parallelLimit(getValidationActions(this), CONCURRENT_OPERATIONS_AMOUNT, err => {
+        const actions = getValidationActions(this);
+
+        parallelLimit(actions, CONCURRENT_OPERATIONS_AMOUNT, err => {
           this.issueEmitter.emit('finish', err, this.out);
         });
       }
@@ -202,6 +214,8 @@ export class StreamValidator {
       if (!isEmpty(result)) {
         result.map(issue => this.issueEmitter.emit('issue', issue.view()));
       }
+    }, () => {
+      logger.progress();
     });
   }
 
@@ -211,6 +225,9 @@ export class StreamValidator {
 
   multiThreadProcessing() {
     const fileChunks = getDataPointFileChunks(this.ddfDataSet, cpuCount);
+    const total = fileChunks.reduce((result, chunk) => result + chunk.length, 0);
+
+    logger.progressInit('datapoints validation', {total});
 
     let childProcessesFinished = 0;
 
@@ -220,6 +237,10 @@ export class StreamValidator {
       childProcess.on('message', (message) => {
         if (message.finish) {
           childProcessesFinished++;
+        }
+
+        if (message.progress) {
+          logger.progress();
         }
 
         if (!message.finish && message.issue) {
@@ -270,7 +291,11 @@ export class StreamValidator {
       }
 
       if (!this.settings.isMultithread) {
-        parallelLimit(getValidationActions(this), CONCURRENT_OPERATIONS_AMOUNT, err => {
+        const actions = getValidationActions(this);
+
+        logger.progressInit('datapoints validation', {total: actions.length});
+
+        parallelLimit(actions, CONCURRENT_OPERATIONS_AMOUNT, err => {
           this.issueEmitter.emit('finish', err);
         });
       }

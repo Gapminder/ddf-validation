@@ -5,6 +5,7 @@ import { resolve } from 'path';
 import { TRNSLATIONS_FOLDER } from '../ddf-definitions/constants';
 import { DataPackage } from './data-package';
 import { FileDescriptor } from './file-descriptor';
+import { logger } from '../utils';
 
 const PROCESS_LIMIT = 30;
 
@@ -75,13 +76,13 @@ export class DDFRoot {
 
       this.fileDescriptors = expectedResources.map(ddfResource => this.getFileDescriptor(this.path, ddfResource));
 
-      const actionsCsv = this.fileDescriptors.map(fileDescriptor => onFileChecked =>
-        fileDescriptor.csvChecker.check(onFileChecked));
-      const actionsForDescriptor = this.fileDescriptors.map(fileDescriptor =>
+      logger.progressInit('root checking', {total: this.fileDescriptors.length});
+
+      const actions = this.fileDescriptors.map(fileDescriptor =>
         onFileChecked => fileDescriptor.check(onFileChecked));
 
       parallelLimit(
-        actionsCsv.concat(actionsForDescriptor),
+        actions,
         PROCESS_LIMIT,
         checkErr => {
           if (checkErr) {
