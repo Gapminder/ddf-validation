@@ -1,3 +1,13 @@
+<a name="1.8.0"></a>
+# [1.8.0](https://github.com/Gapminder/ddf-validation/compare/v1.7.6...v1.8.0) (2017-07-03)
+
+
+### Features
+
+* **general:** show current progress/file during validation ([29a8af9](https://github.com/Gapminder/ddf-validation/commit/29a8af9)), closes [#142](https://github.com/Gapminder/ddf-validation/issues/142)
+
+
+
 <a name="1.7.6"></a>
 ## [1.7.6](https://github.com/Gapminder/ddf-validation/compare/v1.7.5...v1.7.6) (2017-06-27)
 
