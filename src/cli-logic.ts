@@ -109,11 +109,11 @@ if (isValidationExpected) {
       throw err;
     }
 
-    if (settings.progress && hasIssue) {
+    if (!settings.silent && hasIssue) {
       console.log(`\nValidation was finished with issues. Details are here: ${validationTransport.file}.`);
     }
 
-    if (settings.progress && !hasIssue) {
+    if (!settings.silent && !hasIssue) {
       console.log('\nValidation was finished successfully.');
     }
 

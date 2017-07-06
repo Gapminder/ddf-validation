@@ -3,6 +3,8 @@ import { DDFRoot } from '../src/data/ddf-root';
 
 const expect = chai.expect;
 
+process.env.SILENT_MODE = true;
+
 describe('ddf root folder validation', () => {
   describe('when DDF folder (fixtures/good-folder)', () => {
     it('ddf folder should present', done => {

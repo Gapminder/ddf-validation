@@ -6,6 +6,8 @@ import {DdfJsonCorrector} from '../src/ddf-definitions/ddf-json-corrector';
 
 const expect = chai.expect;
 
+process.env.SILENT_MODE = true;
+
 describe('ddf json corrector', () => {
   describe('when wrong json is NOT found', () => {
     const dummyCompaniesPath = './test/fixtures/dummy-companies';

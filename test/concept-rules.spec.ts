@@ -15,6 +15,8 @@ import {allRules} from '../src/ddf-rules';
 
 const expect = chai.expect;
 
+process.env.SILENT_MODE = true;
+
 describe('rules for concept', () => {
   let ddfDataSet = null;
 

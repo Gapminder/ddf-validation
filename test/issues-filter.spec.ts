@@ -12,6 +12,8 @@ import { Issue } from '../src/ddf-rules/issue';
 
 const expect = chai.expect;
 
+process.env.SILENT_MODE = true;
+
 describe('issues filter', () => {
   describe('when issues filter was constructed with "include-tags" and "exclude-tags"', () => {
     it('should WRONG_TAGS_COMBINATION_ERROR', done => {

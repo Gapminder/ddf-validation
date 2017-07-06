@@ -15,6 +15,8 @@ import { Issue } from '../src/ddf-rules/issue';
 const expect = chai.expect;
 const CONCURRENT_OPERATIONS_AMOUNT = 30;
 
+process.env.SILENT_MODE = true;
+
 describe('rules for data points', () => {
   describe(`when data set is correct ('fixtures/good-folder')`, () => {
     const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);

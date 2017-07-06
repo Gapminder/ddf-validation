@@ -1,9 +1,13 @@
 import * as fs from 'fs';
+import { includes } from 'lodash';
 import { Logger, Transport } from 'winston';
 import { terminal as term } from 'terminal-kit';
 import { getSettings } from '../utils/args';
 
 const settings = getSettings();
+
+const args = process.argv.join(' ');
+const isSeparateThread = includes(args, 'thread.js');
 
 export class Progress {
   public title: string;
@@ -14,7 +18,7 @@ export class Progress {
 
   constructor(title: string, totalSteps: number) {
     this.title = title;
-    this.isEnabled = +totalSteps > 1;
+    this.isEnabled = +totalSteps > 1 && !isSeparateThread;
 
     if (this.isEnabled) {
       this.step = (100 / (+totalSteps)) / 100;
@@ -58,7 +62,7 @@ export class ValidationTransport extends Transport {
     this.name = 'InfoTransport';
     this.level = 'notice';
 
-    if (settings.progress) {
+    if (!settings.silent && !process.env.SILENT_MODE) {
       const dateLabel = new Date().toISOString().replace(/:/g, '');
 
       this.file = `validation-${dateLabel}.log`;
@@ -66,7 +70,7 @@ export class ValidationTransport extends Transport {
   }
 
   log(level: string, msg: string, meta: any, callback: Function) {
-    if (level === 'progressInit' && settings.progress) {
+    if (level === 'progressInit' && !settings.silent && !process.env.SILENT_MODE) {
       if (this.progress) {
         this.progress.resume();
       }
@@ -74,16 +78,16 @@ export class ValidationTransport extends Transport {
       this.progress = new Progress(msg, meta.total as number);
     }
 
-    if (level === 'progress' && settings.progress) {
+    if (level === 'progress' && !settings.silent && !process.env.SILENT_MODE) {
       this.progress.update();
     }
 
     if (level === 'notice') {
-      if (!settings.progress) {
+      if (settings.silent) {
         console.log(msg);
       }
 
-      if (settings.progress) {
+      if (!settings.silent && !process.env.SILENT_MODE) {
         fs.appendFile(this.file, msg, (err) => {
           if (err) {
             return callback(err)

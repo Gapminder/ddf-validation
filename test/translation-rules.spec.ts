@@ -16,7 +16,7 @@ import { Issue } from '../src/ddf-rules/issue';
 const CONCURRENT_OPERATIONS_AMOUNT = 30;
 const expect = chai.expect;
 
-/*eslint-disable camelcase*/
+process.env.SILENT_MODE = true;
 
 describe('translation rules', () => {
   describe('when "UNEXPECTED_TRANSLATION_HEADER" rule', () => {
