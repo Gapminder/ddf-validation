@@ -1,3 +1,13 @@
+<a name="1.9.0"></a>
+# [1.9.0](https://github.com/Gapminder/ddf-validation/compare/v1.8.0...v1.9.0) (2017-07-24)
+
+
+### Features
+
+* **general:** set --progress mode by default ([d5a5a29](https://github.com/Gapminder/ddf-validation/commit/d5a5a29)), closes [#444](https://github.com/Gapminder/ddf-validation/issues/444)
+
+
+
 <a name="1.8.0"></a>
 # [1.8.0](https://github.com/Gapminder/ddf-validation/compare/v1.7.6...v1.8.0) (2017-07-03)
 
