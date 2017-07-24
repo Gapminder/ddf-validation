@@ -4,6 +4,8 @@ import {CsvChecker} from '../src/data/csv-checker';
 
 const expect = chai.expect;
 
+process.env.SILENT_MODE = true;
+
 describe('csv checker', () => {
   it('should be no errors for correct csv file', done => {
     const csvChecker = new CsvChecker('./test/fixtures/good-folder/ddf--concepts.csv');

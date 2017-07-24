@@ -4,6 +4,8 @@ import { getDdfSchema } from '../src/data/ddf-schema';
 
 const expect = chai.expect;
 
+process.env.SILENT_MODE = true;
+
 describe('ddf schema creation', () => {
   it('for dummy-companies', done => {
     const dataPackage = new DataPackage('./test/fixtures/ddf-schema', {});

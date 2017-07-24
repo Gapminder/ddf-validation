@@ -27,16 +27,16 @@ const argv = yargs
     'validate "ddf-example" and its subdirectories that contain spaces')
   .example(`${myName} ../ddf-example --exclude-dirs '"dir1 with spaces","dir2 with spaces"'`,
     'validate "ddf-example" and its subdirectories that contain spaces: case 2')
-  .example(`${myName} ../ddf-example -i --compress-datapackage --heap 4096`,'Create compressed datapackage.json via 4Gb heap')
+  .example(`${myName} ../ddf-example -i --compress-datapackage --heap 4096`, 'Create compressed datapackage.json via 4Gb heap')
   .describe('i', 'Generate datapackage.json file')
-  .describe('compress-datapackage','Compress datapackage.json file')
+  .describe('compress-datapackage', 'Compress datapackage.json file')
   .describe('translations', 'Rewrite "translations" section in existing datapackage.json')
   .describe('content', 'Rewrite "resources" and "ddfSchema" sections in existing datapackage.json')
   .describe('j', 'Fix wrong JSONs')
   .describe('rules', 'print information regarding supported rules')
   .describe('multithread', 'validate datapoints in separate threads')
   .describe('datapointless', 'forget about datapoint validation')
-  .describe('progress', 'show progress of validation and save result to a file')
+  .describe('silent', `don't show progress of validation and print issues to the screen`)
   .describe('hidden', 'allow hidden folders validation')
   .describe('include-tags', 'Process only issues by selected tags')
   .describe('exclude-tags', 'Process all tags except selected')
@@ -44,7 +44,7 @@ const argv = yargs
   .describe('exclude-rules', 'Process all rules except selected')
   .describe('exclude-dirs',
     'Process all directories except selected. Directories should be separated via "," character')
-  .describe('heap','Set custom heap size')
+  .describe('heap', 'Set custom heap size')
   .argv;
 
 export const getDDFRootFolder = () => head(argv._) || process.cwd();
@@ -56,13 +56,13 @@ export const getSettings = () => {
     settings.isJsonAutoCorrectionMode = !!argv.j;
     settings.versionShouldBePrinted = !!argv.v;
     settings.datapointlessMode = !!argv.datapointless;
-    settings.progress = !!argv.progress;
+    settings.silent = !!argv.silent;
     settings.updateDataPackageTranslations = !!argv.translations;
     settings.updateDataPackageContent = !!argv.content;
     settings.isPrintRules = !!argv.rules;
     settings.isCheckHidden = !!argv.hidden;
     settings.isMultithread = !!argv.multithread;
-    settings.compressDatapackage =  argv['compress-datapackage'];
+    settings.compressDatapackage = argv['compress-datapackage'];
   };
 
   setMiscSettings();

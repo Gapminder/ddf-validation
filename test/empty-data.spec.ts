@@ -6,6 +6,8 @@ import {allRules} from '../src/ddf-rules';
 
 const expect = chai.expect;
 
+process.env.SILENT_MODE = true;
+
 describe('general rules', () => {
   describe('when "EMPTY_DATA" rule', () => {
     it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {

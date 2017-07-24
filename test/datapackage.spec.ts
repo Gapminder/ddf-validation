@@ -4,6 +4,8 @@ import { DataPackage } from '../src/data/data-package';
 
 const expect = chai.expect;
 
+process.env.SILENT_MODE = true;
+
 describe('datapackage validation', () => {
   describe('when "ddf--unpop--wpp_population" dataset', () => {
     it('should datapackage be created propery', done => {

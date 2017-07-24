@@ -12,6 +12,8 @@ import { allRules } from '../src/ddf-rules';
 
 const expect = chai.expect;
 
+process.env.SILENT_MODE = true;
+
 describe('general rules', () => {
   describe('when DDF folder is correct', () => {
     it('there should be no issues for "NON_DDF_DATA_SET" rule', done => {

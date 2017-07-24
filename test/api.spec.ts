@@ -5,6 +5,8 @@ import { JSONValidator, StreamValidator, SimpleValidator, validate } from '../sr
 
 const expect = chai.expect;
 
+process.env.SILENT_MODE = true;
+
 describe('api', () => {
   describe('when JSONValidator', () => {
     describe('and DDF dataset is correct', () => {

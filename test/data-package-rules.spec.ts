@@ -15,6 +15,8 @@ import { allRules } from '../src/ddf-rules';
 
 const expect = chai.expect;
 
+process.env.SILENT_MODE = true;
+
 describe('ddf datapackage.json validation', () => {
   describe('when INCORRECT_FILE', () => {
     it('any issue should NOT be found for folder (fixtures/good-folder)', done => {
