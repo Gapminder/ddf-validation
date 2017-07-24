@@ -1,0 +1,4 @@
+geo,name,is--country,is--city
+usa,USA,TRUE,FALSE
+swe,SWE,TRUE,FALSE
+hkg,HKG,TRUE,TRUE
