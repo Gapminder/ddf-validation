@@ -194,8 +194,17 @@ describe('rules for entry', () => {
   });
 
   describe('when "UNEXISTING_CONSTRAINT_VALUE" rule', () => {
-    it('any issue should NOT be found for folder without the problem (fixtures/good-folder-unpop-wpp_population)', done => {
+    it('any issue should NOT be found for a folder without the problem (fixtures/good-folder-unpop-wpp_population)', done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/good-folder-unpop-wpp_population', null);
+      ddfDataSet.load(() => {
+        expect(allRules[UNEXISTING_CONSTRAINT_VALUE].rule(ddfDataSet).length).to.equal(0);
+
+        done();
+      });
+    });
+
+    it('any issue should NOT be found for a folder without the problem (fixtures/rules-cases/unexisting-constraint-value-2)', done => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/unexisting-constraint-value-2', null);
       ddfDataSet.load(() => {
         expect(allRules[UNEXISTING_CONSTRAINT_VALUE].rule(ddfDataSet).length).to.equal(0);
 

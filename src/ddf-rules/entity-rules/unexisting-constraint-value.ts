@@ -6,9 +6,10 @@ import { Issue } from '../issue';
 
 const checkConstraintValue = (ddfDataSet: DdfDataSet, name: string, value: string): boolean => {
   const allEntities = ddfDataSet.getEntity().getAllData();
+  const domainHash = ddfDataSet.getConcept().getDictionary(null, 'domain');
 
   for (const record of allEntities) {
-    if (record[name] === value) {
+    if (record[name] === value || record[domainHash[name]] === value) {
       return true;
     }
   }

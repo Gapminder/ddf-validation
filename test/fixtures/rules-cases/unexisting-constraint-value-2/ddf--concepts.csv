@@ -1,0 +1,8 @@
+concept,name,concept_type,domain
+geo,,entity_domain,
+country,,entity_set,geo
+city,,entity_set,geo
+year,,time,
+name,,string,
+domain,,string,
+test_indicator,,measurt,
