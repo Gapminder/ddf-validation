@@ -1,4 +1,4 @@
-import { difference, uniq, isEmpty } from 'lodash';
+import { difference, uniq } from 'lodash';
 import { DUPLICATED_DATA_POINT_TRANSLATION_KEY } from '../registry';
 import { Issue } from '../issue';
 
@@ -11,7 +11,8 @@ const initStorage = () => {
 
   storage = {
     hash: new Set(),
-    duplicatedPrimaryKeys: []
+    duplicatedHashes: [],
+    content: {}
   };
 };
 
@@ -29,24 +30,29 @@ export const rule = {
     const recordHash = `${dimensionData}@${indicatorName}`;
 
     if (storage.hash.has(recordHash)) {
-      storage.duplicatedPrimaryKeys.push(recordHash);
+      storage.duplicatedHashes.push(recordHash);
     }
 
     storage.hash.add(recordHash);
-  },
-  aggregativeRule: (dataPointDescriptor) => {
-    const duplicates = uniq(storage.duplicatedPrimaryKeys);
 
-    let issue = null;
-
-    if (!isEmpty(duplicates)) {
-      issue = new Issue(DUPLICATED_DATA_POINT_TRANSLATION_KEY)
-        .setPath(dataPointDescriptor.fileDescriptor.fullPath)
-        .setData(duplicates);
+    if (!storage.content[recordHash]) {
+      storage.content[recordHash] = [];
     }
 
-    initStorage();
+    storage.content[recordHash].push({
+      file: dataPointDescriptor.fileDescriptor.file,
+      record: dataPointDescriptor.record,
+      line: dataPointDescriptor.line
+    });
+  },
+  aggregativeRule: () => {
+    const duplicates: string[] = <string[]>uniq(storage.duplicatedHashes);
+    const issues: Issue[] = [];
 
-    return issue;
+    for (const hash of duplicates) {
+      issues.push(new Issue(DUPLICATED_DATA_POINT_TRANSLATION_KEY).setData(storage.content[hash]));
+    }
+
+    return issues;
   }
 };

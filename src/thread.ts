@@ -5,8 +5,10 @@ import { DdfDataSet } from './ddf-definitions/ddf-data-set';
 import {
   CONCURRENT_OPERATIONS_AMOUNT,
   toArray,
-  createRecordBasedRulesProcessor
+  createRecordBasedRulesProcessor,
+  getDataPointFileDescriptorsGroups
 } from './shared';
+import { FileDescriptor } from './data/file-descriptor';
 
 class RecordProcessor {
   public isCollectResultMode: boolean;
@@ -17,13 +19,14 @@ class RecordProcessor {
     this.out = [];
   }
 
-  processRecordBasedRules(context: any, dataPointDetail: any): Function {
-    return createRecordBasedRulesProcessor(context, dataPointDetail, resultParam => {
+  processRecordBasedRules(context: any, fileDescriptors: FileDescriptor[]): Function {
+    return createRecordBasedRulesProcessor(context, fileDescriptors, resultParam => {
       const result = toArray(resultParam);
 
       if (!isEmpty(result)) {
         result.forEach(issue => {
           if (issue) {
+
             if (!this.isCollectResultMode) {
               process.send({issue: JSON.stringify(issue.view(), null, 2)});
             }
@@ -40,27 +43,39 @@ class RecordProcessor {
   }
 }
 
+const isExistInFilesChunks = (filesChunks: string[][], fileDescriptorsGroup: FileDescriptor[]): boolean => {
+  for (let chunk of filesChunks) {
+    for (let fileDescriptor of fileDescriptorsGroup) {
+      if (includes(chunk, fileDescriptor.fullPath)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+};
+
 process.on('message', (message: any) => {
   const recordProcessor = new RecordProcessor(message.isCollectResultMode);
-  const threadContext = {
-    issuesFilter: new IssuesFilter(message.settings),
-    ddfDataSet: new DdfDataSet(message.rootPath, message.settings)
-  };
+  const ddfDataSet = new DdfDataSet(message.rootPath, message.settings);
+  const threadContext = {issuesFilter: new IssuesFilter(message.settings), ddfDataSet};
 
-  if (isEmpty(message.fileChunks)) {
+  if (isEmpty(message.filesChunks)) {
     process.send({err: null, out: [], finish: true});
     process.exit();
   }
 
   threadContext.ddfDataSet.load(() => {
     const validationActions = [];
+    const fileDescriptors = threadContext.ddfDataSet.getDataPoint().fileDescriptors;
+    const fileDescriptorsGroups = getDataPointFileDescriptorsGroups(ddfDataSet, fileDescriptors);
 
-    for (let fileDescriptor of threadContext.ddfDataSet.getDataPoint().fileDescriptors) {
-      if (includes(message.fileChunks, fileDescriptor.fullPath)) {
-        validationActions.push(recordProcessor.processRecordBasedRules(threadContext, fileDescriptor));
+    for (let fileDescriptors of fileDescriptorsGroups) {
+      if (isExistInFilesChunks(message.filesChunks, fileDescriptors)) {
+        validationActions.push(recordProcessor.processRecordBasedRules(threadContext, fileDescriptors));
 
-        for (let transFileDescriptor of fileDescriptor.getExistingTranslationDescriptors()) {
-          validationActions.push(recordProcessor.processRecordBasedRules(threadContext, transFileDescriptor));
+        for (let fileDescriptor of fileDescriptors) {
+          validationActions.push(recordProcessor.processRecordBasedRules(threadContext, fileDescriptor.getExistingTranslationDescriptors()));
         }
       }
     }

@@ -14,10 +14,12 @@ import {
   sameTranslation,
   noTranslation,
   toArray,
-  getDataPointFileChunks,
-  createRecordBasedRulesProcessor
+  getDataPointFilesChunks,
+  createRecordBasedRulesProcessor,
+  getDataPointFileDescriptorsGroups
 } from './shared';
 import { logger } from './utils';
+import { FileDescriptor } from "./data/file-descriptor";
 
 const child_process = require('child_process');
 const os = require('os');
@@ -80,7 +82,6 @@ export function createRecordBasedRuleProcessor(context, fileDescriptor, resultHa
           }
         }
 
-
         onDataPointReady();
       }
     );
@@ -88,13 +89,22 @@ export function createRecordBasedRuleProcessor(context, fileDescriptor, resultHa
 }
 
 function getValidationActions(context): any[] {
-  const dataPointActions = context.ddfDataSet.getDataPoint().fileDescriptors.map(fileDescriptor =>
-    context.processRecordBasedRules(fileDescriptor));
+  const fileDescriptorsGroups: FileDescriptor[][] =
+    getDataPointFileDescriptorsGroups(context.ddfDataSet, context.ddfDataSet.getDataPoint().fileDescriptors);
+  const dataPointActions = fileDescriptorsGroups.map(fileDescriptors =>
+    context.processRecordBasedRules(fileDescriptors));
   const dataPointTransActions = flattenDeep(
-    context.ddfDataSet.getDataPoint().fileDescriptors.map(fileDescriptor =>
-      fileDescriptor.getExistingTranslationDescriptors().map(transFileDescriptor =>
-        context.processRecordBasedRules(transFileDescriptor, fileDescriptor)))
-  );
+    fileDescriptorsGroups.map(fileDescriptors => {
+      const transFileActionsByGroup = [];
+
+      for (let fileDescriptor of fileDescriptors) {
+        const translationDescriptors = context.processRecordBasedRules(fileDescriptor.getExistingTranslationDescriptors());
+
+        transFileActionsByGroup.push(translationDescriptors);
+      }
+
+      return transFileActionsByGroup;
+    }));
 
   return concat(dataPointActions, dataPointTransActions);
 }
@@ -113,8 +123,8 @@ export class JSONValidator {
     this.issueEmitter = new EventEmitter();
   }
 
-  processRecordBasedRules(fileDescriptor) {
-    return createRecordBasedRulesProcessor(this, fileDescriptor, resultParam => {
+  processRecordBasedRules(fileDescriptors: FileDescriptor[]) {
+    return createRecordBasedRulesProcessor(this, fileDescriptors, resultParam => {
       const result = toArray(resultParam);
 
       if (!isEmpty(result)) {
@@ -128,7 +138,7 @@ export class JSONValidator {
   }
 
   multiThreadProcessing() {
-    const fileChunks = getDataPointFileChunks(this.ddfDataSet, cpuCount);
+    const filesChunks = getDataPointFilesChunks(this.ddfDataSet, cpuCount);
 
     let childProcessesFinished = 0;
 
@@ -136,11 +146,13 @@ export class JSONValidator {
       const childProcess = child_process.fork(path.resolve(__dirname, 'thread.js'));
 
       childProcess.on('message', (message) => {
-        childProcessesFinished++;
+        if (message.finish) {
+          childProcessesFinished++;
+        }
 
         this.out = compact(this.out.concat(message.out));
 
-        if (childProcessesFinished === cpuCount) {
+        if (message.finish && childProcessesFinished === cpuCount) {
           this.issueEmitter.emit('finish', message.err, this.out);
         }
       });
@@ -148,7 +160,7 @@ export class JSONValidator {
       childProcess.send({
         rootPath: this.rootPath,
         settings: this.settings,
-        fileChunks: fileChunks[index],
+        filesChunks: filesChunks[index],
         isCollectResultMode: true
       });
     }
@@ -207,8 +219,8 @@ export class StreamValidator {
     this.issueEmitter = new EventEmitter();
   }
 
-  processRecordBasedRules(dataPointDetail) {
-    return createRecordBasedRulesProcessor(this, dataPointDetail, resultParam => {
+  processRecordBasedRules(fileDescriptors: FileDescriptor[]) {
+    return createRecordBasedRulesProcessor(this, fileDescriptors, resultParam => {
       const result = toArray(resultParam);
 
       if (!isEmpty(result)) {
@@ -224,8 +236,8 @@ export class StreamValidator {
   }
 
   multiThreadProcessing() {
-    const fileChunks = getDataPointFileChunks(this.ddfDataSet, cpuCount);
-    const total = fileChunks.reduce((result, chunk) => result + chunk.length, 0);
+    const filesChunks = getDataPointFilesChunks(this.ddfDataSet, cpuCount);
+    const total = filesChunks.reduce((result, chunk) => result + chunk.length, 0);
 
     logger.progressInit('datapoints validation', {total});
 
@@ -255,7 +267,7 @@ export class StreamValidator {
       childProcess.send({
         rootPath: this.rootPath,
         settings: this.settings,
-        fileChunks: fileChunks[index],
+        filesChunks: filesChunks[index],
         isCollectResultMode: false
       });
     }
@@ -325,8 +337,8 @@ export class SimpleValidator {
     this.settings.excludeTags += ' WARNING ';
   }
 
-  processRecordBasedRules(dataPointDetail) {
-    return createRecordBasedRulesProcessor(this, dataPointDetail, result => {
+  processRecordBasedRules(fileDescriptors: FileDescriptor[]) {
+    return createRecordBasedRulesProcessor(this, fileDescriptors, result => {
       if (!isEmpty(result)) {
         this.isDataSetCorrect = false;
       }

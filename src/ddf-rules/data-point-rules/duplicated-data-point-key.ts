@@ -1,4 +1,4 @@
-import { uniq, isEmpty, difference } from 'lodash';
+import { uniq, difference } from 'lodash';
 import { DUPLICATED_DATA_POINT_KEY } from '../registry';
 import { Issue } from '../issue';
 
@@ -44,22 +44,14 @@ export const rule = {
       line: dataPointDescriptor.line
     });
   },
-  aggregativeRule: (dataPointDescriptor) => {
+  aggregativeRule: () => {
     const duplicates: string[] = <string[]>uniq(storage.duplicatedHashes);
-    const data: any[] = [];
+    const issues: Issue[] = [];
 
     for (const hash of duplicates) {
-      data.push(storage.content[hash]);
+      issues.push(new Issue(DUPLICATED_DATA_POINT_KEY).setData(storage.content[hash]));
     }
 
-    let issue = null;
-
-    if (!isEmpty(duplicates)) {
-      issue = new Issue(DUPLICATED_DATA_POINT_KEY).setPath(dataPointDescriptor.fileDescriptor.fullPath).setData(data);
-    }
-
-    initStorage();
-
-    return issue;
+    return issues;
   }
 };

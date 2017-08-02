@@ -44,7 +44,15 @@ const argv = yargs
   .describe('exclude-rules', 'Process all rules except selected')
   .describe('exclude-dirs',
     'Process all directories except selected. Directories should be separated via "," character')
-  .describe('heap', 'Set custom heap size')
+  .describe('heap', `Set custom heap size:
+1024 will increase heap to 1gb
+2048 will increase heap to 2gb
+3072 will increase heap to 3gb
+4096 will increase heap to 4gb
+5120 will increase heap to 5gb
+6144 will increase heap to 6gb
+7168 will increase heap to 7gb
+8192 will increase heap to 8gb`)
   .argv;
 
 export const getDDFRootFolder = () => head(argv._) || process.cwd();
