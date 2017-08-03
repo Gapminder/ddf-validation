@@ -1,5 +1,5 @@
 import * as chai from 'chai';
-import { head, flattenDeep, compact, isEqual, endsWith } from 'lodash';
+import { head, flattenDeep, compact, isEqual } from 'lodash';
 import { parallelLimit } from 'async';
 import { DdfDataSet } from '../src/ddf-definitions/ddf-data-set';
 import {
@@ -236,39 +236,34 @@ describe('rules for data points', () => {
         const actions = <any>flattenDeep(actionsSource);
 
         parallelLimit(actions, CONCURRENT_OPERATIONS_AMOUNT, () => {
-          const results = compact(tempResults);
+          const results = compact(head(tempResults));
           const EXPECTED_RESULT = {
-            path: 'ddf--datapoints--gas_production_bcf--by--geo--year.csv',
             data: [
-              [
-                {
-                  file: 'ddf--datapoints--gas_production_bcf--by--geo--year.csv',
-                  record: {
-                    geo: 'algeria',
-                    year: '1977',
-                    gas_production_bcf: '0.74553176325556'
-                  },
-                  line: 7
+              {
+                file: 'ddf--datapoints--gas_production_bcf--by--geo--year.csv',
+                record: {
+                  geo: 'algeria',
+                  year: '1977',
+                  gas_production_bcf: '0.74553176325556'
                 },
-                {
-                  file: 'ddf--datapoints--gas_production_bcf--by--geo--year.csv',
-                  record: {
-                    geo: 'algeria',
-                    year: '1977',
-                    gas_production_bcf: '1.15619237401781'
-                  },
-                  line: 8
-                }
-              ]
+                line: 7
+              },
+              {
+                "file": "ddf--datapoints--gas_production_bcf--by--geo--year.csv",
+                record: {
+                  geo: 'algeria',
+                  year: '1977',
+                  gas_production_bcf: '1.15619237401781'
+                },
+                line: 8
+              }
             ]
           };
 
           expect(results.length).to.equal(1);
 
-          const result = head(results);
+          const result: any = head(results);
 
-          expect(result.type).to.equal(DUPLICATED_DATA_POINT_KEY);
-          expect(endsWith(result.path, EXPECTED_RESULT.path)).to.be.true;
           expect(isEqual(result.data, EXPECTED_RESULT.data)).to.be.true;
 
           done();

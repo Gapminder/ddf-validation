@@ -225,7 +225,7 @@ describe('translation rules', () => {
         const actions = flattenDeep(actionsSource);
 
         parallelLimit(actions, CONCURRENT_OPERATIONS_AMOUNT, () => {
-          const results = compact(tempResults);
+          const results = compact(flattenDeep(tempResults));
 
           expect(isEmpty(results)).to.be.true;
 
@@ -262,18 +262,34 @@ describe('translation rules', () => {
         const actions = flattenDeep(actionsSource);
 
         parallelLimit(actions, CONCURRENT_OPERATIONS_AMOUNT, () => {
-          const results = compact(tempResults);
+          const results = compact(flattenDeep(tempResults));
           const EXPECTED_RESULT = {
-            path: 'lang/nl-nl/ddf--datapoints--company_size_string--by--company--anno.csv',
-            data: ['anno:2016,company:mic@company_size_string']
+            data: [
+              {
+                file: 'ddf--datapoints--company_size_string--by--company--anno.csv',
+                record: {
+                  company: 'mic',
+                  anno: '2016',
+                  company_size_string: 'groot'
+                },
+                line: 1
+              },
+              {
+                file: 'ddf--datapoints--company_size_string--by--company--anno.csv',
+                record: {
+                  company: 'mic',
+                  anno: '2016',
+                  company_size_string: 'groot'
+                },
+                line: 2
+              }
+            ]
           };
 
           expect(results.length).to.equal(1);
 
           const result = head(results);
 
-          expect(result.type).to.equal(DUPLICATED_DATA_POINT_TRANSLATION_KEY);
-          expect(endsWith(result.path, EXPECTED_RESULT.path)).to.be.true;
           expect(isEqual(result.data, EXPECTED_RESULT.data)).to.be.true;
 
           done();
