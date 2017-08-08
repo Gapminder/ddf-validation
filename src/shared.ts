@@ -1,57 +1,26 @@
-import { compact, isArray, sortBy, values } from 'lodash';
-import { parallelLimit } from 'async';
+import { isArray, isEmpty, sortBy, values } from 'lodash';
 import { allRules as ddfRules } from './ddf-rules';
 import { FileDescriptor } from './data/file-descriptor';
 import { DdfDataSet } from './ddf-definitions/ddf-data-set';
+import { Issue } from './ddf-rules/issue';
+import { IssuesFilter } from './utils/issues-filter';
+import { DataPointChunksProcessingStory } from './stories/data-point-chunks-processing';
 
-/*eslint max-params: ["error", 4]*/
-function createRecordAggregationProcessor(context, ddfDataSet, fileDescriptor, resultHandler) {
-  return (record, line) => {
-    Object.getOwnPropertySymbols(ddfRules)
-      .filter(key => sameTranslation(key, fileDescriptor) || noTranslation(key, fileDescriptor))
-      .filter(key => isRecordRule(ddfRules[key]) || isAggregativeRule(ddfRules[key]))
-      .filter(key => context.issuesFilter.isAllowed(key))
-      .forEach(key => {
-        if (isRecordRule(ddfRules[key])) {
-          const issues = ddfRules[key].recordRule({ddfDataSet, fileDescriptor, record, line});
+const injectTranslations = (fileDescriptors: FileDescriptor[]) => {
+  const translationDescriptors = [];
 
-          resultHandler(issues);
-        }
+  for (let fileDescriptor of fileDescriptors) {
+    translationDescriptors.push(...fileDescriptor.getExistingTranslationDescriptors());
+  }
 
-        if (isAggregativeRule(ddfRules[key])) {
-          ddfRules[key].aggregateRecord({ddfDataSet, fileDescriptor, record, line});
-        }
-      });
-  };
-}
-
-function processAggregation(context, ddfDataSet, fileDescriptor, resultHandler) {
-  Object.getOwnPropertySymbols(ddfRules)
-    .filter(ruleKey => sameTranslation(ruleKey, fileDescriptor) || noTranslation(ruleKey, fileDescriptor))
-    .filter(ruleKey => isAggregativeRule(ddfRules[ruleKey]))
-    .filter(ruleKey => context.issuesFilter.isAllowed(ruleKey))
-    .forEach(ruleKey => {
-      resultHandler(ddfRules[ruleKey].aggregativeRule({ddfDataSet, fileDescriptor}, ruleKey));
-    });
-}
-
-function clearAggregationCache(context, fileDescriptor) {
-  Object.getOwnPropertySymbols(ddfRules)
-    .filter(ruleKey => sameTranslation(ruleKey, fileDescriptor) || noTranslation(ruleKey, fileDescriptor))
-    .filter(ruleKey => isAggregativeRule(ddfRules[ruleKey]))
-    .filter(ruleKey => context.issuesFilter.isAllowed(ruleKey))
-    .forEach(ruleKey => {
-      ddfRules[ruleKey].resetStorage();
-    });
-}
+  fileDescriptors.push(...translationDescriptors);
+};
 
 export const CONCURRENT_OPERATIONS_AMOUNT = 30;
-export const isSimpleRule = ruleObject => !!ruleObject.rule;
-export const isRecordRule = ruleObject => !!ruleObject.recordRule;
-export const isAggregativeRule = ruleObject => !!ruleObject.aggregateRecord && !!ruleObject.aggregativeRule;
+
 export const sameTranslation = (key, fileDescriptor) => fileDescriptor.isTranslation === ddfRules[key].isTranslation;
 export const noTranslation = (key, fileDescriptor) => !fileDescriptor.isTranslation && !ddfRules[key].isTranslation;
-export const toArray = value => compact(isArray(value) ? value : [value]);
+export const isSimpleRule = ruleObject => !!ruleObject.rule;
 export const getDataPointFileDescriptorsGroups = (ddfDataSet: DdfDataSet, fileDescriptors: FileDescriptor[]): FileDescriptor[][] => {
   const dataPointsGroups = {};
   const resources = ddfDataSet.getDataPackageDescriptor().dataPackageContent.resources;
@@ -84,8 +53,32 @@ export const getDataPointFileDescriptorsGroups = (ddfDataSet: DdfDataSet, fileDe
 
   return <FileDescriptor[][]>values(dataPointsGroups);
 };
-export const getDataPointFilesChunks = (ddfDataSet: DdfDataSet, cpuCount: number): string[] => {
-  const filesChunks = [];
+
+export const getAllDataPointFileDescriptorsChunks = (ddfDataSet: DdfDataSet): FileDescriptor[][] => {
+  const chunks = [];
+  const descriptorsGroupsWithSize = getDataPointFileDescriptorsGroups(ddfDataSet, ddfDataSet.getDataPoint().fileDescriptors)
+    .map(descriptorsGroup => {
+      const size = descriptorsGroup.reduce((sum: number, fileDescriptor: FileDescriptor) =>
+        sum + fileDescriptor.size, 0);
+
+      return {descriptorsGroup, size};
+    });
+  const descriptorsGroupsSortedBySize = sortBy(descriptorsGroupsWithSize, ['size']);
+
+  for (let descriptorPosition = 0;
+       descriptorPosition < descriptorsGroupsSortedBySize.length;
+       descriptorPosition++) {
+    const expectedDescriptorsGroup = descriptorsGroupsSortedBySize[descriptorPosition].descriptorsGroup;
+
+    injectTranslations(expectedDescriptorsGroup);
+    chunks.push(expectedDescriptorsGroup);
+  }
+
+  return chunks;
+};
+
+export const getDataPointFileDescriptorsChunks = (ddfDataSet: DdfDataSet, cpuCount: number): FileDescriptor[][][] => {
+  const chunks = [];
   const descriptorsGroupsWithSize = getDataPointFileDescriptorsGroups(ddfDataSet, ddfDataSet.getDataPoint().fileDescriptors)
     .map(descriptorsGroup => {
       const size = descriptorsGroup.reduce((sum: number, fileDescriptor: FileDescriptor) =>
@@ -96,7 +89,7 @@ export const getDataPointFilesChunks = (ddfDataSet: DdfDataSet, cpuCount: number
   const descriptorsGroupsSortedBySize = sortBy(descriptorsGroupsWithSize, ['size']);
 
   for (let index = 0; index < cpuCount; index++) {
-    filesChunks.push([]);
+    chunks.push([]);
   }
 
   for (let index = 0; index < descriptorsGroupsSortedBySize.length; index += cpuCount) {
@@ -104,44 +97,115 @@ export const getDataPointFilesChunks = (ddfDataSet: DdfDataSet, cpuCount: number
          completeIndex < cpuCount && descriptorPosition < descriptorsGroupsSortedBySize.length;
          completeIndex++, descriptorPosition = index + completeIndex) {
       const expectedDescriptorsGroup = descriptorsGroupsSortedBySize[descriptorPosition].descriptorsGroup;
-      const expectedFiles = expectedDescriptorsGroup.map(fileDescriptor => fileDescriptor.fullPath);
 
-      filesChunks[completeIndex].push(expectedFiles);
+      injectTranslations(expectedDescriptorsGroup);
+      chunks[completeIndex].push(expectedDescriptorsGroup);
     }
   }
 
-  return filesChunks;
+  return chunks;
 };
 
-export function createRecordBasedRulesProcessor(context,
-                                                fileDescriptors: FileDescriptor[],
-                                                resultHandler: Function,
-                                                progressHandler?: Function) {
-  const ddfDataSet = context.ddfDataSet;
+export const getDataPointFilesChunks = (ddfDataSet: DdfDataSet, cpuCount: number): string[][][] => {
+  const dataPointFileDescriptorsChunks = getDataPointFileDescriptorsChunks(ddfDataSet, cpuCount);
 
-  return onDataPointReady => {
-    const actions = fileDescriptors.map(fileDescriptor => onFileDescriptorReady => {
-      context.ddfDataSet.getDataPoint().loadFile(
-        fileDescriptor,
-        createRecordAggregationProcessor(context, ddfDataSet, fileDescriptor, resultHandler),
-        () => {
-          processAggregation(context, ddfDataSet, fileDescriptor, resultHandler);
+  return dataPointFileDescriptorsChunks.map(chunkForProcess =>
+    chunkForProcess.map(dataPointFileDescriptors =>
+      dataPointFileDescriptors.map(dataPointFileDescriptor => dataPointFileDescriptor.fullPath)));
+};
 
-          onFileDescriptorReady();
-        }
-      );
-    });
 
-    parallelLimit(actions, 10, () => {
-      if (progressHandler) {
-        progressHandler();
+export const getSimpleRulesResult = (ddfDataSet: DdfDataSet, issuesFilter: IssuesFilter): Issue[] => {
+  const rulesKeys = Object.getOwnPropertySymbols(ddfRules).filter(key => isSimpleRule(ddfRules[key]) && issuesFilter.isAllowed(key));
+  const allIssuesSources = [];
+
+  for (let key of rulesKeys) {
+    const issuesSources = ddfRules[key].rule(ddfDataSet);
+
+    if (!isEmpty(issuesSources)) {
+      if (isArray(issuesSources)) {
+        allIssuesSources.push(...issuesSources);
       }
 
-      fileDescriptors.forEach(fileDescriptor => {
-        clearAggregationCache(context, fileDescriptor)
-      });
+      if (!isArray(issuesSources)) {
+        allIssuesSources.push(issuesSources);
+      }
+    }
+  }
 
-      onDataPointReady();
+  return allIssuesSources;
+};
+
+export const validationProcess = (context, logger, isCollectResultMode?: boolean) => {
+  const simpleRulesResult = getSimpleRulesResult(context.ddfDataSet, context.issuesFilter);
+  const allIssuesToOut = [];
+
+  if (!isEmpty(simpleRulesResult)) {
+    simpleRulesResult.forEach((issue: Issue) => {
+      allIssuesToOut.push(issue.view());
+
+      context.issueEmitter.emit('issue', issue.view());
     });
+  }
+
+  if (context.settings.datapointlessMode) {
+    context.issueEmitter.emit('finish', null, allIssuesToOut);
+  }
+
+  if (!context.settings.datapointlessMode && (context.settings.isMultithread && context.multiThreadProcessing)) {
+    context.multiThreadProcessing();
+  }
+
+  if (!context.settings.datapointlessMode && (!context.settings.isMultithread || !context.multiThreadProcessing)) {
+    const fileDescriptorsChunks = getAllDataPointFileDescriptorsChunks(context.ddfDataSet);
+    const dataPointChunksProcessingStory = new DataPointChunksProcessingStory(fileDescriptorsChunks, context.issueEmitter);
+    const theEnd = (out: Issue[] = []) => {
+      context.issueEmitter.emit('finish', null, allIssuesToOut.concat(out));
+    };
+
+    context.issueEmitter.on('init-chunk-progress', (total: number) => {
+      logger.progressInit('datapoints validation', {total});
+    });
+
+    context.issueEmitter.on('chunk-progress', () => {
+      logger.progress();
+    });
+
+    dataPointChunksProcessingStory.waitForResult(theEnd, isCollectResultMode).processDataPointChunks(context.ddfDataSet, context.issuesFilter);
+  }
+};
+
+export const simpleValidationProcess = (context, logger) => {
+  const simpleRulesResult = getSimpleRulesResult(context.ddfDataSet, context.issuesFilter);
+
+  let isDataSetCorrect = true;
+
+  if (!isEmpty(simpleRulesResult)) {
+    isDataSetCorrect = false;
+
+    simpleRulesResult.forEach((issue: Issue) => {
+      context.issueEmitter.emit('issue', issue.view());
+    });
+  }
+
+  if (!isDataSetCorrect) {
+    context.issueEmitter.emit('finish', null, isDataSetCorrect);
+    return;
+  }
+
+  const fileDescriptorsChunks = getAllDataPointFileDescriptorsChunks(context.ddfDataSet);
+  const dataPointChunksProcessingStory = new DataPointChunksProcessingStory(fileDescriptorsChunks, context.issueEmitter);
+  const theEnd = (out: any[]) => {
+    context.issueEmitter.emit('finish', null, isEmpty(out) && isEmpty(simpleRulesResult));
   };
-}
+
+  context.issueEmitter.on('init-chunk-progress', (total: number) => {
+    logger.progressInit('datapoints validation', {total});
+  });
+
+  context.issueEmitter.on('chunk-progress', () => {
+    logger.progress();
+  });
+
+  dataPointChunksProcessingStory.waitForResult(theEnd, true).processDataPointChunks(context.ddfDataSet, context.issuesFilter);
+};
