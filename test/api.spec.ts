@@ -2,10 +2,19 @@ import * as chai from 'chai';
 import { parallel } from 'async';
 import { head, isEmpty, isEqual } from 'lodash';
 import { JSONValidator, StreamValidator, SimpleValidator, validate } from '../src/index';
+import { allRules } from '../src/ddf-rules';
 
 const expect = chai.expect;
 
 process.env.SILENT_MODE = true;
+
+const resetGlobals = () => {
+  Object.getOwnPropertySymbols(allRules).forEach(dataPointRuleKey => {
+    if (allRules[dataPointRuleKey].resetStorage) {
+      allRules[dataPointRuleKey].resetStorage();
+    }
+  });
+};
 
 describe('api', () => {
   describe('when JSONValidator', () => {
@@ -32,6 +41,7 @@ describe('api', () => {
           done();
         });
 
+        resetGlobals();
         validate(jsonValidator);
       });
     });
@@ -48,6 +58,7 @@ describe('api', () => {
           done();
         });
 
+        resetGlobals();
         validate(jsonValidator);
       });
 
@@ -61,6 +72,7 @@ describe('api', () => {
           done();
         });
 
+        resetGlobals();
         validate(jsonValidator);
       });
 
@@ -80,6 +92,7 @@ describe('api', () => {
           done();
         });
 
+        resetGlobals();
         validate(jsonValidator);
       });
     });
@@ -96,6 +109,7 @@ describe('api', () => {
           done();
         });
 
+        resetGlobals();
         validate(streamValidator);
       });
 
@@ -114,6 +128,7 @@ describe('api', () => {
           done();
         });
 
+        resetGlobals();
         validate(streamValidator);
       });
     });
@@ -130,6 +145,7 @@ describe('api', () => {
           done();
         });
 
+        resetGlobals();
         validate(streamValidator);
       });
 
@@ -148,6 +164,7 @@ describe('api', () => {
           done();
         });
 
+        resetGlobals();
         validate(streamValidator);
       });
 
@@ -171,6 +188,7 @@ describe('api', () => {
           done();
         });
 
+        resetGlobals();
         validate(streamValidator);
       });
 
@@ -191,6 +209,7 @@ describe('api', () => {
           done();
         });
 
+        resetGlobals();
         validate(streamValidator);
       });
     });
@@ -208,6 +227,7 @@ describe('api', () => {
           done();
         });
 
+        resetGlobals();
         validate(fundamentalValidator);
       });
     });
@@ -228,6 +248,7 @@ describe('api', () => {
           done();
         });
 
+        resetGlobals();
         validate(streamValidator);
       });
 
@@ -256,6 +277,7 @@ describe('api', () => {
           done();
         });
 
+        resetGlobals();
         validate(streamValidator);
       });
 
@@ -280,6 +302,7 @@ describe('api', () => {
           done();
         });
 
+        resetGlobals();
         validate(streamValidator);
       });
       it('should correctly validate "sankey" dataset via SimpleValidator', done => {
@@ -293,6 +316,7 @@ describe('api', () => {
           done();
         });
 
+        resetGlobals();
         validate(fundamentalValidator);
       });
     });
@@ -310,6 +334,7 @@ describe('api', () => {
           done();
         });
 
+        resetGlobals();
         validate(fundamentalValidator);
       });
     });
@@ -317,6 +342,7 @@ describe('api', () => {
 
   describe('run validator under multi thread mode', () => {
     const _JSONValidator = require('../lib/index').JSONValidator;
+    const _StreamValidator = require('../lib/index').StreamValidator;
 
     it('should result for generic and multi thread modes be same ', done => {
       const EXPECTED_ISSUES_COUNT = 8;
@@ -331,13 +357,20 @@ describe('api', () => {
             validate(jsonValidator);
           },
           multithread: onDataSetValidated => {
-            const jsonValidator = new _JSONValidator(DATA_SET_PATH, {
+            const streamValidator = new _StreamValidator(DATA_SET_PATH, {
               isMultithread: true
             });
+            const issues = [];
 
-            jsonValidator.on('finish', onDataSetValidated);
+            streamValidator.on('issue', (issue: any) => {
+              issues.push(issue);
+            });
 
-            validate(jsonValidator);
+            streamValidator.on('finish', () => {
+              onDataSetValidated(null, issues);
+            });
+
+            validate(streamValidator);
           }
         },
         (err, results) => {

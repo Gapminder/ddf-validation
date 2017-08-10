@@ -1,6 +1,6 @@
 import * as chai from 'chai';
-import { head, flattenDeep, compact, isEqual } from 'lodash';
-import { parallelLimit } from 'async';
+import { EventEmitter } from 'events';
+import { head, isEqual } from 'lodash';
 import { DdfDataSet } from '../src/ddf-definitions/ddf-data-set';
 import {
   DATA_POINT_UNEXPECTED_ENTITY_VALUE,
@@ -8,43 +8,46 @@ import {
   DATA_POINT_CONSTRAINT_VIOLATION,
   DUPLICATED_DATA_POINT_KEY
 } from '../src/ddf-rules/registry';
-import { createRecordBasedRuleProcessor } from '../src/index';
 import { allRules } from '../src/ddf-rules';
 import { Issue } from '../src/ddf-rules/issue';
+import { getAllDataPointFileDescriptorsChunks } from '../src/shared';
+import { DataPointChunksProcessingStory } from '../src/stories/data-point-chunks-processing';
+import { IssuesFilter } from '../src/utils/issues-filter';
 
 const expect = chai.expect;
-const CONCURRENT_OPERATIONS_AMOUNT = 30;
 
 process.env.SILENT_MODE = true;
 
+const issuesFilter = new IssuesFilter({});
+
 describe('rules for data points', () => {
   describe(`when data set is correct ('fixtures/good-folder')`, () => {
-    const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
-
     Object.getOwnPropertySymbols(allRules).forEach(dataPointRuleKey => {
       it(`any issue should NOT be found for rule ${Symbol.keyFor(dataPointRuleKey)}`, done => {
+        const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
+        const issueEmitter = new EventEmitter();
+        const issues: Issue[] = [];
+
         ddfDataSet.load(() => {
-          const fileDescriptor = head(ddfDataSet.getDataPoint().fileDescriptors);
-          const rule = allRules[dataPointRuleKey];
+          const fileDescriptorsChunks = getAllDataPointFileDescriptorsChunks(ddfDataSet);
+          const theEnd = () => {
+            expect(issues.length).to.equal(0);
 
-          if (rule.resetStorage) {
-            rule.resetStorage();
-          }
+            done();
+          };
 
-          ddfDataSet.getDataPoint().loadFile(
-            fileDescriptor,
-            (record, line) => {
-              if (rule.isDataPoint && rule.recordRule) {
-                expect(rule.recordRule({
-                  ddfDataSet,
-                  fileDescriptor,
-                  record,
-                  line
-                }).length).to.equal(0);
-              }
-            },
-            () => done()
-          );
+          issueEmitter.on('issue', (issue) => {
+            issues.push(issue);
+          });
+
+          const customRules = [{
+            ruleKey: dataPointRuleKey,
+            rule: allRules[dataPointRuleKey]
+          }];
+
+          const dataPointChunksProcessingStory = new DataPointChunksProcessingStory(fileDescriptorsChunks, issueEmitter);
+
+          dataPointChunksProcessingStory.withCustomRules(customRules).waitForResult(theEnd).processDataPointChunks(ddfDataSet, issuesFilter);
         });
       });
     });
@@ -55,38 +58,40 @@ describe('rules for data points', () => {
    (fixtures/rules-cases/data-point-unexpected-entity-value)`, done => {
       const EXPECTED_FILE = 'ddf--datapoints--pop--by--country--year.csv';
       const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-unexpected-entity-value', null);
+      const issueEmitter = new EventEmitter();
+      const issues: Issue[] = [];
+      const expectedConcept = 'country';
+      const expectedLine = 2;
+      const expectedValue = 'non-usa';
+
       ddfDataSet.load(() => {
-        const rule = allRules[DATA_POINT_UNEXPECTED_ENTITY_VALUE];
-        const ruleStarter = rule.recordRule;
-        const fileDescriptor = head(ddfDataSet.getDataPoint().fileDescriptors.filter(descriptor => descriptor.file === EXPECTED_FILE));
-        const expectedConcept = 'country';
-        const expectedLine = 2;
-        const expectedValue = 'non-usa';
-        const allIssues = [];
+        const fileDescriptorsChunks = getAllDataPointFileDescriptorsChunks(ddfDataSet);
+        const theEnd = () => {
+          expect(issues.length).to.equal(1);
 
-        rule.resetStorage();
+          const issue = head(issues);
 
-        ddfDataSet.getDataPoint().loadFile(
-          fileDescriptor,
-          (record, line) => {
-            const issues: Issue[] = ruleStarter({ddfDataSet, fileDescriptor, record, line});
+          expect(issue.path.endsWith(EXPECTED_FILE)).to.be.true;
+          expect(!!issue.data).to.be.true;
+          expect(issue.data.concept).to.equal(expectedConcept);
+          expect(issue.data.line).to.equal(expectedLine);
+          expect(issue.data.value).to.equal(expectedValue);
 
-            allIssues.push(...issues);
-          },
-          () => {
-            const issue = head(allIssues);
+          done();
+        };
 
-            expect(allIssues.length).to.equal(1);
-            expect(issue.type).to.equal(DATA_POINT_UNEXPECTED_ENTITY_VALUE);
-            expect(issue.path.endsWith(EXPECTED_FILE)).to.be.true;
-            expect(!!issue.data).to.be.true;
-            expect(issue.data.concept).to.equal(expectedConcept);
-            expect(issue.data.line).to.equal(expectedLine);
-            expect(issue.data.value).to.equal(expectedValue);
+        issueEmitter.on('issue', (issue) => {
+          issues.push(issue);
+        });
 
-            done();
-          }
-        );
+        const customRules = [{
+          ruleKey: DATA_POINT_UNEXPECTED_ENTITY_VALUE,
+          rule: allRules[DATA_POINT_UNEXPECTED_ENTITY_VALUE]
+        }];
+
+        const dataPointChunksProcessingStory = new DataPointChunksProcessingStory(fileDescriptorsChunks, issueEmitter);
+
+        dataPointChunksProcessingStory.withCustomRules(customRules).waitForResult(theEnd).processDataPointChunks(ddfDataSet, issuesFilter);
       });
     });
 
@@ -94,38 +99,40 @@ describe('rules for data points', () => {
    (fixtures/rules-cases/data-point-unexpected-time-value)`, done => {
       const EXPECTED_FILE = 'ddf--datapoints--pop--by--country--year.csv';
       const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-unexpected-time-value', null);
+      const issueEmitter = new EventEmitter();
+      const issues: Issue[] = [];
+      const expectedConcept = 'year';
+      const expectedLine = 2;
+      const expectedValue = '1960wfoo';
+
       ddfDataSet.load(() => {
-        const rule = allRules[DATA_POINT_UNEXPECTED_TIME_VALUE];
-        const ruleStarter = rule.recordRule;
-        const fileDescriptor = head(ddfDataSet.getDataPoint().fileDescriptors.filter(descriptor => descriptor.file === EXPECTED_FILE));
-        const expectedConcept = 'year';
-        const expectedLine = 2;
-        const expectedValue = '1960wfoo';
-        const allIssues = [];
+        const fileDescriptorsChunks = getAllDataPointFileDescriptorsChunks(ddfDataSet);
+        const theEnd = () => {
+          expect(issues.length).to.equal(1);
 
-        rule.resetStorage();
+          const issue = head(issues);
 
-        ddfDataSet.getDataPoint().loadFile(
-          fileDescriptor,
-          (record, line) => {
-            const issues: Issue[] = ruleStarter({ddfDataSet, fileDescriptor, record, line});
+          expect(issue.path.endsWith(EXPECTED_FILE)).to.be.true;
+          expect(!!issue.data).to.be.true;
+          expect(issue.data.concept).to.equal(expectedConcept);
+          expect(issue.data.line).to.equal(expectedLine);
+          expect(issue.data.value).to.equal(expectedValue);
 
-            allIssues.push(...issues);
-          },
-          () => {
-            const issue = head(allIssues);
+          done();
+        };
 
-            expect(allIssues.length).to.equal(1);
-            expect(issue.type).to.equal(DATA_POINT_UNEXPECTED_TIME_VALUE);
-            expect(issue.path.endsWith(EXPECTED_FILE)).to.be.true;
-            expect(!!issue.data).to.be.true;
-            expect(issue.data.concept).to.equal(expectedConcept);
-            expect(issue.data.line).to.equal(expectedLine);
-            expect(issue.data.value).to.equal(expectedValue);
+        issueEmitter.on('issue', (issue) => {
+          issues.push(issue);
+        });
 
-            done();
-          }
-        );
+        const customRules = [{
+          ruleKey: DATA_POINT_UNEXPECTED_TIME_VALUE,
+          rule: allRules[DATA_POINT_UNEXPECTED_TIME_VALUE]
+        }];
+
+        const dataPointChunksProcessingStory = new DataPointChunksProcessingStory(fileDescriptorsChunks, issueEmitter);
+
+        dataPointChunksProcessingStory.withCustomRules(customRules).waitForResult(theEnd).processDataPointChunks(ddfDataSet, issuesFilter);
       });
     });
 
@@ -133,142 +140,137 @@ describe('rules for data points', () => {
    (fixtures/rules-cases/data-point-unexpected-entity-value-2)`, done => {
       const EXPECTED_FILE = 'ddf--datapoints--pop--by--geo--year.csv';
       const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-unexpected-entity-value-2', null);
+      const issueEmitter = new EventEmitter();
+      const issues: Issue[] = [];
+      const expectedConcept = 'geo';
+      const expectedLine = 2;
+      const expectedValue = 'Afg';
+
       ddfDataSet.load(() => {
-        const rule = allRules[DATA_POINT_UNEXPECTED_ENTITY_VALUE];
-        const ruleStarter = rule.recordRule;
-        const fileDescriptor = head(ddfDataSet.getDataPoint().fileDescriptors.filter(descriptor => descriptor.file === EXPECTED_FILE));
-        const expectedConcept = 'geo';
-        const expectedLine = 2;
-        const expectedValue = 'Afg';
-        const allIssues = [];
+        const fileDescriptorsChunks = getAllDataPointFileDescriptorsChunks(ddfDataSet);
+        const theEnd = () => {
+          expect(issues.length).to.equal(1);
 
-        rule.resetStorage();
+          const issue = head(issues);
 
-        ddfDataSet.getDataPoint().loadFile(
-          fileDescriptor,
-          (record, line) => {
-            const issues: Issue[] = ruleStarter({ddfDataSet, fileDescriptor, record, line});
+          expect(issue.path.endsWith(EXPECTED_FILE)).to.be.true;
+          expect(!!issue.data).to.be.true;
+          expect(issue.data.concept).to.equal(expectedConcept);
+          expect(issue.data.line).to.equal(expectedLine);
+          expect(issue.data.value).to.equal(expectedValue);
 
-            allIssues.push(...issues);
-          },
-          () => {
-            const issue = head(allIssues);
+          done();
+        };
 
-            expect(allIssues.length).to.equal(1);
-            expect(issue.type).to.equal(DATA_POINT_UNEXPECTED_ENTITY_VALUE);
-            expect(issue.path.endsWith(EXPECTED_FILE)).to.be.true;
-            expect(!!issue.data).to.be.true;
-            expect(issue.data.concept).to.equal(expectedConcept);
-            expect(issue.data.line).to.equal(expectedLine);
-            expect(issue.data.value).to.equal(expectedValue);
+        issueEmitter.on('issue', (issue) => {
+          issues.push(issue);
+        });
 
-            done();
-          }
-        );
+        const customRules = [{
+          ruleKey: DATA_POINT_UNEXPECTED_ENTITY_VALUE,
+          rule: allRules[DATA_POINT_UNEXPECTED_ENTITY_VALUE]
+        }];
+
+        const dataPointChunksProcessingStory = new DataPointChunksProcessingStory(fileDescriptorsChunks, issueEmitter);
+
+        dataPointChunksProcessingStory.withCustomRules(customRules).waitForResult(theEnd).processDataPointChunks(ddfDataSet, issuesFilter);
       });
     });
 
     it(`an issue should be found for rule 'DATA_POINT_CONSTRAINT_VIOLATION'
    (fixtures/rules-cases/data-point-constraint-violation)`, done => {
-      const EXPECTED_FILE = 'ddf--datapoints--population--by--country_code-900--year--age.csv';
       const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-constraint-violation', null);
+      const issueEmitter = new EventEmitter();
+      const issues: Issue[] = [];
+      const EXPECTED_ISSUES_QUANTITY = 2;
+      const EXPECTED_FILE = 'ddf--datapoints--population--by--country_code-900--year--age.csv';
+      const EXPECTED_ISSUES_DATA = [{
+        path: EXPECTED_FILE,
+        data: {constraints: ['900'], fieldName: 'country_code', fieldValue: '777', line: 1}
+      }, {
+        path: EXPECTED_FILE,
+        data: {constraints: ['900'], fieldName: 'country_code', fieldValue: '901', line: 3}
+      }];
+
       ddfDataSet.load(() => {
-        const rule = allRules[DATA_POINT_CONSTRAINT_VIOLATION];
-        const ruleStarter = rule.recordRule;
-        const fileDescriptor = head(ddfDataSet.getDataPoint().fileDescriptors.filter(descriptor => descriptor.file === EXPECTED_FILE));
-        const issuesStorage = [];
-        const EXPECTED_ISSUES_QUANTITY = 2;
-        const EXPECTED_ISSUES_DATA = [{
-          path: EXPECTED_FILE,
-          data: {constraints: ['900'], fieldName: 'country_code', fieldValue: '777', line: 1}
-        }, {
-          path: EXPECTED_FILE,
-          data: {constraints: ['900'], fieldName: 'country_code', fieldValue: '901', line: 3}
+        const fileDescriptorsChunks = getAllDataPointFileDescriptorsChunks(ddfDataSet);
+        const theEnd = () => {
+          expect(issues.length).to.equal(EXPECTED_ISSUES_QUANTITY);
+
+          issues.forEach((issue, index: number) => {
+            expect(issue.path.endsWith(EXPECTED_ISSUES_DATA[index].path)).to.be.true;
+            expect(!!issue.data).to.be.true;
+            expect(isEqual(issue.data, EXPECTED_ISSUES_DATA[index].data)).to.be.true;
+          });
+
+          done();
+        };
+
+        issueEmitter.on('issue', (issue) => {
+          issues.push(issue);
+        });
+
+        const customRules = [{
+          ruleKey: DATA_POINT_CONSTRAINT_VIOLATION,
+          rule: allRules[DATA_POINT_CONSTRAINT_VIOLATION]
         }];
 
-        rule.resetStorage();
+        const dataPointChunksProcessingStory = new DataPointChunksProcessingStory(fileDescriptorsChunks, issueEmitter);
 
-        ddfDataSet.getDataPoint().loadFile(fileDescriptor,
-          (record, line) => {
-            issuesStorage.push(ruleStarter({ddfDataSet, fileDescriptor, record, line}));
-          },
-          () => {
-            const issues = compact(flattenDeep(issuesStorage));
-
-            expect(issues.length).to.equal(EXPECTED_ISSUES_QUANTITY);
-
-            issues.forEach((issue: Issue, index: number) => {
-              expect(issue.type).to.equal(DATA_POINT_CONSTRAINT_VIOLATION);
-              expect(issue.path.endsWith(EXPECTED_ISSUES_DATA[index].path)).to.be.true;
-              expect(!!issue.data).to.be.true;
-              expect(isEqual(issue.data, EXPECTED_ISSUES_DATA[index].data)).to.be.true;
-            });
-
-            done();
-          }
-        );
+        dataPointChunksProcessingStory.withCustomRules(customRules).waitForResult(theEnd).processDataPointChunks(ddfDataSet, issuesFilter);
       });
     });
   });
+});
 
-  describe('when "DUPLICATED_KEY" rule', () => {
-    it('an issue should be found for "fixtures/rules-cases/duplicated-data-point-key"', done => {
-      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/duplicated-data-point-key', null);
-      const tempResults = [];
+describe('when "DUPLICATED_KEY" rule', () => {
+  it('an issue should be found for "fixtures/rules-cases/duplicated-data-point-key"', done => {
+    const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/duplicated-data-point-key', null);
+    const issueEmitter = new EventEmitter();
+    const issues: Issue[] = [];
+    const EXPECTED_RESULT = {
+      data: [
+        {
+          file: 'ddf--datapoints--gas_production_bcf--by--geo--year.csv',
+          record: {
+            geo: 'algeria',
+            year: '1977',
+            gas_production_bcf: '0.74553176325556'
+          },
+          line: 7
+        },
+        {
+          "file": "ddf--datapoints--gas_production_bcf--by--geo--year.csv",
+          record: {
+            geo: 'algeria',
+            year: '1977',
+            gas_production_bcf: '1.15619237401781'
+          },
+          line: 8
+        }
+      ]
+    };
 
-      allRules[DUPLICATED_DATA_POINT_KEY].resetStorage();
+    ddfDataSet.load(() => {
+      const fileDescriptorsChunks = getAllDataPointFileDescriptorsChunks(ddfDataSet);
+      const theEnd = () => {
+        expect(issues.length).to.equal(1);
 
-      ddfDataSet.load(() => {
-        const actionsSource: any[] = ddfDataSet.getDataPoint().fileDescriptors.map(fileDescriptor =>
-          createRecordBasedRuleProcessor(
-            {
-              ddfDataSet,
-              ruleKey: DUPLICATED_DATA_POINT_KEY,
-              rule: allRules[DUPLICATED_DATA_POINT_KEY],
-              issuesFilter: {isAllowed: () => true}
-            },
-            fileDescriptor,
-            result => {
-              tempResults.push(result);
-            }
-          )
-        );
-        const actions = <any>flattenDeep(actionsSource);
+        const issue = head(issues);
 
-        parallelLimit(actions, CONCURRENT_OPERATIONS_AMOUNT, () => {
-          const results = compact(head(tempResults));
-          const EXPECTED_RESULT = {
-            data: [
-              {
-                file: 'ddf--datapoints--gas_production_bcf--by--geo--year.csv',
-                record: {
-                  geo: 'algeria',
-                  year: '1977',
-                  gas_production_bcf: '0.74553176325556'
-                },
-                line: 7
-              },
-              {
-                "file": "ddf--datapoints--gas_production_bcf--by--geo--year.csv",
-                record: {
-                  geo: 'algeria',
-                  year: '1977',
-                  gas_production_bcf: '1.15619237401781'
-                },
-                line: 8
-              }
-            ]
-          };
+        expect(isEqual(issue.data, EXPECTED_RESULT.data)).to.be.true;
 
-          expect(results.length).to.equal(1);
+        done();
+      };
 
-          const result: any = head(results);
-
-          expect(isEqual(result.data, EXPECTED_RESULT.data)).to.be.true;
-
-          done();
-        });
+      issueEmitter.on('issue', (issue) => {
+        issues.push(issue);
       });
+      const customRules = [{ruleKey: DUPLICATED_DATA_POINT_KEY, rule: allRules[DUPLICATED_DATA_POINT_KEY]}];
+
+      const dataPointChunksProcessingStory = new DataPointChunksProcessingStory(fileDescriptorsChunks, issueEmitter);
+
+      dataPointChunksProcessingStory.withCustomRules(customRules).waitForResult(theEnd).processDataPointChunks(ddfDataSet, issuesFilter);
     });
   });
 });

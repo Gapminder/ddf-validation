@@ -1,7 +1,6 @@
 import * as chai from 'chai';
-import { endsWith, isEqual, head, flattenDeep, compact, isEmpty } from 'lodash';
-import { parallelLimit } from 'async';
-import { createRecordBasedRuleProcessor } from '../src/index';
+import { EventEmitter } from 'events';
+import { endsWith, isEqual, head } from 'lodash';
 import { DdfDataSet } from '../src/ddf-definitions/ddf-data-set';
 import {
   UNEXPECTED_TRANSLATION_HEADER,
@@ -12,11 +11,15 @@ import {
 } from '../src/ddf-rules/registry';
 import { allRules } from '../src/ddf-rules';
 import { Issue } from '../src/ddf-rules/issue';
+import { getAllDataPointFileDescriptorsChunks } from "../src/shared";
+import { DataPointChunksProcessingStory } from '../src/stories/data-point-chunks-processing';
+import { IssuesFilter } from '../src/utils/issues-filter';
 
-const CONCURRENT_OPERATIONS_AMOUNT = 30;
 const expect = chai.expect;
 
 process.env.SILENT_MODE = true;
+
+const issuesFilter = new IssuesFilter({});
 
 describe('translation rules', () => {
   describe('when "UNEXPECTED_TRANSLATION_HEADER" rule', () => {
@@ -86,7 +89,7 @@ describe('translation rules', () => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/unexpected-translations-data', null);
 
       ddfDataSet.load(() => {
-        const results: Array<Issue> = allRules[UNEXPECTED_TRANSLATIONS_DATA].rule(ddfDataSet);
+        const results: Issue[] = allRules[UNEXPECTED_TRANSLATIONS_DATA].rule(ddfDataSet);
         const EXPECTED_RESULT = {
           path: 'ddf--entities--company.csv',
           data: {
@@ -116,35 +119,28 @@ describe('translation rules', () => {
   describe('when "UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA" rule', () => {
     it('any issue should NOT be found for "fixtures/dummy-companies"', done => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/dummy-companies', null);
-      const tempResults = [];
+      const issueEmitter = new EventEmitter();
+      const issues: Issue[] = [];
 
       ddfDataSet.load(() => {
-        const actionsSource: Array<any> =
-          ddfDataSet.getDataPoint().fileDescriptors.map(fileDescriptor =>
-            fileDescriptor.getExistingTranslationDescriptors().map(transDescriptor =>
-              createRecordBasedRuleProcessor(
-                {
-                  ddfDataSet,
-                  ruleKey: UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA,
-                  rule: allRules[UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA],
-                  issuesFilter: {isAllowed: () => true}
-                },
-                transDescriptor,
-                result => {
-                  tempResults.push(result);
-                }
-              )
-            )
-          );
-        const actions = flattenDeep(actionsSource);
-
-        parallelLimit(actions, CONCURRENT_OPERATIONS_AMOUNT, () => {
-          const results = compact(tempResults);
-
-          expect(isEmpty(results)).to.be.true;
+        const fileDescriptorsChunks = getAllDataPointFileDescriptorsChunks(ddfDataSet);
+        const theEnd = () => {
+          expect(issues.length).to.equal(0);
 
           done();
+        };
+
+        issueEmitter.on('issue', (issue) => {
+          issues.push(issue);
         });
+        const customRules = [{
+          ruleKey: UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA,
+          rule: allRules[UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA]
+        }];
+
+        const dataPointChunksProcessingStory = new DataPointChunksProcessingStory(fileDescriptorsChunks, issueEmitter);
+
+        dataPointChunksProcessingStory.withCustomRules(customRules).waitForResult(theEnd).processDataPointChunks(ddfDataSet, issuesFilter);
       });
     });
   });
@@ -152,85 +148,69 @@ describe('translation rules', () => {
   describe('when "UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA" rule', () => {
     it('an issue should be found for "fixtures/rules-cases/unexpected-data-point-translations-data"', done => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/unexpected-data-point-translations-data', null);
-      const tempResults = [];
+      const issueEmitter = new EventEmitter();
+      const issues: Issue[] = [];
+      const EXPECTED_RESULT = {
+        path: 'lang/nl-nl/ddf--datapoints--company_size_string--by--company--anno.csv',
+        data: {
+          record: {company: '', anno: '2015', company_size_string: 'groot'},
+          primaryKey: ['company', 'anno']
+        }
+      };
 
       ddfDataSet.load(() => {
-        const actionsSource: Array<any> = ddfDataSet.getDataPoint().fileDescriptors.map(fileDescriptor =>
-          fileDescriptor.getExistingTranslationDescriptors().map(transDescriptor =>
-            createRecordBasedRuleProcessor(
-              {
-                ddfDataSet,
-                ruleKey: UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA,
-                rule: allRules[UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA],
-                issuesFilter: {isAllowed: () => true}
-              },
-              transDescriptor,
-              result => {
-                tempResults.push(result);
-              }
-            )
-          )
-        );
-        const actions = flattenDeep(actionsSource);
+        const fileDescriptorsChunks = getAllDataPointFileDescriptorsChunks(ddfDataSet);
+        const theEnd = () => {
+          expect(issues.length).to.equal(1);
 
-        parallelLimit(actions, CONCURRENT_OPERATIONS_AMOUNT, () => {
-          const results = compact(tempResults);
-          const EXPECTED_RESULT = {
-            path: 'lang/nl-nl/ddf--datapoints--company_size_string--by--company--anno.csv',
-            data: {
-              record: {company: '', anno: '2015', company_size_string: 'groot'},
-              primaryKey: ['company', 'anno']
-            }
-          };
+          const issue = head(issues);
 
-          expect(results.length).to.equal(1);
-
-          const result = head(results);
-
-          expect(result.type).to.equal(UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA);
-          expect(endsWith(result.path, EXPECTED_RESULT.path)).to.be.true;
-          expect(isEqual(result.data, EXPECTED_RESULT.data)).to.be.true;
+          expect(endsWith(issue.path, EXPECTED_RESULT.path)).to.be.true;
+          expect(isEqual(issue.data, EXPECTED_RESULT.data)).to.be.true;
 
           done();
+        };
+
+        issueEmitter.on('issue', (issue) => {
+          issues.push(issue);
         });
+        const customRules = [{
+          ruleKey: UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA,
+          rule: allRules[UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA]
+        }];
+
+        const dataPointChunksProcessingStory = new DataPointChunksProcessingStory(fileDescriptorsChunks, issueEmitter);
+
+        dataPointChunksProcessingStory.withCustomRules(customRules).waitForResult(theEnd).processDataPointChunks(ddfDataSet, issuesFilter);
       });
     });
   });
 
-
   describe('when "DUPLICATED_DATA_POINT_TRANSLATION_KEY" rule', () => {
     it('any issue should NOT be found for "fixtures/dummy-companies"', done => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/dummy-companies', null);
-      const tempResults = [];
-
-      allRules[DUPLICATED_DATA_POINT_TRANSLATION_KEY].resetStorage();
+      const issueEmitter = new EventEmitter();
+      const issues: Issue[] = [];
 
       ddfDataSet.load(() => {
-        const actionsSource: Array<any> = ddfDataSet.getDataPoint().fileDescriptors.map(fileDescriptor =>
-          fileDescriptor.getExistingTranslationDescriptors().map(transDescriptor =>
-            createRecordBasedRuleProcessor(
-              {
-                ddfDataSet,
-                ruleKey: DUPLICATED_DATA_POINT_TRANSLATION_KEY,
-                rule: allRules[DUPLICATED_DATA_POINT_TRANSLATION_KEY],
-                issuesFilter: {isAllowed: () => true}
-              },
-              transDescriptor,
-              result => {
-                tempResults.push(result);
-              }
-            )
-          )
-        );
-        const actions = flattenDeep(actionsSource);
-
-        parallelLimit(actions, CONCURRENT_OPERATIONS_AMOUNT, () => {
-          const results = compact(flattenDeep(tempResults));
-
-          expect(isEmpty(results)).to.be.true;
+        const fileDescriptorsChunks = getAllDataPointFileDescriptorsChunks(ddfDataSet);
+        const theEnd = () => {
+          expect(issues.length).to.equal(0);
 
           done();
+        };
+
+        issueEmitter.on('issue', (issue) => {
+          issues.push(issue);
         });
+        const customRules = [{
+          ruleKey: DUPLICATED_DATA_POINT_TRANSLATION_KEY,
+          rule: allRules[DUPLICATED_DATA_POINT_TRANSLATION_KEY]
+        }];
+
+        const dataPointChunksProcessingStory = new DataPointChunksProcessingStory(fileDescriptorsChunks, issueEmitter);
+
+        dataPointChunksProcessingStory.withCustomRules(customRules).waitForResult(theEnd).processDataPointChunks(ddfDataSet, issuesFilter);
       });
     });
   });
@@ -238,62 +218,54 @@ describe('translation rules', () => {
   describe('when "DUPLICATED_TRANSLATION_KEY" rule', () => {
     it('an issue should be found for "fixtures/rules-cases/duplicated-data-point-translation-key"', done => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/duplicated-data-point-translation-key', null);
-      const tempResults = [];
-
-      allRules[DUPLICATED_DATA_POINT_TRANSLATION_KEY].resetStorage();
+      const issueEmitter = new EventEmitter();
+      const issues: Issue[] = [];
+      const EXPECTED_RESULT = {
+        data: [
+          {
+            file: 'ddf--datapoints--company_size_string--by--company--anno.csv',
+            record: {
+              company: 'mic',
+              anno: '2016',
+              company_size_string: 'groot'
+            },
+            line: 1
+          },
+          {
+            file: 'ddf--datapoints--company_size_string--by--company--anno.csv',
+            record: {
+              company: 'mic',
+              anno: '2016',
+              company_size_string: 'groot'
+            },
+            line: 2
+          }
+        ]
+      };
 
       ddfDataSet.load(() => {
-        const actionsSource: Array<any> = ddfDataSet.getDataPoint().fileDescriptors.map(fileDescriptor =>
-          fileDescriptor.getExistingTranslationDescriptors().map(transDescriptor =>
-            createRecordBasedRuleProcessor(
-              {
-                ddfDataSet,
-                ruleKey: DUPLICATED_DATA_POINT_TRANSLATION_KEY,
-                rule: allRules[DUPLICATED_DATA_POINT_TRANSLATION_KEY],
-                issuesFilter: {isAllowed: () => true}
-              },
-              transDescriptor,
-              result => {
-                tempResults.push(result);
-              }
-            )
-          )
-        );
-        const actions = flattenDeep(actionsSource);
+        const fileDescriptorsChunks = getAllDataPointFileDescriptorsChunks(ddfDataSet);
+        const theEnd = () => {
+          expect(issues.length).to.equal(1);
 
-        parallelLimit(actions, CONCURRENT_OPERATIONS_AMOUNT, () => {
-          const results = compact(flattenDeep(tempResults));
-          const EXPECTED_RESULT = {
-            data: [
-              {
-                file: 'ddf--datapoints--company_size_string--by--company--anno.csv',
-                record: {
-                  company: 'mic',
-                  anno: '2016',
-                  company_size_string: 'groot'
-                },
-                line: 1
-              },
-              {
-                file: 'ddf--datapoints--company_size_string--by--company--anno.csv',
-                record: {
-                  company: 'mic',
-                  anno: '2016',
-                  company_size_string: 'groot'
-                },
-                line: 2
-              }
-            ]
-          };
+          const issue = head(issues);
 
-          expect(results.length).to.equal(1);
-
-          const result = head(results);
-
-          expect(isEqual(result.data, EXPECTED_RESULT.data)).to.be.true;
+          expect(isEqual(issue.data, EXPECTED_RESULT.data)).to.be.true;
 
           done();
+        };
+
+        issueEmitter.on('issue', (issue) => {
+          issues.push(issue);
         });
+        const customRules = [{
+          ruleKey: DUPLICATED_DATA_POINT_TRANSLATION_KEY,
+          rule: allRules[DUPLICATED_DATA_POINT_TRANSLATION_KEY]
+        }];
+
+        const dataPointChunksProcessingStory = new DataPointChunksProcessingStory(fileDescriptorsChunks, issueEmitter);
+
+        dataPointChunksProcessingStory.withCustomRules(customRules).waitForResult(theEnd).processDataPointChunks(ddfDataSet, issuesFilter);
       });
     });
   });
