@@ -1,0 +1,12 @@
+concept,concept_type,domain
+population,measure,
+geo,entity_domain,
+foo1,entity_domain,
+foo2,entity_domain,
+country,entity_set,foo1
+city,entity_set,foo2
+continent,entity_set,geo
+year,time,
+name,string,
+domain,string,
+time,time,

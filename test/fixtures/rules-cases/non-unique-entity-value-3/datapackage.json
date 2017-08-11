@@ -1,0 +1,327 @@
+{
+  "name": "ddf-test-2",
+  "title": "ddf-test-2",
+  "description": "",
+  "version": "0.0.1",
+  "language": {
+    "id": "en",
+    "name": "English"
+  },
+  "translations": [],
+  "license": "",
+  "author": "",
+  "resources": [
+    {
+      "path": "ddf--concepts.csv",
+      "name": "ddf--concepts",
+      "schema": {
+        "fields": [
+          {
+            "name": "concept"
+          },
+          {
+            "name": "concept_type"
+          },
+          {
+            "name": "domain"
+          }
+        ],
+        "primaryKey": "concept"
+      }
+    },
+    {
+      "path": "ddf--datapoints--population--by--geo--time.csv",
+      "name": "population--by--geo--time",
+      "schema": {
+        "fields": [
+          {
+            "name": "geo"
+          },
+          {
+            "name": "time"
+          },
+          {
+            "name": "population"
+          }
+        ],
+        "primaryKey": [
+          "geo",
+          "time"
+        ]
+      }
+    },
+    {
+      "path": "ddf--entities--geo--city.csv",
+      "name": "geo--city",
+      "schema": {
+        "fields": [
+          {
+            "name": "geo"
+          },
+          {
+            "name": "name"
+          },
+          {
+            "name": "is--city"
+          },
+          {
+            "name": "is--country"
+          }
+        ],
+        "primaryKey": "geo"
+      }
+    },
+    {
+      "path": "ddf--entities--geo--continent.csv",
+      "name": "geo--continent",
+      "schema": {
+        "fields": [
+          {
+            "name": "continent"
+          },
+          {
+            "name": "name"
+          }
+        ],
+        "primaryKey": "continent"
+      }
+    },
+    {
+      "path": "ddf--entities--geo--country.csv",
+      "name": "geo--country",
+      "schema": {
+        "fields": [
+          {
+            "name": "geo"
+          },
+          {
+            "name": "name"
+          },
+          {
+            "name": "is--country"
+          },
+          {
+            "name": "is--continent"
+          }
+        ],
+        "primaryKey": "geo"
+      }
+    },
+    {
+      "path": "ddf--entities--geo.csv",
+      "name": "geo",
+      "schema": {
+        "fields": [
+          {
+            "name": "geo"
+          },
+          {
+            "name": "name"
+          }
+        ],
+        "primaryKey": "geo"
+      }
+    }
+  ],
+  "ddfSchema": {
+    "datapoints": [
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "population",
+        "resources": [
+          "population--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "city",
+          "time"
+        ],
+        "value": "population",
+        "resources": [
+          "population--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country",
+          "time"
+        ],
+        "value": "population",
+        "resources": [
+          "population--by--geo--time"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "name",
+        "resources": [
+          "geo--city",
+          "geo--continent",
+          "geo--country",
+          "geo"
+        ]
+      },
+      {
+        "primaryKey": [
+          "city"
+        ],
+        "value": "name",
+        "resources": [
+          "geo--city",
+          "geo--country",
+          "geo"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "name",
+        "resources": [
+          "geo--city",
+          "geo--country",
+          "geo"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "is--city",
+        "resources": [
+          "geo--city"
+        ]
+      },
+      {
+        "primaryKey": [
+          "city"
+        ],
+        "value": "is--city",
+        "resources": [
+          "geo--city"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "is--city",
+        "resources": [
+          "geo--city"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "is--country",
+        "resources": [
+          "geo--city",
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "city"
+        ],
+        "value": "is--country",
+        "resources": [
+          "geo--city",
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "is--country",
+        "resources": [
+          "geo--city",
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "continent"
+        ],
+        "value": "name",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "continent"
+        ],
+        "value": "is--country",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "is--continent",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "is--continent",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "continent"
+        ],
+        "value": "is--continent",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "city"
+        ],
+        "value": "is--continent",
+        "resources": [
+          "geo--country"
+        ]
+      }
+    ],
+    "concepts": [
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "concept_type",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "domain",
+        "resources": [
+          "ddf--concepts"
+        ]
+      }
+    ]
+  }
+}
