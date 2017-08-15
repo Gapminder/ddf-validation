@@ -1,3 +1,13 @@
+<a name="1.9.4"></a>
+## [1.9.4](https://github.com/Gapminder/ddf-validation/compare/v1.9.3...v1.9.4) (2017-08-15)
+
+
+### Bug Fixes
+
+* **rules:** NON_UNIQUE_ENTITY_VALUE rule does NOT work ([ec7d6e6](https://github.com/Gapminder/ddf-validation/commit/ec7d6e6)), closes [#454](https://github.com/Gapminder/ddf-validation/issues/454)
+
+
+
 <a name="1.9.3"></a>
 ## [1.9.3](https://github.com/Gapminder/ddf-validation/compare/v1.9.2...v1.9.3) (2017-08-10)
 
