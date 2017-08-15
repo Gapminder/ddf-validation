@@ -175,37 +175,26 @@ export const validationProcess = (context, logger, isCollectResultMode?: boolean
   }
 };
 
-export const simpleValidationProcess = (context, logger) => {
+export const simpleValidationProcess = (context) => {
   const simpleRulesResult = getSimpleRulesResult(context.ddfDataSet, context.issuesFilter);
 
   let isDataSetCorrect = true;
 
   if (!isEmpty(simpleRulesResult)) {
     isDataSetCorrect = false;
-
-    simpleRulesResult.forEach((issue: Issue) => {
-      context.issueEmitter.emit('issue', issue.view());
-    });
   }
 
-  if (!isDataSetCorrect) {
+  if (context.settings.datapointlessMode) {
     context.issueEmitter.emit('finish', null, isDataSetCorrect);
-    return;
   }
 
-  const fileDescriptorsChunks = getAllDataPointFileDescriptorsChunks(context.ddfDataSet);
-  const dataPointChunksProcessingStory = new DataPointChunksProcessingStory(fileDescriptorsChunks, context.issueEmitter);
-  const theEnd = (out: any[]) => {
-    context.issueEmitter.emit('finish', null, isEmpty(out) && isEmpty(simpleRulesResult));
-  };
+  if (!context.settings.datapointlessMode) {
+    const fileDescriptorsChunks = getAllDataPointFileDescriptorsChunks(context.ddfDataSet);
+    const dataPointChunksProcessingStory = new DataPointChunksProcessingStory(fileDescriptorsChunks, context.issueEmitter);
+    const theEnd = (out: Issue[] = []) => {
+      context.issueEmitter.emit('finish', null, isDataSetCorrect && isEmpty(out));
+    };
 
-  context.issueEmitter.on('init-chunk-progress', (total: number) => {
-    logger.progressInit('datapoints validation', {total});
-  });
-
-  context.issueEmitter.on('chunk-progress', () => {
-    logger.progress();
-  });
-
-  dataPointChunksProcessingStory.waitForResult(theEnd, true).processDataPointChunks(context.ddfDataSet, context.issuesFilter);
+    dataPointChunksProcessingStory.waitForResult(theEnd, true).processDataPointChunks(context.ddfDataSet, context.issuesFilter);
+  }
 };

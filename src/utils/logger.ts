@@ -69,6 +69,14 @@ export class ValidationTransport extends Transport {
     }
   }
 
+  updateSettings(newSettings: any) {
+    const newSettingsKeys = Object.keys(newSettings);
+
+    for (let key of newSettingsKeys) {
+      settings[key] = newSettings[key];
+    }
+  }
+
   log(level: string, msg: string, meta: any, callback: Function) {
     if (level === 'progressInit' && !settings.silent && !process.env.SILENT_MODE) {
       if (this.progress) {
@@ -125,3 +133,5 @@ export const getLogger: Function = () => {
 
   return logger;
 };
+
+export const getTransport = () => validationTransport;
