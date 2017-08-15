@@ -6,7 +6,7 @@ import {
   validationProcess,
   simpleValidationProcess, getDataPointFilesChunks
 } from './shared';
-import { logger } from './utils';
+import { logger, getTransport } from './utils';
 
 const child_process = require('child_process');
 const os = require('os');
@@ -122,8 +122,11 @@ export class SimpleValidator {
       this.settings.excludeTags = '';
     }
 
-    // SimpleValidator should ignore warnings
+    // SimpleValidator should ignore warnings and in silent mode
     this.settings.excludeTags += ' WARNING ';
+    this.settings.silent = true;
+
+    getTransport().updateSettings(this.settings);
   }
 
   on(type, data) {
@@ -135,7 +138,7 @@ export class SimpleValidator {
     this.ddfDataSet = new DdfDataSet(this.rootPath, this.settings);
 
     this.ddfDataSet.load(() => {
-      simpleValidationProcess(this, logger);
+      simpleValidationProcess(this);
     });
   }
 }
