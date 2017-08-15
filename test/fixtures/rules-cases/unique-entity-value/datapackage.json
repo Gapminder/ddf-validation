@@ -1,0 +1,238 @@
+{
+  "name": "ddf-test-2",
+  "title": "ddf-test-2",
+  "description": "",
+  "version": "0.0.1",
+  "language": {
+    "id": "en",
+    "name": "English"
+  },
+  "translations": [],
+  "license": "",
+  "author": "",
+  "resources": [
+    {
+      "path": "ddf--concepts.csv",
+      "name": "ddf--concepts",
+      "schema": {
+        "fields": [
+          {
+            "name": "concept"
+          },
+          {
+            "name": "concept_type"
+          },
+          {
+            "name": "domain"
+          }
+        ],
+        "primaryKey": "concept"
+      }
+    },
+    {
+      "path": "ddf--datapoints--population--by--geo--time.csv",
+      "name": "population--by--geo--time",
+      "schema": {
+        "fields": [
+          {
+            "name": "geo"
+          },
+          {
+            "name": "time"
+          },
+          {
+            "name": "population"
+          }
+        ],
+        "primaryKey": [
+          "geo",
+          "time"
+        ]
+      }
+    },
+    {
+      "path": "ddf--entities--foo1--country.csv",
+      "name": "foo1--country",
+      "schema": {
+        "fields": [
+          {
+            "name": "foo1"
+          },
+          {
+            "name": "name"
+          },
+          {
+            "name": "is--country"
+          }
+        ],
+        "primaryKey": "foo1"
+      }
+    },
+    {
+      "path": "ddf--entities--foo2--city.csv",
+      "name": "foo2--city",
+      "schema": {
+        "fields": [
+          {
+            "name": "foo2"
+          },
+          {
+            "name": "name"
+          },
+          {
+            "name": "is--city"
+          }
+        ],
+        "primaryKey": "foo2"
+      }
+    },
+    {
+      "path": "ddf--entities--geo--continent.csv",
+      "name": "geo--continent",
+      "schema": {
+        "fields": [
+          {
+            "name": "continent"
+          },
+          {
+            "name": "name"
+          }
+        ],
+        "primaryKey": "continent"
+      }
+    },
+    {
+      "path": "ddf--entities--geo.csv",
+      "name": "geo",
+      "schema": {
+        "fields": [
+          {
+            "name": "geo"
+          },
+          {
+            "name": "name"
+          }
+        ],
+        "primaryKey": "geo"
+      }
+    }
+  ],
+  "ddfSchema": {
+    "datapoints": [
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "population",
+        "resources": [
+          "population--by--geo--time"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "primaryKey": [
+          "foo1"
+        ],
+        "value": "name",
+        "resources": [
+          "foo1--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "name",
+        "resources": [
+          "foo1--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "foo1"
+        ],
+        "value": "is--country",
+        "resources": [
+          "foo1--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "is--country",
+        "resources": [
+          "foo1--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "foo2"
+        ],
+        "value": "name",
+        "resources": [
+          "foo2--city"
+        ]
+      },
+      {
+        "primaryKey": [
+          "city"
+        ],
+        "value": "name",
+        "resources": [
+          "foo2--city"
+        ]
+      },
+      {
+        "primaryKey": [
+          "foo2"
+        ],
+        "value": "is--city",
+        "resources": [
+          "foo2--city"
+        ]
+      },
+      {
+        "primaryKey": [
+          "city"
+        ],
+        "value": "is--city",
+        "resources": [
+          "foo2--city"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "name",
+        "resources": [
+          "geo--continent",
+          "geo"
+        ]
+      }
+    ],
+    "concepts": [
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "concept_type",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "domain",
+        "resources": [
+          "ddf--concepts"
+        ]
+      }
+    ]
+  }
+}

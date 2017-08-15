@@ -1,5 +1,5 @@
 import * as chai from 'chai';
-import { sortBy, head } from 'lodash';
+import { sortBy, head, endsWith } from 'lodash';
 import { DdfDataSet } from '../src/ddf-definitions/ddf-data-set';
 import {
   WRONG_ENTITY_IS_HEADER,
@@ -148,45 +148,171 @@ describe('rules for entry', () => {
       });
     });
 
-    it(`issues should be found for folder with the problem
-   (fixtures/rules-cases/non-unique-entity-value)`, done => {
+    it(`issues should be found for folder with a problem (fixtures/rules-cases/non-unique-entity-value)`, done => {
+      const EXPECTED_ISSUES_DATA = [
+        {
+          data: {
+            value: 'afg',
+            records: [
+              {
+                geo: 'afg',
+                $$source: 'ddf--entities--geo--country.csv',
+                $$lineNumber: 2
+              },
+              {
+                geo: 'afg',
+                $$source: 'ddf--entities--geo--country.csv',
+                $$lineNumber: 3
+              }
+            ]
+          }
+        },
+        {
+          data: {
+            value: 'and',
+            records: [
+              {
+                geo: 'and',
+                $$source: 'ddf--entities--geo--country.csv',
+                $$lineNumber: 1
+              },
+              {
+                geo: 'and',
+                $$source: 'ddf--entities--geo--capital.csv',
+                $$lineNumber: 2
+              }
+            ]
+          }
+        },
+        {
+          data: {
+            value: 'vat',
+            records: [
+              {
+                geo: 'vat',
+                $$source: 'ddf--entities--geo--capital.csv',
+                $$lineNumber: 1
+              },
+              {
+                geo: 'vat',
+                $$source: 'ddf--entities--geo--country.csv',
+                $$lineNumber: 9
+              }
+            ]
+          }
+        }
+      ];
+
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/non-unique-entity-value', null);
       ddfDataSet.load(() => {
-        const results: Array<Issue> = allRules[NON_UNIQUE_ENTITY_VALUE].rule(ddfDataSet);
-        const issuesData = [
-          {
-            source: {
-              geo: 'afg',
-              name: 'Afghanistan'
-            },
-            duplicate: {
-              geo: 'afg',
-              name: 'Afghanistan2'
-            }
-          },
-          {
-            source: {
-              geo: 'vat',
-              name: 'Vatican2'
-            },
-            duplicate: {
-              geo: 'vat',
-              name: 'Vatican'
-            }
-          }
-        ];
-        const resultsCopy = sortBy(results, result => result.data.source.geo);
+        const issuesSource: Issue[] = allRules[NON_UNIQUE_ENTITY_VALUE].rule(ddfDataSet);
+        const issuesData = sortBy(issuesSource, result => result.data.value);
 
-        expect(resultsCopy.length).to.equal(issuesData.length);
+        issuesData.forEach((issueData, issueIndex) => {
+          const records = sortBy(issueData.data.records, (result: any) => result.$$lineNumber);
 
-        issuesData.forEach((issueData, index) => {
-          expect(resultsCopy[index].type).to.equal(NON_UNIQUE_ENTITY_VALUE);
-          expect(!!resultsCopy[index].data).to.be.true;
-          expect(!!resultsCopy[index].data.source).to.be.true;
-          expect(!!resultsCopy[index].data.duplicate).to.be.true;
-          expect(resultsCopy[index].data.source.geo).to.equal(issueData.source.geo);
-          expect(resultsCopy[index].data.duplicate.geo).to.equal(issueData.duplicate.geo);
+          records.forEach((record, recordIndex) => {
+            expect(issuesData.length).to.equal(EXPECTED_ISSUES_DATA.length);
+
+            expect(!!issueData.data).to.be.true;
+            expect(issueData.data.value).to.equal(EXPECTED_ISSUES_DATA[issueIndex].data.value);
+            expect(!!issueData.data.records).to.be.true;
+            expect(issueData.data.records.length).to.equal(EXPECTED_ISSUES_DATA[issueIndex].data.records.length);
+
+            expect(record.geo).to.equal(EXPECTED_ISSUES_DATA[issueIndex].data.records[recordIndex].geo);
+            expect(record.$$lineNumber).to.equal(EXPECTED_ISSUES_DATA[issueIndex].data.records[recordIndex].$$lineNumber);
+            expect(endsWith(record.$$source, EXPECTED_ISSUES_DATA[issueIndex].data.records[recordIndex].$$source)).to.be.true;
+          });
         });
+
+        done();
+      });
+    });
+
+    it(`issues should be found for folder with an another problem (fixtures/rules-cases/non-unique-entity-value-2)`, done => {
+      const EXPECTED_ISSUE_DATA = {
+        data: {
+          value: 'luxemburg',
+          records: [
+            {
+              geo: 'luxemburg',
+              $$source: 'ddf--entities--geo--city.csv',
+              $$lineNumber: 1
+            },
+            {
+              geo: 'luxemburg',
+              $$source: 'ddf--entities--geo--country.csv',
+              $$lineNumber: 2
+            },
+            {
+              geo: 'luxemburg',
+              $$source: 'ddf--entities--geo.csv',
+              $$lineNumber: 1
+            }
+          ]
+        }
+      };
+
+      ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/non-unique-entity-value-2', null);
+      ddfDataSet.load(() => {
+        const issuesData: Issue[] = allRules[NON_UNIQUE_ENTITY_VALUE].rule(ddfDataSet);
+        const issue = head(issuesData);
+        const records = sortBy(issue.data.records, (result: any) => result.$$source);
+
+        records.forEach((record, recordIndex) => {
+          expect(issuesData.length).to.equal(1);
+          expect(record.geo).to.equal(EXPECTED_ISSUE_DATA.data.records[recordIndex].geo);
+          expect(record.$$lineNumber).to.equal(EXPECTED_ISSUE_DATA.data.records[recordIndex].$$lineNumber);
+          expect(endsWith(record.$$source, EXPECTED_ISSUE_DATA.data.records[recordIndex].$$source)).to.be.true;
+        });
+
+        done();
+      });
+    });
+
+    it(`issues should be found for folder with an another problem (fixtures/rules-cases/non-unique-entity-value-3)`, done => {
+      const EXPECTED_ISSUE_DATA = {
+        data: {
+          value: 'luxemburg',
+          records: [
+            {
+              geo: 'luxemburg',
+              $$source: 'ddf--entities--geo--city.csv',
+              $$lineNumber: 1
+            },
+            {
+              geo: 'luxemburg',
+              $$source: 'ddf--entities--geo--country.csv',
+              $$lineNumber: 2
+            }
+          ]
+        }
+      };
+
+      ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/non-unique-entity-value-3', null);
+      ddfDataSet.load(() => {
+        const issuesData: Issue[] = allRules[NON_UNIQUE_ENTITY_VALUE].rule(ddfDataSet);
+        const issue = head(issuesData);
+        const records = sortBy(issue.data.records, (result: any) => result.$$source);
+
+        records.forEach((record, recordIndex) => {
+          expect(issuesData.length).to.equal(1);
+          expect(record.geo).to.equal(EXPECTED_ISSUE_DATA.data.records[recordIndex].geo);
+          expect(record.$$lineNumber).to.equal(EXPECTED_ISSUE_DATA.data.records[recordIndex].$$lineNumber);
+          expect(endsWith(record.$$source, EXPECTED_ISSUE_DATA.data.records[recordIndex].$$source)).to.be.true;
+        });
+
+        done();
+      });
+    });
+
+    it(`issues should NOT be found for same entity values from different domains (fixtures/rules-cases/unique-entity-value`, done => {
+
+      ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/unique-entity-value', null);
+      ddfDataSet.load(() => {
+        const issuesData: Issue[] = allRules[NON_UNIQUE_ENTITY_VALUE].rule(ddfDataSet);
+
+        expect(issuesData.length).to.equal(0);
 
         done();
       });
