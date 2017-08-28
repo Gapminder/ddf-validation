@@ -53,7 +53,7 @@
     "path": "0.12.7",
     "prettyjson": "1.2.1",
     "semver": "5.3.0",
-    "terminal-kit": "1.8.12",
+    "terminal-kit": "1.13.7",
     "ts-node": "3.0.2",
     "typescript": "2.3.4",
     "winston": "2.3.1",
