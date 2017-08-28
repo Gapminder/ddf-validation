@@ -3,7 +3,7 @@ name,string,,
 geo,entity_domain,,
 geo,entity_domain,,
 region,entity_set,geo,Region
-country,entity_set,geoCountry
-country,entity_set,geoCountry
+country,entity_set,geoCountry,
+country,entity_set,geoCountry,
 capital,entity_set,geo,Capital
 pop,measure,geo,Population

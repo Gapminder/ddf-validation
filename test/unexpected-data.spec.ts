@@ -1,8 +1,9 @@
 import * as chai from 'chai';
-import {endsWith, isEqual} from 'lodash';
-import {DdfDataSet} from '../src/ddf-definitions/ddf-data-set';
-import {UNEXPECTED_DATA} from '../src/ddf-rules/registry';
-import {allRules} from '../src/ddf-rules';
+import { endsWith, isEqual, head } from 'lodash';
+import { DdfDataSet } from '../src/ddf-definitions/ddf-data-set';
+import { UNEXPECTED_DATA } from '../src/ddf-rules/registry';
+import { allRules } from '../src/ddf-rules';
+import { Issue } from "../src/ddf-rules/issue";
 
 const expect = chai.expect;
 
@@ -98,6 +99,60 @@ describe('general rules', () => {
         results.forEach((result, index) => {
           expect(endsWith(result.path, expectedResult[index].path)).to.be.true;
           expect(isEqual(result.data, expectedResult[index].data)).to.be.true;
+        });
+
+        done();
+      });
+    });
+
+    it(`issues should be found for a folder with inconsistent columns in csv (fixtures/rules-cases/unexpected-data-2)`, done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/unexpected-data-2', null);
+
+      ddfDataSet.load(() => {
+        const issues: Issue[] = allRules[UNEXPECTED_DATA].rule(ddfDataSet);
+        const expectedData = {
+          path: 'ddf--concepts.csv',
+          message: 'Too many fields: expected 3 fields but parsed 4',
+          row: 0,
+          type: 'FieldMismatch/TooManyFields'
+        };
+
+        const issue: Issue = head(issues);
+        const data: any = head(issue.data);
+
+        expect(issues.length).to.equal(1);
+        expect(issue.data.length).to.equal(1);
+
+        expect(endsWith(issue.path, expectedData.path)).to.be.true;
+        expect(data.message).to.equal(expectedData.message);
+        expect(data.row).to.equal(expectedData.row);
+        expect(data.type).to.equal(expectedData.type);
+
+        done();
+      });
+    });
+
+    it(`issues should be found for a folder with inconsistent columns in csv (fixtures/rules-cases/unexpected-data-3)`, done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/unexpected-data-3', null);
+
+      ddfDataSet.load(() => {
+        const issues: Issue[] = allRules[UNEXPECTED_DATA].rule(ddfDataSet);
+        const expectedData = {
+          path: 'ddf--concepts.csv',
+          message: 'Too many fields: expected 3 fields but parsed 4',
+          type: 'FieldMismatch/TooManyFields'
+        };
+        const expectedDataLength = 3;
+        const issue: Issue = head(issues);
+
+        issue.data.forEach((item, row) => {
+          expect(issues.length).to.equal(1);
+          expect(issue.data.length).to.equal(expectedDataLength);
+          expect(endsWith(issue.path, expectedData.path)).to.be.true;
+
+          expect(item.message).to.equal(expectedData.message);
+          expect(item.row).to.equal(row);
+          expect(item.type).to.equal(expectedData.type);
         });
 
         done();

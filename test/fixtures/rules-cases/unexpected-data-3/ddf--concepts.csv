@@ -1,0 +1,5 @@
+concept,concept_type,domain
+year,time,,
+lex,measure,,
+pop,measure,,
+domain,string,
