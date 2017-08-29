@@ -42,6 +42,6 @@ export class CsvChecker {
   }
 
   isCorrect() {
-    return isEmpty(this.errors);
+    return isEmpty(this.errors) && !this.error;
   }
 }

@@ -36,7 +36,7 @@ export class DdfDataSet {
         logger.progressInit('dataset loading', {total: expectedFileDescriptors.length});
 
         expectedFileDescriptors.forEach(fileDescriptor => {
-          if (fileDescriptor.is(DATA_POINT)) {
+          if (fileDescriptor.is(DATA_POINT) && fileDescriptor.csvChecker.isCorrect()) {
             loaders.push(onFileLoaded => {
               fileDescriptor.fillHeaders(() => {
                 this.expectedClass[fileDescriptor.type].addDescriptors(fileDescriptor, ddfRoot.dataPackageDescriptor);
@@ -48,7 +48,7 @@ export class DdfDataSet {
             });
           }
 
-          if (fileDescriptor.is([CONCEPT, ENTITY])) {
+          if (fileDescriptor.is([CONCEPT, ENTITY]) && fileDescriptor.csvChecker.isCorrect()) {
             loaders.push(onFileLoaded => {
               fileDescriptor.fillHeaders(() => {
                 this.db.fillCollection(
