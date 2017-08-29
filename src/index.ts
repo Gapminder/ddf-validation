@@ -10,7 +10,7 @@ import { logger, getTransport } from './utils';
 
 const child_process = require('child_process');
 const os = require('os');
-const cpuCount = os.cpus().length;
+const allCpuCount = os.cpus().length;
 
 export class JSONValidator {
   public rootPath: string;
@@ -57,6 +57,7 @@ export class StreamValidator {
   }
 
   multiThreadProcessing() {
+    const cpuCount = allCpuCount - (this.settings.useAllCpu ? 0 : 1);
     const filesChunks = getDataPointFilesChunks(this.ddfDataSet, cpuCount);
     const total = filesChunks.reduce((result, chunk) => result + chunk.length, 0);
 

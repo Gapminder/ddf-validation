@@ -16,6 +16,8 @@ const argv = yargs
   .example(`${myName} --rules`, 'print information regarding supported rules')
   .example(`${myName} ../ddf-example --multithread`,
     'validate datapoints for `ddf-example` in separate threads')
+  .example(`${myName} ../ddf-example --use-all-cpu`,
+    'use all CPU during validation via multithread mode')
   .example(`${myName} ../ddf-example --hidden`, 'allow hidden folders validation')
   .example(`${myName} ../ddf-example --include-rules "INCORRECT_JSON_FIELD"`,
     'Validate only by INCORRECT_JSON_FIELD rule')
@@ -35,6 +37,7 @@ const argv = yargs
   .describe('j', 'Fix wrong JSONs')
   .describe('rules', 'print information regarding supported rules')
   .describe('multithread', 'validate datapoints in separate threads')
+  .describe('use-all-cpu', 'use all CPU during validation via multithread mode')
   .describe('datapointless', 'forget about datapoint validation')
   .describe('silent', `don't show progress of validation and print issues to the screen`)
   .describe('hidden', 'allow hidden folders validation')
@@ -70,6 +73,7 @@ export const getSettings = () => {
     settings.isPrintRules = !!argv.rules;
     settings.isCheckHidden = !!argv.hidden;
     settings.isMultithread = !!argv.multithread;
+    settings.useAllCpu = !!argv['use-all-cpu'];
     settings.compressDatapackage = argv['compress-datapackage'];
   };
 
