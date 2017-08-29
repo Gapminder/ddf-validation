@@ -16,7 +16,7 @@ const argv = yargs
   .example(`${myName} --rules`, 'print information regarding supported rules')
   .example(`${myName} ../ddf-example --multithread`,
     'validate datapoints for `ddf-example` in separate threads')
-  .example(`${myName} ../ddf-example --use-all-cpu`,
+  .example(`${myName} ../ddf-example --multithread --use-all-cpu`,
     'use all CPU during validation via multithread mode')
   .example(`${myName} ../ddf-example --hidden`, 'allow hidden folders validation')
   .example(`${myName} ../ddf-example --include-rules "INCORRECT_JSON_FIELD"`,

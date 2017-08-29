@@ -27,6 +27,7 @@ Options:
   -j                     Fix wrong JSONs
   --rules                Print information regarding supported rules
   --multithread          Validate datapoints in separate threads
+  --use-all-cpu          Use all CPU during validation via multithread mode
   --datapointless        Forget about datapoint validation
   --hidden               Allow hidden folders validation
   --include-tags         Process only issues by selected tags
@@ -44,6 +45,7 @@ Examples:
   validate-ddf ../ddf-example -j                                                     fix JSONs for this DDF dataset
   validate-ddf  --rules                                                              print information regarding supported rules
   validate-ddf ../ddf-example --multithread                                          validate datapoints for `ddf-example` in separate threads
+  validate-ddf ../ddf-example --multithread --use-all-cpu                            use all CPU during validation via multithread mode
   validate-ddf ../ddf-example --datapointless                                        forget about datapoint validation
   validate-ddf ../ddf-example --hidden                                               allow hidden folders validation
   validate-ddf ../ddf-example --include-rules "INCORRECT_JSON_FIELD"                 validate only by  INCORRECT_JSON_FIELD rule
@@ -141,6 +143,7 @@ Also all validators supports validation parameters that corresponds with some pa
 | datapointlessMode | `datapointless`       | boolean                 | don't validate datapoints                           |
 | isCheckHidden     | `hidden`              | boolean                 | allow to validate hidden (starts with '.') folders  |
 | isMultithread     | `multithread` (see 4) | boolean                 | validate datapoints in separate threads             |
+| useAllCpu         | `use-all-cpu `        | boolean                 | use all CPU during validation via multithread mode  |
 
 Notes.
 
