@@ -1,6 +1,6 @@
 import * as path from 'path';
 import { parallelLimit } from 'async';
-import { compact, cloneDeep, isArray, head, startsWith, keys, includes } from 'lodash';
+import { compact, cloneDeep, isArray, head, startsWith, keys, includes, sortBy } from 'lodash';
 import { readFile } from '../utils/file';
 import { DataPackage } from '../data/data-package';
 import { DdfDataSet } from '../ddf-definitions/ddf-data-set';
@@ -284,6 +284,13 @@ export const getDdfSchema = (dataPackageDescriptor: DataPackage, settings: any, 
 
     const conceptsResources = resources.filter(resource => head(resource.schema.primaryKey) === 'concept');
     const entitiesResources = resources.filter(resource => resource.schema.primaryKey.length === 1 && head(resource.schema.primaryKey) !== 'concept');
+    const getOrderedSection = (section: any[]) => {
+      section.forEach(dataPointDescriptor => {
+        dataPointDescriptor.resources = sortBy(dataPointDescriptor.resources);
+      });
+
+      return sortBy(section, ['primaryKey', 'value']);
+    };
 
     console.log('generating ddfSchema...');
 
@@ -294,6 +301,11 @@ export const getDdfSchema = (dataPackageDescriptor: DataPackage, settings: any, 
       ddfDataSet,
       dataPackageDescriptor
     }, settings.isProgressNeeded, (err, ddfSchema) => {
+
+      ddfSchema.datapoints = getOrderedSection(ddfSchema.datapoints);
+      ddfSchema.entities = getOrderedSection(ddfSchema.entities);
+      ddfSchema.concepts = getOrderedSection(ddfSchema.concepts);
+
       onDdfSchemaReady(ddfSchema);
     });
   });
