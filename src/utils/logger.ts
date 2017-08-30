@@ -32,20 +32,31 @@ export class Progress {
     }
 
     if (!this.isEnabled && this.progressBar) {
-      this.resume();
+      try {
+
+      } catch (e) {
+        this.resume();
+      }
     }
   }
 
   update() {
     if (this.isEnabled) {
-      this.progressValue += this.step;
-      this.progressBar.update(this.progressValue);
+      try {
+        this.progressValue += this.step;
+        this.progressBar.update(this.progressValue);
+      } catch (e) {
+      }
     }
   }
 
   resume() {
     if (this.progressBar) {
-      this.progressBar.stop();
+      try {
+        this.progressBar.stop();
+      } catch (e) {
+
+      }
     }
   }
 }
