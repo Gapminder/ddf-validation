@@ -4,6 +4,7 @@ export const NON_DDF_DATA_SET = Symbol.for('NON_DDF_DATA_SET');
 export const INCORRECT_FILE = Symbol.for('INCORRECT_FILE');
 export const INCORRECT_JSON_FIELD = Symbol.for('INCORRECT_JSON_FIELD');
 export const CONCEPT_ID_IS_NOT_UNIQUE = Symbol.for('CONCEPT_ID_IS_NOT_UNIQUE');
+export const INCORRECT_CONCEPT_TYPE = Symbol.for('INCORRECT_CONCEPT_TYPE');
 export const EMPTY_CONCEPT_ID = Symbol.for('EMPTY_CONCEPT_ID');
 export const INCORRECT_IDENTIFIER = Symbol.for('INCORRECT_IDENTIFIER');
 export const NON_CONCEPT_HEADER = Symbol.for('NON_CONCEPT_HEADER');
@@ -48,6 +49,7 @@ export const tags: any = {
   [INCORRECT_FILE]: [FILE_SYSTEM_TAG],
   [INCORRECT_JSON_FIELD]: [WARNING_TAG],
   [CONCEPT_ID_IS_NOT_UNIQUE]: [],
+  [INCORRECT_CONCEPT_TYPE]: [],
   [EMPTY_CONCEPT_ID]: [],
   [INCORRECT_IDENTIFIER]: [],
   [NON_CONCEPT_HEADER]: [],
@@ -86,6 +88,8 @@ export const descriptions = {
   [INCORRECT_FILE]: 'Incorrect file',
   [INCORRECT_JSON_FIELD]: 'Incorrect JSON field',
   [CONCEPT_ID_IS_NOT_UNIQUE]: 'Concept Id is not unique',
+  [INCORRECT_CONCEPT_TYPE]: [`Concept type does not correspond to any of available DDF types: 
+  boolean, string, measure, entity_domain, entity_set, time, year, week, month, day, quarter, interval, role, custom_type`],
   [EMPTY_CONCEPT_ID]: `Empty concept ID. An issue according to this rule will be fired 
   when concept ID ('concept' header) is empty`,
   [INCORRECT_IDENTIFIER]: `Incorrect identifier. 
