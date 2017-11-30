@@ -1,0 +1,4 @@
+geo,name,country,is--country,is--city
+swe,Sweden,,TRUE,FALSE
+sgp,Singapore,sgp,TRUE,TRUE
+sto,Stockholm,swe,FALSE,TRUE

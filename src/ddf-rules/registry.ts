@@ -13,6 +13,7 @@ export const MEASURE_VALUE_NOT_NUMERIC = Symbol.for('MEASURE_VALUE_NOT_NUMERIC')
 export const DATA_POINT_UNEXPECTED_ENTITY_VALUE = Symbol.for('DATA_POINT_UNEXPECTED_ENTITY_VALUE');
 export const DATA_POINT_UNEXPECTED_TIME_VALUE = Symbol.for('DATA_POINT_UNEXPECTED_TIME_VALUE');
 export const WRONG_DATA_POINT_HEADER = Symbol.for('WRONG_DATA_POINT_HEADER');
+export const SAME_KEY_VALUE_CONCEPT = Symbol.for('SAME_KEY_VALUE_CONCEPT');
 export const WRONG_ENTITY_IS_HEADER = Symbol.for('WRONG_ENTITY_IS_HEADER');
 export const WRONG_ENTITY_IS_VALUE = Symbol.for('WRONG_ENTITY_IS_VALUE');
 export const NON_UNIQUE_ENTITY_VALUE = Symbol.for('NON_UNIQUE_ENTITY_VALUE');
@@ -58,6 +59,7 @@ export const tags: any = {
   [DATA_POINT_UNEXPECTED_ENTITY_VALUE]: [DATAPOINT_TAG],
   [DATA_POINT_UNEXPECTED_TIME_VALUE]: [DATAPOINT_TAG],
   [WRONG_DATA_POINT_HEADER]: [DATAPOINT_TAG],
+  [SAME_KEY_VALUE_CONCEPT]: [],
   [WRONG_ENTITY_IS_HEADER]: [],
   [WRONG_ENTITY_IS_VALUE]: [],
   [NON_UNIQUE_ENTITY_VALUE]: [],
@@ -106,6 +108,7 @@ export const descriptions = {
   [WRONG_DATA_POINT_HEADER]: `Invalid part of data point header.
   Raised when: some parts of the primary key have an incorrect type or primary from datapackage 
   does not correspond with header from ddf file`,
+  [SAME_KEY_VALUE_CONCEPT]: `Checking for existence of key-value pairs where key is or contains the same concept as value`,
   [WRONG_ENTITY_IS_HEADER]: `Wrong "is" header. An issue according to this rule 
   will be fired when 'is-header' in concept is defined and not valid: 
   not a concept with 'entity_set' type`,

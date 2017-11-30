@@ -105,6 +105,10 @@ export class DdfDataSet {
     return this.ddfRoot.getDataPackageResources();
   }
 
+  getDataPackageSchema() {
+    return this.ddfRoot.getDataPackageSchema();
+  }
+
   getDataPackageDescriptor(): DataPackage {
     return this.ddfRoot.dataPackageDescriptor;
   }

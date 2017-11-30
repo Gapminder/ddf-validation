@@ -110,4 +110,8 @@ export class DDFRoot {
   getDataPackageResources() {
     return this.dataPackageDescriptor.getResources();
   }
+
+  getDataPackageSchema() {
+    return this.dataPackageDescriptor.getSchema();
+  }
 }

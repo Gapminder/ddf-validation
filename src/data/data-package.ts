@@ -489,6 +489,10 @@ export class DataPackage {
     return this.dataPackageContent.resources;
   }
 
+  getSchema() {
+    return this.dataPackageContent.ddfSchema;
+  }
+
   getTranslations() {
     return this.dataPackageContent.translations || [];
   }

@@ -7,7 +7,8 @@ import {
   DATAPACKAGE_INCORRECT_PRIMARY_KEY,
   DATAPACKAGE_NON_UNIQUE_RESOURCE_FILE,
   DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME,
-  DATA_POINT_WITHOUT_INDICATOR
+  DATA_POINT_WITHOUT_INDICATOR,
+  SAME_KEY_VALUE_CONCEPT
 } from '../src/ddf-rules/registry';
 import { DdfDataSet } from '../src/ddf-definitions/ddf-data-set';
 import { Issue } from '../src/ddf-rules/issue';
@@ -302,6 +303,47 @@ describe('ddf datapackage.json validation', () => {
           expect(isEqual(result.data.fields, EXPECTED_DATA[index].fields)).to.be.true;
           expect(isEqual(result.data.primaryKey, EXPECTED_DATA[index].primaryKey)).to.be.true;
         });
+
+        done();
+      });
+    });
+  });
+
+  describe('when "SAME_KEY_VALUE_CONCEPT" rule', () => {
+    it('any issue should NOT be found for a folder without the problem', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/dummy-companies-with-dp', null);
+
+      ddfDataSet.load(() => {
+        const issues = allRules[SAME_KEY_VALUE_CONCEPT].rule(ddfDataSet);
+
+        expect(issues.length).to.equal(0);
+
+        done();
+      });
+    });
+
+    it('an issue should be found for a folder with the problem', done => {
+      const expectedData = {
+        schemaRecord: {
+          primaryKey: [
+            'country'
+          ],
+          value: 'country',
+          resources: [
+            'geo--country'
+          ]
+        },
+        reason: 'Value country already exists in primaryKey'
+      };
+      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/same-key-value-concepts', null);
+
+      ddfDataSet.load(() => {
+        const issues: Issue[] = allRules[SAME_KEY_VALUE_CONCEPT].rule(ddfDataSet);
+
+        console.log(JSON.stringify(issues, null, 2));
+
+        expect(issues.length).to.equal(1);
+        expect(isEqual(head(issues).data, expectedData)).to.be.true;
 
         done();
       });
