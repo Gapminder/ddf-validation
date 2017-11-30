@@ -1,17 +1,18 @@
 import * as chai from 'chai';
 
-import {head, isEmpty, isEqual} from 'lodash';
-import {DdfDataSet} from '../src/ddf-definitions/ddf-data-set';
+import { head, isEmpty, isEqual } from 'lodash';
+import { DdfDataSet } from '../src/ddf-definitions/ddf-data-set';
 import {
   CONCEPT_ID_IS_NOT_UNIQUE,
   EMPTY_CONCEPT_ID,
+  INCORRECT_CONCEPT_TYPE,
   NON_CONCEPT_HEADER,
   CONCEPT_MANDATORY_FIELD_NOT_FOUND,
   CONCEPTS_NOT_FOUND,
   INVALID_DRILL_UP
 } from '../src/ddf-rules/registry';
-import {Issue} from '../src/ddf-rules/issue';
-import {allRules} from '../src/ddf-rules';
+import { Issue } from '../src/ddf-rules/issue';
+import { allRules } from '../src/ddf-rules';
 
 const expect = chai.expect;
 
@@ -40,6 +41,34 @@ describe('rules for concept', () => {
         expect(result.type).to.equal(CONCEPT_ID_IS_NOT_UNIQUE);
         expect(result.data.indexOf('geo')).to.be.greaterThan(-1);
         expect(result.data.indexOf('country')).to.be.greaterThan(-1);
+
+        done();
+      });
+    });
+  });
+
+  describe('when "INCORRECT_CONCEPT_TYPE" rule', () => {
+    it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
+      ddfDataSet.load(() => {
+        const result = allRules[INCORRECT_CONCEPT_TYPE].rule(ddfDataSet);
+
+        expect(isEmpty(result)).to.be.true;
+
+        done();
+      });
+    });
+
+    it(`issues should be found for folder with the problem
+    (fixtures/rules-cases/incorrect-concept-type)`, done => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/incorrect-concept-type', null);
+      ddfDataSet.load(() => {
+        const result = allRules[INCORRECT_CONCEPT_TYPE].rule(ddfDataSet);
+        const data = result.map((issue: Issue) => issue.data);
+        const expectedData = [{lineNumber: 8, type: ''}, {lineNumber: 10, type: 'incorrect_type!'}];
+
+        expect(result).to.be.not.null;
+        expect(data).to.deep.equal(expectedData);
 
         done();
       });
