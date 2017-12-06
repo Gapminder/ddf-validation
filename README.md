@@ -6,7 +6,6 @@ This nodejs app checks the validity of a DDF datasets and generates datapackage.
 ## System requirements
 
 You have [node.js](https://nodejs.org/en/) environment installed on your computer.  
-You
 
 ## Install
 
