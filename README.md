@@ -1,14 +1,16 @@
 # ddf-validation
 
+This nodejs app checks the validity of a DDF datasets and generates datapackage.
 [npm version](https://www.npmjs.com/package/ddf-validation)
+
+## System requirements
+
+You have [node.js](https://nodejs.org/en/) environment installed on your computer.  
+You
 
 ## Install
 
 `npm i ddf-validation -g`
-
-## Test
-
-`npm test` or `npm run n-test` without eslint
 
 ## Console utility usage
 
@@ -180,6 +182,11 @@ api.validate(streamValidator);
 ## Developer guide
 
 [you can see it here](doc/developer-guide.md)
+
+
+## Test
+
+`npm test` or `npm run n-test` without eslint
 
 ## Release
 1. `npm run changelog` - generates content for `CHANGELOG.md` file with changes that have happened since last release
