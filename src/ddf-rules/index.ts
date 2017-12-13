@@ -15,6 +15,7 @@ import { rule as incorrectPrimaryKey } from './data-package-rules/incorrect-prim
 import { rule as nonUniqueResourceName } from './data-package-rules/non-unique-resource-name';
 import { rule as nonUniqueResourceFile } from './data-package-rules/non-unique-resource-file';
 import { rule as dataPointWithoutIndicator } from './data-package-rules/datapoint-without-indicator';
+import { rule as sameKeyValueConcept } from './data-package-rules/same-key-value-concept';
 
 // import { rule as measureValueNotNumeric } from './data-point-rules/measure-value-not-numeric';
 import { rule as unexpectedEntityValue } from './data-point-rules/unexpected-entity-value';
@@ -58,6 +59,7 @@ export const allRules = {
   // [registry.MEASURE_VALUE_NOT_NUMERIC]: measureValueNotNumeric,
   [registry.DATA_POINT_UNEXPECTED_ENTITY_VALUE]: unexpectedEntityValue,
   [registry.DATA_POINT_UNEXPECTED_TIME_VALUE]: unexpectedTimeValue,
+  [registry.SAME_KEY_VALUE_CONCEPT]: sameKeyValueConcept,
   [registry.WRONG_ENTITY_IS_HEADER]: wrongEntityIsHeader,
   [registry.WRONG_ENTITY_IS_VALUE]: wrongEntityIsValue,
   [registry.NON_UNIQUE_ENTITY_VALUE]: nonUniqueEntityValue,

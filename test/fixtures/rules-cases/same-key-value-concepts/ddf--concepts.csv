@@ -1,0 +1,7 @@
+concept,concept_type,name,domain
+geo,entity_domain,geo,
+name,string,name,
+country,entity_set,country,geo
+city,entity_set,city,geo
+foo,measure,foo,
+time,time,time,
