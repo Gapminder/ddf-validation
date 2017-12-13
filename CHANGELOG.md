@@ -1,3 +1,14 @@
+<a name="1.10.0"></a>
+# [1.10.0](https://github.com/Gapminder/ddf-validation/compare/v1.9.7...v1.10.0) (2017-12-13)
+
+
+### Features
+
+* **rule:** check for existence of key-value pairs where key is or contains the same concept as value ([9c16c05](https://github.com/Gapminder/ddf-validation/commit/9c16c05)), closes [#473](https://github.com/Gapminder/ddf-validation/issues/473)
+* **rule:** wrong concept type ([f0dabe4](https://github.com/Gapminder/ddf-validation/commit/f0dabe4)), closes [#469](https://github.com/Gapminder/ddf-validation/issues/469)
+
+
+
 <a name="1.9.7"></a>
 ## [1.9.7](https://github.com/Gapminder/ddf-validation/compare/v1.9.6...v1.9.7) (2017-08-29)
 
