@@ -29,6 +29,7 @@ import { Concept } from '../ddf-definitions/concept';
 import { readDir, getFileLine, writeFile, fileExists, walkDir } from '../utils/file';
 import { getDdfSchema } from './ddf-schema';
 import { getExcludedDirs, isPathExpected } from './shared';
+import { CONCEPT_TYPE_ENTITY_DOMAIN, CONCEPT_TYPE_ENTITY_SET } from '../utils/ddf-things';
 
 export interface IDdfFileDescriptor {
   valid: boolean;
@@ -279,8 +280,8 @@ export class DataPackage {
         }
 
         if (fileDescriptor.type === ENTITY) {
-          const entityDomain = fileDescriptor.headers.find(header => conceptTypeHash[header] === 'entity_domain');
-          const entitySet = fileDescriptor.headers.find(header => conceptTypeHash[header] === 'entity_set');
+          const entityDomain = fileDescriptor.headers.find(header => conceptTypeHash[header] === CONCEPT_TYPE_ENTITY_DOMAIN);
+          const entitySet = fileDescriptor.headers.find(header => conceptTypeHash[header] === CONCEPT_TYPE_ENTITY_SET);
 
           fileDescriptor.primaryKey = entityDomain || entitySet;
         }

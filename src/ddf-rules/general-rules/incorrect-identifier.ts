@@ -1,14 +1,15 @@
-import {keys, includes, head, compact, isEmpty, flattenDeep, concat} from 'lodash';
-import {INCORRECT_IDENTIFIER} from '../registry';
-import {DdfDataSet} from '../../ddf-definitions/ddf-data-set';
-import {Issue} from '../issue';
+import { keys, includes, head, compact, isEmpty, flattenDeep, concat } from 'lodash';
+import { INCORRECT_IDENTIFIER } from '../registry';
+import { DdfDataSet } from '../../ddf-definitions/ddf-data-set';
+import { Issue } from '../issue';
+import { CONCEPT_TYPE_ENTITY_DOMAIN, CONCEPT_TYPE_ENTITY_SET } from '../../utils/ddf-things';
 
 const NOT_ALPHANUMERIC = /[^a-z0-9_]/;
 
 function getIdentifierColumnsNames(ddfDataSet, firstRecord) {
   const concept = ddfDataSet.getConcept();
-  const relatedConceptNames = concept.getDataIdsByType('entity_set')
-    .concat(concept.getDataIdsByType('entity_domain'));
+  const relatedConceptNames = concept.getDataIdsByType(CONCEPT_TYPE_ENTITY_SET)
+    .concat(concept.getDataIdsByType(CONCEPT_TYPE_ENTITY_DOMAIN));
 
   return keys(firstRecord)
     .filter(entityHeader => includes(relatedConceptNames, entityHeader));

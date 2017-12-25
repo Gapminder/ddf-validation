@@ -1,7 +1,8 @@
-import {startsWith, includes, uniq} from 'lodash';
-import {NON_CONCEPT_HEADER} from '../registry';
-import {DdfDataSet} from '../../ddf-definitions/ddf-data-set';
-import {Issue} from '../issue';
+import { includes, uniq } from 'lodash';
+import { NON_CONCEPT_HEADER } from '../registry';
+import { DdfDataSet } from '../../ddf-definitions/ddf-data-set';
+import { Issue } from '../issue';
+import { looksLikeIsField } from '../../utils/ddf-things';
 
 const Levenshtein = require('levenshtein');
 const SUGGEST_TOLERANCE = 3;
@@ -31,7 +32,7 @@ function getEntityHeaderDetails(ddfDataSet) {
 
   ddfDataSet.getEntity().fileDescriptors.forEach(fileDescriptor => {
     fileDescriptor.headers.forEach(header => {
-      if (!startsWith(header, 'is--')) {
+      if (!looksLikeIsField(header)) {
         result.push({header, fileDescriptor});
       }
     });

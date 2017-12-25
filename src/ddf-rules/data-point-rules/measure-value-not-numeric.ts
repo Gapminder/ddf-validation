@@ -2,11 +2,12 @@ import { isEmpty } from 'lodash';
 import { MEASURE_VALUE_NOT_NUMERIC } from '../registry';
 import { LINE_NUM_INCLUDING_HEADER } from '../../ddf-definitions/constants';
 import { Issue } from '../issue';
+import { CONCEPT_TYPE_STRING } from '../../utils/ddf-things';
 
 const parseDecimalNumber = require('parse-decimal-number');
 
 function isNotNumeric(valueParam) {
-  const value = typeof valueParam === 'string' ? valueParam : `${valueParam}`;
+  const value = typeof valueParam === CONCEPT_TYPE_STRING ? valueParam : `${valueParam}`;
 
   return isNaN(parseDecimalNumber(value)) && !isEmpty(value);
 }

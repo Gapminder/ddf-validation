@@ -1,11 +1,11 @@
-import { includes, startsWith } from 'lodash';
+import { includes } from 'lodash';
+import * as Levenshtein from 'levenshtein';
 import { WRONG_ENTITY_IS_HEADER } from '../registry';
 import { DdfDataSet } from '../../ddf-definitions/ddf-data-set';
 import { Issue } from '../issue';
-import * as Levenshtein from 'levenshtein';
+import { CONCEPT_TYPE_ENTITY_SET, fieldIsPrefix, looksLikeIsField } from '../../utils/ddf-things';
 
 const SUGGEST_TOLERANCE = 5;
-const IS_HEADER_PREFIX = 'is--';
 
 const getInformationAboutNonConcept = (ddfDataSet, actualHeaderDetail, headerDetail) =>
   includes(ddfDataSet.getConcept().getIds(), actualHeaderDetail) ? null : {
@@ -16,7 +16,7 @@ const getInformationAboutNonConcept = (ddfDataSet, actualHeaderDetail, headerDet
 const getInformationAboutWrongNonEntityConcept = (ddfDataSet, actualHeaderDetail, headerDetail) => {
   const conceptRecord = ddfDataSet.getConcept().getRecordByKey(actualHeaderDetail);
 
-  return !conceptRecord || conceptRecord.concept_type !== 'entity_set' ? {
+  return !conceptRecord || conceptRecord.concept_type !== CONCEPT_TYPE_ENTITY_SET ? {
     message: 'Wrong concept type',
     headerDetail
   } : null;
@@ -41,7 +41,7 @@ const getInformationForbiddenDomain = (ddfDataSet, actualHeader, fileDescriptor)
 };
 
 const getSuggestions = (ddfDataSet, actualHeader) => {
-  return ddfDataSet.getConcept().getDataIdsByType('entity_set')
+  return ddfDataSet.getConcept().getDataIdsByType(CONCEPT_TYPE_ENTITY_SET)
     .map(concept => {
       const levenshtein = new Levenshtein(concept, actualHeader);
 
@@ -62,8 +62,8 @@ export const rule = {
       fileDescriptor.headers.forEach(header => {
         let actualHeader = header;
 
-        if (startsWith(header, IS_HEADER_PREFIX)) {
-          actualHeader = header.replace(IS_HEADER_PREFIX, '');
+        if (looksLikeIsField(header)) {
+          actualHeader = header.replace(fieldIsPrefix, '');
 
           const data = getInformationAboutNonConcept(ddfDataSet, actualHeader, header) ||
             getInformationAboutWrongNonEntityConcept(ddfDataSet, actualHeader, header) ||

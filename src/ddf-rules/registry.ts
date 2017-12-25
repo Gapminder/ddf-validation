@@ -33,6 +33,8 @@ export const DATA_POINT_WITHOUT_INDICATOR = Symbol.for('DATA_POINT_WITHOUT_INDIC
 export const UNEXISTING_CONSTRAINT_VALUE = Symbol.for('UNEXISTING_CONSTRAINT_VALUE');
 export const DATA_POINT_CONSTRAINT_VIOLATION = Symbol.for('DATA_POINT_CONSTRAINT_VIOLATION');
 export const DUPLICATED_DATA_POINT_KEY = Symbol.for('DUPLICATED_DATA_POINT_KEY');
+export const INCORRECT_BOOLEAN_ENTITY = Symbol.for('INCORRECT_BOOLEAN_ENTITY');
+export const CONCEPT_LOOKS_LIKE_BOOLEAN = Symbol.for('CONCEPT_LOOKS_LIKE_BOOLEAN');
 
 export const WARNING_TAG = Symbol.for('WARNING');
 export const FILE_SYSTEM_TAG = Symbol.for('FILE_SYSTEM');
@@ -78,7 +80,9 @@ export const tags: any = {
   [DATA_POINT_WITHOUT_INDICATOR]: [DATAPOINT_TAG],
   [UNEXISTING_CONSTRAINT_VALUE]: [],
   [DATA_POINT_CONSTRAINT_VIOLATION]: [DATAPOINT_TAG],
-  [DUPLICATED_DATA_POINT_KEY]: [DATAPOINT_TAG]
+  [DUPLICATED_DATA_POINT_KEY]: [DATAPOINT_TAG],
+  [INCORRECT_BOOLEAN_ENTITY]: [],
+  [CONCEPT_LOOKS_LIKE_BOOLEAN]: [WARNING_TAG]
 };
 
 export const descriptions = {
@@ -142,7 +146,9 @@ export const descriptions = {
   [DATA_POINT_WITHOUT_INDICATOR]: 'Datapoint without indicator: primary key is equal fields in datapackage.json resource',
   [UNEXISTING_CONSTRAINT_VALUE]: 'Constraint value that described in datapackage.json is not a valid entity value',
   [DATA_POINT_CONSTRAINT_VIOLATION]: 'Constraint violation for particular datapoint. See datapackage.json format.',
-  [DUPLICATED_DATA_POINT_KEY]: 'Duplicated datapoint primary key'
+  [DUPLICATED_DATA_POINT_KEY]: 'Duplicated datapoint primary key',
+  [INCORRECT_BOOLEAN_ENTITY]: 'Boolean entitiy field has an incorrect value',
+  [CONCEPT_LOOKS_LIKE_BOOLEAN]: 'Entity contains values that look like boolean, but related entity field has an another type'
 };
 
 export const getRulesInformation = () => Object.getOwnPropertySymbols(exports.descriptions)

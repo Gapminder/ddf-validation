@@ -7,10 +7,15 @@ import {
 import { NON_UNIQUE_ENTITY_VALUE } from '../../registry';
 import { DdfDataSet } from '../../../ddf-definitions/ddf-data-set';
 import { Issue } from '../../issue';
+import {
+  CONCEPT_TYPE_ENTITY_DOMAIN,
+  CONCEPT_TYPE_ENTITY_SET,
+  isDdfTrue,
+  looksLikeIsField
+} from '../../../utils/ddf-things';
 
-const isEntityDomainField = (conceptTypes, field) => conceptTypes[field] === 'entity_domain';
-const isEntitySetField = (conceptTypes, field) => conceptTypes[field] === 'entity_set';
-const isFieldRelatedToEntity = field => startsWith(field, 'is--');
+const isEntityDomainField = (conceptTypes, field) => conceptTypes[field] === CONCEPT_TYPE_ENTITY_DOMAIN;
+const isEntitySetField = (conceptTypes, field) => conceptTypes[field] === CONCEPT_TYPE_ENTITY_SET;
 
 class EntityFileDescriptor {
   constructor(public entitySetFields: string[], public entityIdField: string) {
@@ -20,7 +25,7 @@ class EntityFileDescriptor {
     const relatedEntities = [];
 
     for (let entitySetField of this.entitySetFields) {
-      if (record[entitySetField] === 'TRUE' || record[entitySetField] === 'true') {
+      if (isDdfTrue(record[entitySetField])) {
         relatedEntities.push(entitySetField.replace(/is--/, ''));
       }
     }
@@ -66,7 +71,7 @@ export class SearchUniqueEntitiesStory {
       const entityIdField = dataPackageResource.schema.primaryKey;
 
       for (let field of allFields) {
-        if (isFieldRelatedToEntity(field)) {
+        if (looksLikeIsField(field)) {
           entitySetFields.push(field);
         }
       }
@@ -193,7 +198,7 @@ export class SearchUniqueEntitiesStory {
     let doesNotContainIsFields = true;
 
     for (let field of allFields) {
-      if (isFieldRelatedToEntity(field)) {
+      if (looksLikeIsField(field)) {
         doesNotContainIsFields = false;
       }
     }

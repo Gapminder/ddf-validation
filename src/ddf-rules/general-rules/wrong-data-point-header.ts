@@ -3,14 +3,15 @@ import { WRONG_DATA_POINT_HEADER } from '../registry';
 import { DdfDataSet } from '../../ddf-definitions/ddf-data-set';
 import { Issue } from '../issue';
 import { FileDescriptor } from '../../data/file-descriptor';
+import { CONCEPT_TYPE_ENTITY_DOMAIN, CONCEPT_TYPE_ENTITY_SET, CONCEPT_TYPE_TIME } from '../../utils/ddf-things';
 
 export const rule = {
   rule: (ddfDataSet: DdfDataSet) => {
     const issues: Issue[] = [];
     const expectedConcepts = ddfDataSet.getConcept().getAllData().filter(conceptRecord =>
-      conceptRecord.concept_type === 'entity_domain' ||
-      conceptRecord.concept_type === 'entity_set' ||
-      conceptRecord.concept_type === 'time').map(conceptRecord => conceptRecord.concept);
+      conceptRecord.concept_type === CONCEPT_TYPE_ENTITY_DOMAIN ||
+      conceptRecord.concept_type === CONCEPT_TYPE_ENTITY_SET ||
+      conceptRecord.concept_type === CONCEPT_TYPE_TIME).map(conceptRecord => conceptRecord.concept);
 
     ddfDataSet.getDataPoint().fileDescriptors.forEach((fileDescriptor: FileDescriptor, index: number) => {
       const dataPackage = ddfDataSet.getDataPoint().dataPackageObjects[index].dataPackageContent;

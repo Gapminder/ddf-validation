@@ -8,6 +8,7 @@ import { Db } from '../data/db';
 import { DDFRoot } from '../data/ddf-root';
 import { DataPackage } from '../data/data-package';
 import { logger } from '../utils';
+import { CONCEPT_TYPE_MEASURE } from '../utils/ddf-things';
 
 export class DdfDataSet {
   public db: Db;
@@ -97,7 +98,7 @@ export class DdfDataSet {
 
   getAllMeasures() {
     return this.getConcept().getAllData()
-      .filter(record => record.concept_type === 'measure')
+      .filter(record => record.concept_type === CONCEPT_TYPE_MEASURE)
       .map(record => record.concept);
   }
 

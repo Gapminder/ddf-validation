@@ -1,4 +1,8 @@
-import { compact, flattenDeep, reduce, keys, startsWith, uniq } from 'lodash';
+import { compact, flattenDeep, reduce, keys } from 'lodash';
+import {
+  CONCEPT_TYPE_ENTITY_DOMAIN, CONCEPT_TYPE_ENTITY_SET, isDdfTrue,
+  looksLikeIsField
+} from '../../utils/ddf-things';
 
 export interface IConstraintDescriptor {
   fullPath: string;
@@ -12,8 +16,6 @@ let cache;
 export const resetCache = () => {
   cache = {};
 };
-
-const isPrefix = 'is--';
 
 resetCache();
 
@@ -69,7 +71,7 @@ export const cacheFor = {
     if (!cache[key]) {
       const conceptTypeDictionary = cacheFor.conceptTypeDictionary(dataPointDescriptor);
       const entities = keys(dataPointDescriptor.record).filter(key =>
-        conceptTypeDictionary[key] === 'entity_domain' || conceptTypeDictionary[key] === 'entity_set');
+        conceptTypeDictionary[key] === CONCEPT_TYPE_ENTITY_DOMAIN || conceptTypeDictionary[key] === CONCEPT_TYPE_ENTITY_SET);
 
       cache[key] = entities;
     }
@@ -78,7 +80,6 @@ export const cacheFor = {
   },
   getEntityValueHash: dataPointDescriptor => {
     const key = `entityValueHash`;
-    const isTrue = (value: string) => value === 'TRUE' || value === 'true';
 
     if (!cache[key]) {
       const result = {};
@@ -96,14 +97,14 @@ export const cacheFor = {
         const isEntityWithIsSign = {};
         const recordKeys = keys(entityRecord);
 
-        const looksLikeEntity = key => !startsWith(key, isPrefix) || (startsWith(key, isPrefix) && isTrue(entityRecord[key]));
-        const isEntity = key => conceptTypeHash[key] === 'entity_domain' || conceptTypeHash[key] === 'entity_set';
+        const looksLikeEntity = key => !looksLikeIsField(key) || (looksLikeIsField(key) && isDdfTrue(entityRecord[key]));
+        const isEntity = key => conceptTypeHash[key] === CONCEPT_TYPE_ENTITY_DOMAIN || conceptTypeHash[key] === CONCEPT_TYPE_ENTITY_SET;
 
         const entitiesSet = reduce(recordKeys, (result, key) => {
           if (looksLikeEntity(key)) {
             const newKey = key.replace(/is--/, '');
 
-            if (startsWith(key, isPrefix)) {
+            if (looksLikeIsField(key)) {
               isEntityWithIsSign[newKey] = true;
             }
 
