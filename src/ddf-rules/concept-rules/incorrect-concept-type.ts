@@ -1,12 +1,8 @@
-import {includes} from 'lodash';
-import {INCORRECT_CONCEPT_TYPE} from '../registry';
-import {DdfDataSet} from '../../ddf-definitions/ddf-data-set';
-import {Issue} from '../issue';
-
-const CONCEPT_TYPES = [
-  'boolean', 'string', 'measure', 'entity_domain', 'entity_set', 'time',
-  'year', 'week', 'month', 'day', 'quarter', 'interval', 'role', 'custom_type'
-];
+import { includes } from 'lodash';
+import { INCORRECT_CONCEPT_TYPE } from '../registry';
+import { DdfDataSet } from '../../ddf-definitions/ddf-data-set';
+import { Issue } from '../issue';
+import { CONCEPT_TYPES } from '../../utils/ddf-things';
 
 export const rule = {
   rule: (ddfDataSet: DdfDataSet) => {

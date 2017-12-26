@@ -1,10 +1,11 @@
 import * as path from 'path';
 import { parallelLimit } from 'async';
-import { compact, cloneDeep, isArray, head, startsWith, keys, includes, sortBy } from 'lodash';
+import { compact, cloneDeep, isArray, head, keys, includes, sortBy } from 'lodash';
 import { readFile } from '../utils/file';
 import { DataPackage } from '../data/data-package';
 import { DdfDataSet } from '../ddf-definitions/ddf-data-set';
 import { getRelativePath } from './shared';
+import { CONCEPT_TYPE_ENTITY_DOMAIN, CONCEPT_TYPE_ENTITY_SET, isDdfTrue, looksLikeIsField } from '../utils/ddf-things';
 
 const term = require('terminal-kit').terminal;
 const getProgressBar = (isProgressNeeded: boolean = false, config: any): any => {
@@ -81,7 +82,7 @@ function getDdfSchemaContent(dataset: any, isProgressNeeded, onDdfSchemaReady) {
   // fetch entity domain and entity set concepts
   for (let resource of dataset.conceptsResources) {
     for (let row of dataset.dataHash[resource.path]) {
-      if (row.concept_type === 'entity_domain' || row.concept_type === 'entity_set') {
+      if (row.concept_type === CONCEPT_TYPE_ENTITY_DOMAIN || row.concept_type === CONCEPT_TYPE_ENTITY_SET) {
         entityConcepts[row.concept] = row; // entities['geo'] = { concept: "geo", concept_type: "entity_domain", ... }
       }
     }
@@ -95,13 +96,13 @@ function getDdfSchemaContent(dataset: any, isProgressNeeded, onDdfSchemaReady) {
     // find the domain of this entity resource
 
     const pk = resource.schema.primaryKey[0];
-    const domain = (entityConcepts[pk].concept_type == 'entity_domain') ? pk : entityConcepts[pk].domain;
+    const domain = (entityConcepts[pk].concept_type == CONCEPT_TYPE_ENTITY_DOMAIN) ? pk : entityConcepts[pk].domain;
 
     // find sets defined in this resource
     const entity_set_fields = [];
 
     for (let field of resource.schema['fields']) {
-      if (startsWith(field, 'is--')) {
+      if (looksLikeIsField(field)) {
         entity_set_fields.push(field);
       }
     }
@@ -119,7 +120,7 @@ function getDdfSchemaContent(dataset: any, isProgressNeeded, onDdfSchemaReady) {
       entities[domain][row[pk]].add(domain);
 
       for (let field of entity_set_fields) {
-        if (row[field] == 'true' || row[field] == 'TRUE') {
+        if (isDdfTrue(row[field])) {
           entities[domain][row[pk]].add(field.substring(4));
         }
       }
@@ -167,7 +168,7 @@ function getDdfSchemaContent(dataset: any, isProgressNeeded, onDdfSchemaReady) {
         // save the concept if it's a entity concept
         if (entityConcepts[pkField]) {
           // find the domain of this entity concept (for lookup in the entities object)
-          const domain = entityConcepts[pkField].concept_type == 'entity_domain' ? pkField : entityConcepts[pkField].domain;
+          const domain = entityConcepts[pkField].concept_type == CONCEPT_TYPE_ENTITY_DOMAIN ? pkField : entityConcepts[pkField].domain;
 
           primaryKeyEntityConcepts.push({concept: pkField, domain: domain});
         } else {

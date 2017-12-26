@@ -1,22 +1,23 @@
-import {isEmpty} from 'lodash';
-import {CONCEPT_MANDATORY_FIELD_NOT_FOUND} from '../registry';
-import {DdfDataSet} from '../../ddf-definitions/ddf-data-set';
-import {Issue} from '../issue';
+import { isEmpty } from 'lodash';
+import { CONCEPT_MANDATORY_FIELD_NOT_FOUND } from '../registry';
+import { DdfDataSet } from '../../ddf-definitions/ddf-data-set';
+import { Issue } from '../issue';
+import { CONCEPT_TYPE_ENTITY_DOMAIN, CONCEPT_TYPE_ENTITY_SET, CONCEPT_TYPE_ROLE } from '../../utils/ddf-things';
 
 function domainIsNotEntityDomain(domain) {
-  return !domain || domain.concept_type !== 'entity_domain';
+  return !domain || domain.concept_type !== CONCEPT_TYPE_ENTITY_DOMAIN;
 }
 
 function domainIsNotEntitySetOrDomain(domain) {
-  return domainIsNotEntityDomain(domain) && domain.concept_type !== 'entity_set';
+  return domainIsNotEntityDomain(domain) && domain.concept_type !== CONCEPT_TYPE_ENTITY_SET;
 }
 
 function isIssueForEntitySet(domain, conceptRecord) {
-  return conceptRecord.concept_type === 'entity_set' && domainIsNotEntityDomain(domain);
+  return conceptRecord.concept_type === CONCEPT_TYPE_ENTITY_SET && domainIsNotEntityDomain(domain);
 }
 
 function isIssueForRole(domain, conceptRecord) {
-  return conceptRecord.concept_type === 'role' && domainIsNotEntitySetOrDomain(domain);
+  return conceptRecord.concept_type === CONCEPT_TYPE_ROLE && domainIsNotEntitySetOrDomain(domain);
 }
 
 function getIssueForConceptMandatoryField(ddfDataSet, conceptRecord) {

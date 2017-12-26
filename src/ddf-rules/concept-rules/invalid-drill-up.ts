@@ -1,8 +1,9 @@
-import {isEmpty} from 'lodash';
-import {INCORRECT_JSON_FIELD, INVALID_DRILL_UP} from '../registry';
-import {allRules}  from '../index';
-import {DdfDataSet} from '../../ddf-definitions/ddf-data-set';
-import {Issue} from '../issue';
+import { isEmpty } from 'lodash';
+import { INCORRECT_JSON_FIELD, INVALID_DRILL_UP } from '../registry';
+import { allRules } from '../index';
+import { DdfDataSet } from '../../ddf-definitions/ddf-data-set';
+import { Issue } from '../issue';
+import { CONCEPT_TYPE_ENTITY_DOMAIN, CONCEPT_TYPE_ENTITY_SET } from '../../utils/ddf-things';
 
 function hasConceptRelatedInvalidJSONIssue(ddfDataSet, concept) {
   const incorrectJSONFieldIssues = allRules[INCORRECT_JSON_FIELD].rule(ddfDataSet);
@@ -25,7 +26,7 @@ function getDrillUpIssue(ddfDataSet, concept): Issue {
     return null;
   }
 
-  if (concept.concept_type !== 'entity_set') {
+  if (concept.concept_type !== CONCEPT_TYPE_ENTITY_SET) {
     return new Issue(INVALID_DRILL_UP)
       .setPath(concept.$$source)
       .setData({
@@ -47,7 +48,7 @@ function getDrillUpIssue(ddfDataSet, concept): Issue {
         result = {drillUpName, reason: 'Concept for Drillup is not found'};
       }
 
-      if (drillUpObject && drillUpObject.domain !== concept.domain && drillUpObject.concept_type === 'entity_set') {
+      if (drillUpObject && drillUpObject.domain !== concept.domain && drillUpObject.concept_type === CONCEPT_TYPE_ENTITY_SET) {
         result = {
           conceptDomain: drillUpObject.domain,
           expectedDomain: concept.domain,
@@ -55,7 +56,7 @@ function getDrillUpIssue(ddfDataSet, concept): Issue {
         };
       }
 
-      if (drillUpObject && concept.domain !== drillUpObject.concept && drillUpObject.concept_type === 'entity_domain') {
+      if (drillUpObject && concept.domain !== drillUpObject.concept && drillUpObject.concept_type === CONCEPT_TYPE_ENTITY_DOMAIN) {
         result = {
           conceptDomain: drillUpObject.concept,
           expectedDomain: concept.domain,

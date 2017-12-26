@@ -27,6 +27,8 @@ import { rule as nonUniqueEntityValue } from './entity-rules/non-unique-entity-v
 import { rule as wrongEntityIsHeader } from './entity-rules/wrong-entity-is-header';
 import { rule as wrongEntityIsValue } from './entity-rules/wrong-entity-is-value';
 import { rule as unexistingConstraintValueRule } from './entity-rules/unexisting-constraint-value';
+import { rule as incorrectBooleanEntity } from './entity-rules/incorrect-boolean-entity';
+import { rule as conceptLooksLikeBoolean } from './entity-rules/concept-looks-like-boolean';
 
 import { rule as emptyData } from './general-rules/empty-data';
 import { rule as unexpectedData } from './general-rules/unexpected-data';
@@ -75,6 +77,8 @@ export const allRules = {
   [registry.DUPLICATED_DATA_POINT_TRANSLATION_KEY]: duplicatedDataPointTranslationKey,
   [registry.DUPLICATED_TRANSLATION_KEY]: duplicatedTranslationKey,
   [registry.UNEXISTING_CONSTRAINT_VALUE]: unexistingConstraintValueRule,
+  [registry.INCORRECT_BOOLEAN_ENTITY]: incorrectBooleanEntity,
+  [registry.CONCEPT_LOOKS_LIKE_BOOLEAN]: conceptLooksLikeBoolean,
   [registry.DATA_POINT_CONSTRAINT_VIOLATION]: dataPointConstraintViolation,
   [registry.DUPLICATED_DATA_POINT_KEY]: duplicatedDataPointKey
 };

@@ -1,0 +1,862 @@
+{
+  "name": "concept-looks-like-boolean",
+  "title": "concept-looks-like-boolean",
+  "description": "",
+  "version": "0.0.1",
+  "language": {
+    "id": "en",
+    "name": "English"
+  },
+  "translations": [],
+  "license": "",
+  "author": "",
+  "resources": [
+    {
+      "path": "ddf--concepts.csv",
+      "name": "ddf--concepts",
+      "schema": {
+        "fields": [
+          {
+            "name": "concept"
+          },
+          {
+            "name": "color"
+          },
+          {
+            "name": "concept_type"
+          },
+          {
+            "name": "description"
+          },
+          {
+            "name": "domain"
+          },
+          {
+            "name": "drill_up"
+          },
+          {
+            "name": "indicator_url"
+          },
+          {
+            "name": "interpolation"
+          },
+          {
+            "name": "name"
+          },
+          {
+            "name": "name_catalog"
+          },
+          {
+            "name": "name_short"
+          },
+          {
+            "name": "scales"
+          },
+          {
+            "name": "tags"
+          }
+        ],
+        "primaryKey": "concept"
+      }
+    },
+    {
+      "path": "ddf--entities--geo--country.csv",
+      "name": "geo--country",
+      "schema": {
+        "fields": [
+          {
+            "name": "country"
+          },
+          {
+            "name": "gwid"
+          },
+          {
+            "name": "name"
+          },
+          {
+            "name": "world_6region"
+          },
+          {
+            "name": "income_groups"
+          },
+          {
+            "name": "landlocked"
+          },
+          {
+            "name": "g77_and_oecd_countries"
+          },
+          {
+            "name": "main_religion_2008"
+          },
+          {
+            "name": "gapminder_list"
+          },
+          {
+            "name": "alternative_1"
+          },
+          {
+            "name": "alternative_2"
+          },
+          {
+            "name": "alternative_3"
+          },
+          {
+            "name": "alternative_4_cdiac"
+          },
+          {
+            "name": "pandg"
+          },
+          {
+            "name": "god_id"
+          },
+          {
+            "name": "alt_5"
+          },
+          {
+            "name": "upper_case_name"
+          },
+          {
+            "name": "iso3166_1_alpha2"
+          },
+          {
+            "name": "iso3166_1_alpha3"
+          },
+          {
+            "name": "iso3166_1_numeric"
+          },
+          {
+            "name": "iso3166_2"
+          },
+          {
+            "name": "unicode_region_subtag"
+          },
+          {
+            "name": "arb1"
+          },
+          {
+            "name": "arb2"
+          },
+          {
+            "name": "arb3"
+          },
+          {
+            "name": "arb4"
+          },
+          {
+            "name": "arb5"
+          },
+          {
+            "name": "arb6"
+          },
+          {
+            "name": "is--country"
+          },
+          {
+            "name": "un_state"
+          },
+          {
+            "name": "world_4region"
+          },
+          {
+            "name": "latitude"
+          },
+          {
+            "name": "longitude"
+          }
+        ],
+        "primaryKey": "country"
+      }
+    }
+  ],
+  "ddfSchema": {
+    "datapoints": [],
+    "entities": [
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "alt_5",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "alternative_1",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "alternative_2",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "alternative_3",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "alternative_4_cdiac",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "arb1",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "arb2",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "arb3",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "arb4",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "arb5",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "arb6",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "g77_and_oecd_countries",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "gapminder_list",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "god_id",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "gwid",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "income_groups",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "is--country",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "iso3166_1_alpha2",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "iso3166_1_alpha3",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "iso3166_1_numeric",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "iso3166_2",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "landlocked",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "latitude",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "longitude",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "main_religion_2008",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "name",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "pandg",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "un_state",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "unicode_region_subtag",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "upper_case_name",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "world_4region",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "world_6region",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "alt_5",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "alternative_1",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "alternative_2",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "alternative_3",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "alternative_4_cdiac",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "arb1",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "arb2",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "arb3",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "arb4",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "arb5",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "arb6",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "g77_and_oecd_countries",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "gapminder_list",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "god_id",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "gwid",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "income_groups",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "is--country",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "iso3166_1_alpha2",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "iso3166_1_alpha3",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "iso3166_1_numeric",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "iso3166_2",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "landlocked",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "latitude",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "longitude",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "main_religion_2008",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "name",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "pandg",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "un_state",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "unicode_region_subtag",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "upper_case_name",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "world_4region",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "world_6region",
+        "resources": [
+          "geo--country"
+        ]
+      }
+    ],
+    "concepts": [
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "color",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "concept_type",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "description",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "domain",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "drill_up",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "indicator_url",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "interpolation",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "name",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "name_catalog",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "name_short",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "scales",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "tags",
+        "resources": [
+          "ddf--concepts"
+        ]
+      }
+    ]
+  }
+}

@@ -5,7 +5,9 @@ import {
   WRONG_ENTITY_IS_HEADER,
   WRONG_ENTITY_IS_VALUE,
   NON_UNIQUE_ENTITY_VALUE,
-  UNEXISTING_CONSTRAINT_VALUE
+  UNEXISTING_CONSTRAINT_VALUE,
+  INCORRECT_BOOLEAN_ENTITY,
+  CONCEPT_LOOKS_LIKE_BOOLEAN
 } from '../src/ddf-rules/registry';
 import { Issue } from '../src/ddf-rules/issue';
 import { allRules } from '../src/ddf-rules';
@@ -354,6 +356,77 @@ describe('rules for entry', () => {
           expect(!!result[index].data).to.be.true;
           expect(result[index].data.constraintEntityValue).to.equal(issueData.constraintEntityValue);
         });
+
+        done();
+      });
+    });
+  });
+
+  describe('when "INCORRECT_BOOLEAN_ENTITY" rule', () => {
+    it('any issue should NOT be found for a folder without the problem (SG)', done => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/ddf--sg', null);
+      ddfDataSet.load(() => {
+        expect(allRules[INCORRECT_BOOLEAN_ENTITY].rule(ddfDataSet).length).to.equal(0);
+
+        done();
+      });
+    });
+
+    it('a couple of issues should be found for a folder with the problem', done => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/incorrect-boolean-entity', null);
+      ddfDataSet.load(() => {
+        const expectedData: any[] = [
+          {
+            path: 'ddf--entities--geo--country.csv',
+            data: {
+              fieldsWithWrongValues: [
+                'un_state'
+              ],
+              line: 1
+            }
+          },
+          {
+            path: 'ddf--entities--geo--country.csv',
+            data: {
+              fieldsWithWrongValues: [
+                'un_state'
+              ],
+              line: 27
+            }
+          }
+        ];
+        const issues = allRules[INCORRECT_BOOLEAN_ENTITY].rule(ddfDataSet);
+
+        issues.forEach((issue, index) => {
+          expect(issues.length).to.equal(expectedData.length);
+          expect(endsWith(issue.path, expectedData[index].path)).to.be.true;
+          expect(issue.data.fieldsWithWrongValues).to.deep.equal(expectedData[index].data.fieldsWithWrongValues);
+          expect(issue.data.line).to.equal(expectedData[index].data.line);
+        });
+
+        done();
+      });
+    });
+  });
+
+  describe('when "CONCEPT_LOOKS_LIKE_BOOLEAN" rule', () => {
+    it('any issue should NOT be found for a folder without the problem (SG)', done => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/ddf--sg', null);
+      ddfDataSet.load(() => {
+        expect(allRules[CONCEPT_LOOKS_LIKE_BOOLEAN].rule(ddfDataSet).length).to.equal(0);
+
+        done();
+      });
+    });
+
+    it('an issue should be found for a folder with the problem', done => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/concept-looks-like-boolean', null);
+      ddfDataSet.load(() => {
+        const issues = <Issue[]>allRules[CONCEPT_LOOKS_LIKE_BOOLEAN].rule(ddfDataSet);
+        const issue: Issue = head(issues);
+
+        expect(issues.length).to.equal(1);
+        expect(issue.data.concept).to.equal('arb5');
 
         done();
       });
