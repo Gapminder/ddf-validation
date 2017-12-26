@@ -1,3 +1,13 @@
+<a name="1.11.0"></a>
+# [1.11.0](https://github.com/Gapminder/ddf-validation/compare/v1.10.0...v1.11.0) (2017-12-26)
+
+
+### Features
+
+* **rules:** entity contains values that look like boolean ([ad65fdd](https://github.com/Gapminder/ddf-validation/commit/ad65fdd)), closes [#467](https://github.com/Gapminder/ddf-validation/issues/467) [#468](https://github.com/Gapminder/ddf-validation/issues/468)
+
+
+
 <a name="1.10.0"></a>
 # [1.10.0](https://github.com/Gapminder/ddf-validation/compare/v1.9.7...v1.10.0) (2017-12-13)
 
