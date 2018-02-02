@@ -1,0 +1,5 @@
+company,name,country,region,additional_column,is--english_speaking
+mcrsft,Microsoft,США,america,any text 1,TRUE
+gap,Gapminder,Швеция,europe,any text 2,TRUE
+valor,Valor Sotware,Украина,europe,,FALSE
+zsoft,Z-Soft,Турция,asia,,FALSE

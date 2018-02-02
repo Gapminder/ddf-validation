@@ -50,6 +50,7 @@ export class FileDescriptor {
   public csvChecker: CsvChecker;
   public hasFirstLine: boolean;
   public isTranslation: boolean;
+  public translationId: boolean;
   public size: number;
 
   constructor(data) {
@@ -62,6 +63,7 @@ export class FileDescriptor {
     this.fullPath = data.fullPath;
     this.csvChecker = new CsvChecker(this.fullPath);
     this.hasFirstLine = false;
+    this.translationId = data.translationId;
     this.isTranslation = data.isTranslation;
   }
 

@@ -43,13 +43,14 @@ export class DDFRoot {
       const translationFolder = resolve(this.path, TRNSLATIONS_FOLDER);
 
       fileDescriptor.transFileDescriptors = translationsIds
-        .map(translationsId =>
+        .map(translationId =>
           new FileDescriptor({
-            dir: resolve(translationFolder, translationsId),
+            dir: resolve(translationFolder, translationId),
             file: fileDescriptor.file,
             type: fileDescriptor.type,
             primaryKey: fileDescriptor.primaryKey,
-            fullPath: resolve(translationFolder, translationsId, fileDescriptor.file),
+            fullPath: resolve(translationFolder, translationId, fileDescriptor.file),
+            translationId,
             isTranslation: true
           }));
     });

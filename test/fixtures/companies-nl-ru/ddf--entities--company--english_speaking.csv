@@ -1,0 +1,3 @@
+company,name,country,region,additional_column,is--english_speaking
+international_house,International House,United States of America,america,any text 1,TRUE
+it_cluster,IT Cluster,Sweden,europe,any text 2,TRUE

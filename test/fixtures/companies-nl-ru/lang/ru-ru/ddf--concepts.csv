@@ -1,0 +1,12 @@
+concept,concept_type,domain,additional_column
+company,entity_domain,,компания
+english_speaking,entity_set,company,англоязычная
+name,string,,название
+lines_of_code,measure,,строк_кода
+region,entity_domain,,регион
+country,string,,страна
+latitude,measure,,широта
+longitude,measure,,долгота
+full_name_changed,string,,полное название
+project,entity_domain,,проект
+additional_column,string,,дополнительный столбец

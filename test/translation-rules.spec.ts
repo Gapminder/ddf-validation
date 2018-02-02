@@ -213,6 +213,33 @@ describe('translation rules', () => {
         dataPointChunksProcessingStory.withCustomRules(customRules).waitForResult(theEnd).processDataPointChunks(ddfDataSet, issuesFilter);
       });
     });
+
+    it('any issue should NOT be found for "fixtures/companies-nl-ru"', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/companies-nl-ru', null);
+      const issueEmitter = new EventEmitter();
+      const issues: Issue[] = [];
+
+      ddfDataSet.load(() => {
+        const fileDescriptorsChunks = getAllDataPointFileDescriptorsChunks(ddfDataSet);
+        const theEnd = () => {
+          expect(issues.length).to.equal(0);
+
+          done();
+        };
+
+        issueEmitter.on('issue', (issue) => {
+          issues.push(issue);
+        });
+        const customRules = [{
+          ruleKey: DUPLICATED_DATA_POINT_TRANSLATION_KEY,
+          rule: allRules[DUPLICATED_DATA_POINT_TRANSLATION_KEY]
+        }];
+
+        const dataPointChunksProcessingStory = new DataPointChunksProcessingStory(fileDescriptorsChunks, issueEmitter);
+
+        dataPointChunksProcessingStory.withCustomRules(customRules).waitForResult(theEnd).processDataPointChunks(ddfDataSet, issuesFilter);
+      });
+    });
   });
 
   describe('when "DUPLICATED_TRANSLATION_KEY" rule', () => {
