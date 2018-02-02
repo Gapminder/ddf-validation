@@ -1,0 +1,18 @@
+concept,concept_type,domain,additional_column
+company,entity_domain,,
+english_speaking,entity_set,company,
+company_scale,entity_set,company,updated
+name,string,,
+anno,time,,
+lines_of_code,measure,,
+region,entity_domain,,
+country,string,,
+latitude,measure,,
+longitude,measure,,
+full_name_changed,string,,new value and change concept
+project,entity_domain,,
+domain,string,,
+additional_column,string,,new row and column
+meeting_style,string,,
+popular_appeal,string,,
+methodology,string,,

@@ -14,7 +14,7 @@ export const rule = {
     const sortedPrimaryKey = dataPointDescriptor.fileDescriptor.primaryKey.sort();
     const dimensionData = sortedPrimaryKey.map(keyPart => `${keyPart}:${dataPointDescriptor.record[keyPart]}`).join(',');
     const indicatorName = difference(dataPointDescriptor.fileDescriptor.headers, dataPointDescriptor.fileDescriptor.primaryKey).join(',');
-    const recordHash = `${dimensionData}@${indicatorName}`;
+    const recordHash = `${dimensionData}@${indicatorName}#${dataPointDescriptor.fileDescriptor.translationId}`;
 
     if (storage.hash.has(recordHash)) {
       storage.duplicatedHashes.push(recordHash);
