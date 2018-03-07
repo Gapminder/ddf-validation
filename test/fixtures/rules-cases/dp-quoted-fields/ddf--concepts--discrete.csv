@@ -1,0 +1,7 @@
+concept,name,concept_type,tags
+name,Name,string,_none
+tag,Tag,entity_domain,_none
+name_short,Short Name,string,_none
+name_catalog,Catalog Name,string,_none
+tags,Tags,string,_none
+parent,Tag Parent,string,_none
