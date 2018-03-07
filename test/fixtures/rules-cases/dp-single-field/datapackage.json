@@ -1,0 +1,90 @@
+{
+  "name": "dp-quoted-fields",
+  "title": "dp-quoted-fields",
+  "description": "",
+  "version": "0.0.1",
+  "language": {
+    "id": "en",
+    "name": "English"
+  },
+  "translations": [],
+  "license": "",
+  "author": "",
+  "resources": [
+    {
+      "path": "ddf--concepts--continuous.csv",
+      "name": "ddf--concepts--continuous",
+      "schema": {
+        "fields": [
+          {
+            "name": "concept"
+          }
+        ],
+        "primaryKey": "concept"
+      }
+    },
+    {
+      "path": "ddf--concepts--discrete.csv",
+      "name": "ddf--concepts--discrete",
+      "schema": {
+        "fields": [
+          {
+            "name": "concept"
+          },
+          {
+            "name": "name"
+          },
+          {
+            "name": "concept_type"
+          },
+          {
+            "name": "tags"
+          }
+        ],
+        "primaryKey": "concept"
+      }
+    }
+  ],
+  "ddfSchema": {
+    "datapoints": [],
+    "entities": [],
+    "concepts": [
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "concept_type",
+        "resources": [
+          "ddf--concepts--discrete"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "name",
+        "resources": [
+          "ddf--concepts--discrete"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "tags",
+        "resources": [
+          "ddf--concepts--discrete"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": null,
+        "resources": [
+          "ddf--concepts--continuous"
+        ]
+      }
+    ]
+  }
+}

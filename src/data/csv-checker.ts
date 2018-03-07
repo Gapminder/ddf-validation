@@ -1,6 +1,6 @@
 import {isEmpty} from 'lodash';
 import {readFile} from 'fs';
-import * as CsvParser from 'babyparse';
+import * as CsvParser from 'papaparse';
 
 const getErrors = parsedCsv => parsedCsv.errors
   .filter(error => error.row >= 0)

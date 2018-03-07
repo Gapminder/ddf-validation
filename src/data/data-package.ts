@@ -1,5 +1,5 @@
 import * as path from 'path';
-import * as CsvParser from 'babyparse';
+import * as CsvParser from 'papaparse';
 import {
   head,
   cloneDeep,
@@ -271,10 +271,6 @@ export class DataPackage {
           }
 
           const parsedFirstCsvLine = CsvParser.parse(firstLine);
-
-          if (!isEmpty(parsedFirstCsvLine.errors)) {
-            return onHeaderReady();
-          }
 
           fileDescriptor.headers = head(parsedFirstCsvLine.data);
           onHeaderReady();

@@ -98,6 +98,16 @@ describe('ddf datapackage.json validation', () => {
       });
     });
 
+    it('any issue should NOT be found for DS with single-field header (fixtures/rules-cases/dp-single-field)', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/dp-single-field', null);
+
+      ddfDataSet.load(() => {
+        expect(allRules[DATAPACKAGE_INCORRECT_FIELDS].rule(ddfDataSet).length).to.equal(0);
+
+        done();
+      });
+    });
+
     it('3 issues should be found for expected folder "fixtures/rules-cases/datapackage-confused-fields"', done => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/datapackage-confused-fields', null);
 
