@@ -87,6 +87,17 @@ describe('ddf datapackage.json validation', () => {
         done();
       });
     });
+
+    it('any issue should NOT be found for DS with quoted header (fixtures/rules-cases/dp-quoted-fields)', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/dp-quoted-fields', null);
+
+      ddfDataSet.load(() => {
+        expect(allRules[DATAPACKAGE_INCORRECT_FIELDS].rule(ddfDataSet).length).to.equal(0);
+
+        done();
+      });
+    });
+
     it('3 issues should be found for expected folder "fixtures/rules-cases/datapackage-confused-fields"', done => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/datapackage-confused-fields', null);
 
@@ -339,8 +350,6 @@ describe('ddf datapackage.json validation', () => {
 
       ddfDataSet.load(() => {
         const issues: Issue[] = allRules[SAME_KEY_VALUE_CONCEPT].rule(ddfDataSet);
-
-        console.log(JSON.stringify(issues, null, 2));
 
         expect(issues.length).to.equal(1);
         expect(isEqual(head(issues).data, expectedData)).to.be.true;
