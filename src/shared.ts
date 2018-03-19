@@ -1,10 +1,31 @@
-import { isArray, isEmpty, sortBy, values } from 'lodash';
+import { isArray, isEmpty, includes, sortBy, values } from 'lodash';
 import { allRules as ddfRules } from './ddf-rules';
 import { FileDescriptor } from './data/file-descriptor';
 import { DdfDataSet } from './ddf-definitions/ddf-data-set';
 import { Issue } from './ddf-rules/issue';
 import { IssuesFilter } from './utils/issues-filter';
 import { DataPointChunksProcessingStory } from './stories/data-point-chunks-processing';
+import { DATAPACKAGE_TAG, tags } from './ddf-rules/registry';
+
+const getValidationSyncResultBySimpleRules = (ddfDataSet: DdfDataSet, rulesKeys): Issue[] => {
+  const allIssuesSources = [];
+
+  for (let key of rulesKeys) {
+    const issuesSources = ddfRules[key].rule(ddfDataSet);
+
+    if (!isEmpty(issuesSources)) {
+      if (isArray(issuesSources)) {
+        allIssuesSources.push(...issuesSources);
+      }
+
+      if (!isArray(issuesSources)) {
+        allIssuesSources.push(issuesSources);
+      }
+    }
+  }
+
+  return allIssuesSources;
+};
 
 const injectTranslations = (fileDescriptors: FileDescriptor[]) => {
   const translationDescriptors = [];
@@ -114,87 +135,98 @@ export const getDataPointFilesChunks = (ddfDataSet: DdfDataSet, cpuCount: number
       dataPointFileDescriptors.map(dataPointFileDescriptor => dataPointFileDescriptor.fullPath)));
 };
 
-
 export const getSimpleRulesResult = (ddfDataSet: DdfDataSet, issuesFilter: IssuesFilter): Issue[] => {
   const rulesKeys = Object.getOwnPropertySymbols(ddfRules).filter(key => isSimpleRule(ddfRules[key]) && issuesFilter.isAllowed(key));
-  const allIssuesSources = [];
 
-  for (let key of rulesKeys) {
-    const issuesSources = ddfRules[key].rule(ddfDataSet);
+  return getValidationSyncResultBySimpleRules(ddfDataSet, rulesKeys);
+};
 
-    if (!isEmpty(issuesSources)) {
-      if (isArray(issuesSources)) {
-        allIssuesSources.push(...issuesSources);
-      }
+export const getPreResult = (ddfDataSet: DdfDataSet, issuesFilter: IssuesFilter): Issue[] => {
+  const rulesKeys = Object.getOwnPropertySymbols(ddfRules)
+    .filter(key => includes(tags[key], DATAPACKAGE_TAG) && issuesFilter.isAllowed(key));
 
-      if (!isArray(issuesSources)) {
-        allIssuesSources.push(issuesSources);
-      }
-    }
-  }
-
-  return allIssuesSources;
+  return getValidationSyncResultBySimpleRules(ddfDataSet, rulesKeys);
 };
 
 export const validationProcess = (context, logger, isCollectResultMode?: boolean) => {
-  const simpleRulesResult = getSimpleRulesResult(context.ddfDataSet, context.issuesFilter);
-  const allIssuesToOut = [];
+  const preRulesResult = getPreResult(context.ddfDataSet, context.issuesFilter);
 
-  if (!isEmpty(simpleRulesResult)) {
-    simpleRulesResult.forEach((issue: Issue) => {
-      allIssuesToOut.push(issue.view());
+  if (!isEmpty(preRulesResult)) {
+    const preIssuesToOut = [];
+
+    preRulesResult.forEach((issue: Issue) => {
+      preIssuesToOut.push(issue.view());
 
       context.issueEmitter.emit('issue', issue.view());
     });
-  }
 
-  if (context.settings.datapointlessMode) {
-    context.issueEmitter.emit('finish', null, allIssuesToOut);
-  }
+    context.issueEmitter.emit('finish', null, preIssuesToOut);
+  } else {
+    const simpleRulesResult = getSimpleRulesResult(context.ddfDataSet, context.issuesFilter);
+    const allIssuesToOut = [];
 
-  if (!context.settings.datapointlessMode && (context.settings.isMultithread && context.multiThreadProcessing)) {
-    context.multiThreadProcessing();
-  }
+    if (!isEmpty(simpleRulesResult)) {
+      simpleRulesResult.forEach((issue: Issue) => {
+        allIssuesToOut.push(issue.view());
 
-  if (!context.settings.datapointlessMode && (!context.settings.isMultithread || !context.multiThreadProcessing)) {
-    const fileDescriptorsChunks = getAllDataPointFileDescriptorsChunks(context.ddfDataSet);
-    const dataPointChunksProcessingStory = new DataPointChunksProcessingStory(fileDescriptorsChunks, context.issueEmitter);
-    const theEnd = (out: Issue[] = []) => {
-      context.issueEmitter.emit('finish', null, allIssuesToOut.concat(out));
-    };
+        context.issueEmitter.emit('issue', issue.view());
+      });
+    }
 
-    context.issueEmitter.on('init-chunk-progress', (total: number) => {
-      logger.progressInit('datapoints validation', {total});
-    });
+    if (context.settings.datapointlessMode) {
+      context.issueEmitter.emit('finish', null, allIssuesToOut);
+    }
 
-    context.issueEmitter.on('chunk-progress', () => {
-      logger.progress();
-    });
+    if (!context.settings.datapointlessMode && (context.settings.isMultithread && context.multiThreadProcessing)) {
+      context.multiThreadProcessing();
+    }
 
-    dataPointChunksProcessingStory.waitForResult(theEnd, isCollectResultMode).processDataPointChunks(context.ddfDataSet, context.issuesFilter);
+    if (!context.settings.datapointlessMode && (!context.settings.isMultithread || !context.multiThreadProcessing)) {
+      const fileDescriptorsChunks = getAllDataPointFileDescriptorsChunks(context.ddfDataSet);
+      const dataPointChunksProcessingStory = new DataPointChunksProcessingStory(fileDescriptorsChunks, context.issueEmitter);
+      const theEnd = (out: Issue[] = []) => {
+        context.issueEmitter.emit('finish', null, allIssuesToOut.concat(out));
+      };
+
+      context.issueEmitter.on('init-chunk-progress', (total: number) => {
+        logger.progressInit('datapoints validation', {total});
+      });
+
+      context.issueEmitter.on('chunk-progress', () => {
+        logger.progress();
+      });
+
+      dataPointChunksProcessingStory.waitForResult(theEnd, isCollectResultMode).processDataPointChunks(context.ddfDataSet, context.issuesFilter);
+    }
   }
 };
 
 export const simpleValidationProcess = (context) => {
-  const simpleRulesResult = getSimpleRulesResult(context.ddfDataSet, context.issuesFilter);
+  const preRulesResult = getPreResult(context.ddfDataSet, context.issuesFilter);
 
-  let isDataSetCorrect = true;
+  if (!isEmpty(preRulesResult)) {
+    context.issueEmitter.emit('finish', null, false);
+  } else {
+    const simpleRulesResult = getSimpleRulesResult(context.ddfDataSet, context.issuesFilter);
 
-  if (!isEmpty(simpleRulesResult)) {
-    isDataSetCorrect = false;
-  }
+    let isDataSetCorrect = true;
 
-  if (context.settings.datapointlessMode) {
-    context.issueEmitter.emit('finish', null, isDataSetCorrect);
-  }
+    if (!isEmpty(simpleRulesResult)) {
+      context.issueEmitter.emit('finish', null, false);
+    } else {
+      if (context.settings.datapointlessMode) {
+        context.issueEmitter.emit('finish', null, isDataSetCorrect);
+      }
 
-  if (!context.settings.datapointlessMode) {
-    const fileDescriptorsChunks = getAllDataPointFileDescriptorsChunks(context.ddfDataSet);
-    const dataPointChunksProcessingStory = new DataPointChunksProcessingStory(fileDescriptorsChunks, context.issueEmitter);
-    const theEnd = (out: Issue[] = []) => {
-      context.issueEmitter.emit('finish', null, isDataSetCorrect && isEmpty(out));
-    };
+      if (!context.settings.datapointlessMode) {
+        const fileDescriptorsChunks = getAllDataPointFileDescriptorsChunks(context.ddfDataSet);
+        const dataPointChunksProcessingStory = new DataPointChunksProcessingStory(fileDescriptorsChunks, context.issueEmitter);
+        const theEnd = (out: Issue[] = []) => {
+          context.issueEmitter.emit('finish', null, isDataSetCorrect && isEmpty(out));
+        };
 
-    dataPointChunksProcessingStory.waitForResult(theEnd, true).processDataPointChunks(context.ddfDataSet, context.issuesFilter);
+        dataPointChunksProcessingStory.waitForResult(theEnd, true).processDataPointChunks(context.ddfDataSet, context.issuesFilter);
+      }
+    }
   }
 };
