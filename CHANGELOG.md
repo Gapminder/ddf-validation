@@ -1,3 +1,13 @@
+<a name="1.14.0"></a>
+# [1.14.0](https://github.com/Gapminder/ddf-validation/compare/v1.13.0...v1.14.0) (2018-03-20)
+
+
+### Features
+
+* **api:** move datapackage creation logic to separate api functionality ([aedde71](https://github.com/Gapminder/ddf-validation/commit/aedde71)), closes [#486](https://github.com/Gapminder/ddf-validation/issues/486)
+
+
+
 <a name="1.13.0"></a>
 # [1.13.0](https://github.com/Gapminder/ddf-validation/compare/v1.12.2...v1.13.0) (2018-03-19)
 
