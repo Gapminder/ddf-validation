@@ -45,9 +45,10 @@ export interface IDdfFileDescriptor {
   directoryIndex?: number
 }
 
+export const DATA_PACKAGE_FILE = 'datapackage.json';
+
 const PROCESS_LIMIT = 5;
 const CONCEPT_ID = 'concept';
-const DATA_PACKAGE_FILE = 'datapackage.json';
 const LANG_FOLDER = 'lang';
 const CSV_EXTENSION = 'csv';
 const REQUIRED_DDF_FILE_PARTS = 2;

@@ -6,7 +6,9 @@ import {
   validationProcess,
   simpleValidationProcess, getDataPointFilesChunks
 } from './shared';
-import { logger, getTransport } from './utils';
+import { logger, getTransport, settings } from './utils';
+import * as fs from 'fs';
+import { DataPackage, DATA_PACKAGE_FILE } from './data/data-package';
 
 const child_process = require('child_process');
 const os = require('os');
@@ -142,6 +144,60 @@ export class SimpleValidator {
       simpleValidationProcess(this);
     });
   }
+}
+
+export interface IDataPackageInfo {
+  ddfPath: string,
+  dataPackagePath: string,
+  exists: boolean
+}
+
+export function getDataPackageInfo(ddfRootFolder: string): IDataPackageInfo {
+  const ddfPath = path.resolve(ddfRootFolder || '.');
+  const dataPackagePath = path.resolve(ddfPath, DATA_PACKAGE_FILE);
+
+  return {ddfPath, dataPackagePath, exists: fs.existsSync(dataPackagePath)};
+}
+
+export function createDataPackage(ddfRootFolder: string, onNotice: Function, onDataPackageReady: Function, newDataPackagePriority = false) {
+  let {ddfPath, dataPackagePath, exists} = getDataPackageInfo(ddfRootFolder);
+
+  if (newDataPackagePriority && exists) {
+    const dateLabel = new Date().toISOString().replace(/:/g, '');
+    const newFileName = `${DATA_PACKAGE_FILE}.${dateLabel}`;
+
+    fs.renameSync(dataPackagePath, path.resolve(ddfPath, newFileName));
+    exists = false
+  }
+
+  let dataPackageContent = null;
+
+  if (exists) {
+    try {
+      dataPackageContent = JSON.parse(fs.readFileSync(dataPackagePath, 'utf-8'));
+    } catch (err) {
+      onNotice(`datapackage.json error: ${err}.`);
+      return onDataPackageReady(err);
+    }
+  }
+
+  const dataPackage = new DataPackage(ddfPath, settings);
+
+  onNotice('datapackage creation started...');
+
+  dataPackage.build(() => {
+    onNotice('resources are ready');
+
+    dataPackage.write(settings, dataPackageContent, (err: any, filePath: string) => {
+      if (err) {
+        onNotice(`datapackage.json was NOT created: ${err}.`);
+        return onDataPackageReady(err);
+      }
+
+      onNotice(`${filePath} was created successfully.`);
+      onDataPackageReady();
+    });
+  });
 }
 
 export const validate = validator => validator.validate();

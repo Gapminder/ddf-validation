@@ -5,7 +5,7 @@ This nodejs app checks the validity of a DDF datasets and generates datapackage.
 
 ## System requirements
 
-You have [node.js](https://nodejs.org/en/) environment installed on your computer.  
+You have [node.js](https://nodejs.org/en/) environment installed on your computer.
 
 ## Install
 
@@ -66,7 +66,7 @@ First of all you should install this package: `npm i ddf-validation`
  * JSON based validator (`JSONValidator`)
  * Stream based validator (`StreamValidator`)
  * Validator that checks whether dataset has errors and if there are some - returns `true`, otherwise - `false`
- 
+
 Some examples of API using:
 
 ### JSONValidator
@@ -85,7 +85,7 @@ jsonValidator.on('finish', (err, jsonIssuesContent) => {
 api.validate(jsonValidator);
 ```
 
-This validator's type returns all issues as JSON object. 
+This validator's type returns all issues as JSON object.
 And for this reason it's not suitable for huge DDF datasets.
 
 ### StreamValidator
@@ -176,6 +176,35 @@ streamValidator.on('finish', err => {
 });
 
 api.validate(streamValidator);
+```
+
+## datapackage.json creation
+
+There is a function for `datapackage.json` creation in API: `createDataPackage`.
+
+`createDataPackage` parameters description:
+
+* ddfRootFolder: `string` - path to DDF folder
+* onNotice: `Function` - function that will be called when notice output should be expected
+* onDataPackageReady: `Function` - function that will be called when `datapackage.json` creation was finished
+* newDataPackagePriority: `boolean` (default `false`) - this is a flag that defines policy regarding existing `datapackage.json`.
+If `true` then current `datapackage.json` will be renamed and new one will be created as `datapackage.json`.
+Otherwise, `createDataPackage` behavior is next: if `datapackage.json` exists then current datapackage will not be changed
+ and new one will be created as `datapackage.json.TIME_LABEL`.
+
+```
+const api = require('ddf-validation');
+
+const ddfRootFolder = '.';
+
+api.createDataPackage(ddfRootFolder, message => {
+  console.log(message);
+}, (err) => {
+  if (err) {
+    console.log(err);
+  }
+});
+
 ```
 
 ## Developer guide
