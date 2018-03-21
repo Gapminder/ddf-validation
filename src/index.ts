@@ -52,6 +52,8 @@ export class StreamValidator {
     this.rootPath = rootPath;
     this.settings = settings || {};
     this.issueEmitter = new EventEmitter();
+
+    getTransport().updateSettings(this.settings);
   }
 
   on(type, data) {
