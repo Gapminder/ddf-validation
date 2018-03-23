@@ -14,7 +14,23 @@ const child_process = require('child_process');
 const os = require('os');
 const allCpuCount = os.cpus().length;
 
-export class JSONValidator {
+export class ValidatorBase {
+  private messageEmitter: EventEmitter;
+
+  constructor() {
+    this.messageEmitter = new EventEmitter();
+  }
+
+  public sendMessage(data) {
+    this.messageEmitter.emit('message', data);
+  }
+
+  public onMessage(data) {
+    return this.messageEmitter.on('message', data);
+  }
+}
+
+export class JSONValidator extends ValidatorBase {
   public rootPath: string;
   public settings: any;
   public issueEmitter: EventEmitter;
@@ -22,6 +38,7 @@ export class JSONValidator {
   public ddfDataSet: DdfDataSet;
 
   constructor(rootPath, settings) {
+    super();
     this.rootPath = rootPath;
     this.settings = settings || {};
     this.issueEmitter = new EventEmitter();
@@ -41,7 +58,7 @@ export class JSONValidator {
   }
 }
 
-export class StreamValidator {
+export class StreamValidator extends ValidatorBase {
   public rootPath: string;
   public settings: any;
   public issueEmitter: EventEmitter;
@@ -49,6 +66,7 @@ export class StreamValidator {
   public ddfDataSet: DdfDataSet;
 
   constructor(rootPath, settings) {
+    super();
     this.rootPath = rootPath;
     this.settings = settings || {};
     this.issueEmitter = new EventEmitter();
@@ -100,16 +118,16 @@ export class StreamValidator {
   }
 
   validate() {
+    this.sendMessage('loading dataset...');
     this.issuesFilter = new IssuesFilter(this.settings);
     this.ddfDataSet = new DdfDataSet(this.rootPath, this.settings);
-
     this.ddfDataSet.load(() => {
       validationProcess(this, logger);
     });
   }
 }
 
-export class SimpleValidator {
+export class SimpleValidator extends ValidatorBase {
   public rootPath: string;
   public settings: any;
   public issueEmitter: EventEmitter;
@@ -118,6 +136,7 @@ export class SimpleValidator {
   public isDataSetCorrect: boolean;
 
   constructor(rootPath, settings) {
+    super();
     this.rootPath = rootPath;
     this.settings = settings || {};
     this.issueEmitter = new EventEmitter();
@@ -161,36 +180,50 @@ export function getDataPackageInfo(ddfRootFolder: string): IDataPackageInfo {
   return {ddfPath, dataPackagePath, exists: fs.existsSync(dataPackagePath)};
 }
 
-export function createDataPackage(ddfRootFolder: string, onNotice: Function, onDataPackageReady: Function, newDataPackagePriority = false) {
-  let {ddfPath, dataPackagePath, exists} = getDataPackageInfo(ddfRootFolder);
+export interface IDataPackageCreationParameters {
+  ddfRootFolder: string,
+  newDataPackagePriority?: boolean,
+  externalSettings?
+}
 
-  if (newDataPackagePriority && exists) {
+export function createDataPackage(parameters: IDataPackageCreationParameters,
+                                  onNotice: Function,
+                                  onDataPackageReady: Function) {
+  const expectedSettings = parameters.externalSettings || settings;
+
+  let {ddfPath, dataPackagePath, exists} = getDataPackageInfo(parameters.ddfRootFolder);
+  let newDataPackagePath;
+
+  if (parameters.newDataPackagePriority && exists) {
     const dateLabel = new Date().toISOString().replace(/:/g, '');
     const newFileName = `${DATA_PACKAGE_FILE}.${dateLabel}`;
 
-    fs.renameSync(dataPackagePath, path.resolve(ddfPath, newFileName));
-    exists = false
+    newDataPackagePath = path.resolve(ddfPath, newFileName);
+
+    fs.renameSync(dataPackagePath, newDataPackagePath);
   }
 
   let dataPackageContent = null;
 
   if (exists) {
     try {
-      dataPackageContent = JSON.parse(fs.readFileSync(dataPackagePath, 'utf-8'));
+      dataPackageContent = JSON.parse(fs.readFileSync(newDataPackagePath || dataPackagePath, 'utf-8'));
     } catch (err) {
       onNotice(`datapackage.json error: ${err}.`);
       return onDataPackageReady(err);
     }
   }
 
-  const dataPackage = new DataPackage(ddfPath, settings);
+  const dataPackage = new DataPackage(ddfPath, expectedSettings);
 
   onNotice('datapackage creation started...');
 
   dataPackage.build(() => {
     onNotice('resources are ready');
 
-    dataPackage.write(settings, dataPackageContent, (err: any, filePath: string) => {
+    expectedSettings._newDataPackagePriority = parameters.newDataPackagePriority;
+
+    dataPackage.write(expectedSettings, dataPackageContent, (err: any, filePath: string) => {
       if (err) {
         onNotice(`datapackage.json was NOT created: ${err}.`);
         return onDataPackageReady(err);

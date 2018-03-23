@@ -427,7 +427,8 @@ export class DataPackage {
     const dateLabel = new Date().toISOString().replace(/:/g, '');
     const isBasedOnCurrentDataPackage =
       (existingDataPackage && (settings.updateDataPackageTranslations || settings.updateDataPackageContent));
-    const fileName = isBasedOnCurrentDataPackage || !existingDataPackage ? DATA_PACKAGE_FILE : `${DATA_PACKAGE_FILE}.${dateLabel}`;
+    const fileName = isBasedOnCurrentDataPackage || (!existingDataPackage || settings._newDataPackagePriority) ?
+      DATA_PACKAGE_FILE : `${DATA_PACKAGE_FILE}.${dateLabel}`;
     const filePath = resolve(this.rootFolder, fileName);
     const commandLineSettings = cloneDeep(this.settings);
 
