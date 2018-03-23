@@ -149,6 +149,7 @@ export const getPreResult = (ddfDataSet: DdfDataSet, issuesFilter: IssuesFilter)
 };
 
 export const validationProcess = (context, logger, isCollectResultMode?: boolean) => {
+  context.sendMessage('validating concepts and entities...');
   const preRulesResult = getPreResult(context.ddfDataSet, context.issuesFilter);
 
   if (!isEmpty(preRulesResult)) {
@@ -189,6 +190,7 @@ export const validationProcess = (context, logger, isCollectResultMode?: boolean
       };
 
       context.issueEmitter.on('init-chunk-progress', (total: number) => {
+        context.sendMessage('validating datapoints...');
         logger.progressInit('datapoints validation', {total});
       });
 

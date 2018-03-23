@@ -22,7 +22,7 @@ if (settings.heap) {
 }
 
 if (settings.isDataPackageGenerationMode && !settings.versionShouldBePrinted) {
-  createDataPackage(ddfRootFolder, (message) => {
+  createDataPackage({ddfRootFolder}, (message) => {
     logger.notice(message);
   }, (err) => {
     if (err) {
