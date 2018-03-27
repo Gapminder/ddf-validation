@@ -1,6 +1,6 @@
 This app checks the validity of [DDF datasets](https://open-numbers.github.io/ddf.html) and generates datapackage
 
-You can use this app in 3 ways: through a GUI of Gapminder Offline, as a command line tool, through an API using an [npm package](https://www.npmjs.com/package/ddf-validation)
+You can use this app in 3 ways: through a GUI of Gapminder Offline, as a command line tool or through the API
 
 ## Normal people can use validator in Gapminder Offline app (version 3.3.0+)
 
