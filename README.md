@@ -5,10 +5,10 @@ You can use this app in 3 ways: through a GUI of Gapminder Offline, as a command
 ## Normal people can use validator in Gapminder Offline app (version 3.3.0+)
 
 * Download and install [Gapminder Offline](https://gapminder.org/tools-offline)   
-* Go to the top-right menu and chose "DDF tools". Follow instructions on the screen for the rest of the process. 
+* Go to the top-right menu and choose "DDF tools". Follow instructions on the screen for the rest of the process. 
 
 #### datapackage
-* With Gapminder Offline DDF tools you can also create or update datapackage file if you chose an option to do so.
+* With Gapminder Offline DDF tools you can also create or update datapackage file if you choose an option to do so.
 
 ## Advanced users can use validator as a command line tool
 
