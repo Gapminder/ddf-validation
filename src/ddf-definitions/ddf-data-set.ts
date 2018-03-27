@@ -8,6 +8,7 @@ import { Db } from '../data/db';
 import { DDFRoot } from '../data/ddf-root';
 import { DataPackage } from '../data/data-package';
 import { logger } from '../utils';
+import { supervisor } from '../shared';
 import { CONCEPT_TYPE_MEASURE } from '../utils/ddf-things';
 
 export class DdfDataSet {
@@ -72,6 +73,10 @@ export class DdfDataSet {
       }
 
       parallelLimit(loaders, 30, (err, definitions) => {
+        if (supervisor.abandon) {
+          return onDataSetLoaded(new Error('abandoned by external reason'));
+        }
+
         const allMeasures = this.getAllMeasures();
 
         this.definitions = compact(definitions);

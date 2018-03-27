@@ -3,8 +3,10 @@ import { EventEmitter } from 'events';
 import { DdfDataSet } from './ddf-definitions/ddf-data-set';
 import { IssuesFilter } from './utils/issues-filter';
 import {
+  supervisor,
   validationProcess,
-  simpleValidationProcess, getDataPointFilesChunks
+  simpleValidationProcess,
+  getDataPointFilesChunks
 } from './shared';
 import { logger, getTransport, settings } from './utils';
 import * as fs from 'fs';
@@ -15,7 +17,7 @@ const os = require('os');
 const allCpuCount = os.cpus().length;
 
 export class ValidatorBase {
-  private messageEmitter: EventEmitter;
+  protected messageEmitter: EventEmitter;
 
   constructor() {
     this.messageEmitter = new EventEmitter();
@@ -27,6 +29,15 @@ export class ValidatorBase {
 
   public onMessage(data) {
     return this.messageEmitter.on('message', data);
+  }
+
+  public abandon() {
+    supervisor.abandon = true;
+    this.messageEmitter.emit('abandon', true);
+  }
+
+  public isAbandoned(): boolean {
+    return supervisor.abandon
   }
 }
 
@@ -82,13 +93,14 @@ export class StreamValidator extends ValidatorBase {
     const cpuCount = allCpuCount - (this.settings.useAllCpu ? 0 : 1);
     const filesChunks = getDataPointFilesChunks(this.ddfDataSet, cpuCount);
     const total = filesChunks.reduce((result, chunk) => result + chunk.length, 0);
+    const childProcesses = [];
 
     logger.progressInit('datapoints validation', {total});
 
     let childProcessesFinished = 0;
 
     for (let index = 0; index < cpuCount; index++) {
-      const childProcess = child_process.fork(path.resolve(__dirname, 'thread.js'));
+      const childProcess = child_process.fork(path.resolve(this.settings.appPath || __dirname, 'thread.js'));
 
       childProcess.on('message', (message) => {
         if (message.finish) {
@@ -114,7 +126,18 @@ export class StreamValidator extends ValidatorBase {
         filesChunks: filesChunks[index],
         isCollectResultMode: false
       });
+
+      childProcesses.push(childProcess);
     }
+
+    this.messageEmitter.on('abandon', () => {
+      for (const childProcess of childProcesses) {
+        try {
+          childProcess.send('abandon');
+        } catch (e) {
+        }
+      }
+    });
   }
 
   validate() {
@@ -235,4 +258,7 @@ export function createDataPackage(parameters: IDataPackageCreationParameters,
   });
 }
 
-export const validate = validator => validator.validate();
+export const validate = validator => {
+  supervisor.abandon = false;
+  validator.validate()
+};

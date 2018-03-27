@@ -7,10 +7,18 @@ import { IssuesFilter } from './utils/issues-filter';
 import { DataPointChunksProcessingStory } from './stories/data-point-chunks-processing';
 import { DATAPACKAGE_TAG, tags } from './ddf-rules/registry';
 
+export const supervisor  = {
+  abandon: false
+};
+
 const getValidationSyncResultBySimpleRules = (ddfDataSet: DdfDataSet, rulesKeys): Issue[] => {
   const allIssuesSources = [];
 
   for (let key of rulesKeys) {
+    if (supervisor.abandon) {
+      return null;
+    }
+
     const issuesSources = ddfRules[key].rule(ddfDataSet);
 
     if (!isEmpty(issuesSources)) {
@@ -165,6 +173,11 @@ export const validationProcess = (context, logger, isCollectResultMode?: boolean
   } else {
     const simpleRulesResult = getSimpleRulesResult(context.ddfDataSet, context.issuesFilter);
     const allIssuesToOut = [];
+
+    if (supervisor.abandon) {
+      context.issueEmitter.emit('finish');
+      return;
+    }
 
     if (!isEmpty(simpleRulesResult)) {
       simpleRulesResult.forEach((issue: Issue) => {

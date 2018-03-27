@@ -1,5 +1,5 @@
 import {isEmpty} from 'lodash';
-import {descriptions, tags} from './registry';
+import {descriptions, tags, howToFix} from './registry';
 
 export class Issue {
   public type: any;
@@ -36,6 +36,7 @@ export class Issue {
     const result = {
       id: Symbol.keyFor(this.type),
       type: descriptions[this.type],
+      howToFix: howToFix[this.type],
       path: this.path,
       data: this.data
     };
