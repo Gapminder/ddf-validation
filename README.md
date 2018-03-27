@@ -19,8 +19,8 @@ You can use this app in 3 ways: through a GUI of Gapminder Offline, as a command
 * If issues are found, the validator will create a human-readable text file with the timestamp, which you can read and debug your dataset
 
 #### datapackage
-* Generating datapackage json: run validator with -i flag: `validate-ddf -i`
-* Updating the schema parts of datapackage json: run validator with -i flag: `validate-ddf --content`
+* Generating a new datapackage json: run validator with -i flag: `validate-ddf -i`
+* Updating existing datapackage json and preserving your headers: run validator with --content flag: `validate-ddf --content`
 
 There is a ton of possible options you can use to customise the validation, make it faster, etc, see the complete reference [here](doc/user-guide.md)
 
