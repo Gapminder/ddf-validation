@@ -106,7 +106,7 @@ export const descriptions = {
   [WRONG_ENTITY_IS_HEADER]: 'Incorrect "is" entity property header. It may only reference a concept of type "entity_set".',
   [WRONG_ENTITY_IS_VALUE]: 'Incorrect value found in the column with "is" header. Only boolean values are allowed.',
   [NON_UNIQUE_ENTITY_VALUE]: 'A non-unique entity value was found within an entity domain.',
-  [CONCEPT_MANDATORY_FIELD_NOT_FOUND]: 'A concept is missing a mandatory property. Mandatory fields are not the same for all concept types.'
+  [CONCEPT_MANDATORY_FIELD_NOT_FOUND]: 'A concept is missing a mandatory property. Mandatory fields are not the same for all concept types.',
   [CONCEPTS_NOT_FOUND]: 'Concepts are not found.',
   [DATAPACKAGE_INCORRECT_FIELDS]: 'Datapackage: Incorrect fields found in datapackage.json.',
   [DATAPACKAGE_NON_CONCEPT_FIELD]: 'Datapackage: Non-concept primary key found in datapackage.json.',
