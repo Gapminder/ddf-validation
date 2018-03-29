@@ -5,7 +5,7 @@ import { allRules as ddfRules } from '../ddf-rules';
 import { FileDescriptor } from '../data/file-descriptor';
 import { DdfDataSet } from '../ddf-definitions/ddf-data-set';
 import { walkFile } from '../utils/file';
-import { CONCURRENT_OPERATIONS_AMOUNT, noTranslation, sameTranslation } from '../shared';
+import { CONCURRENT_OPERATIONS_AMOUNT, noTranslation, sameTranslation, supervisor } from '../shared';
 import { IssuesFilter } from '../utils/issues-filter';
 
 export const isRecordRule = ruleObject => !!ruleObject.recordRule;
@@ -37,7 +37,15 @@ export class ProcessOneDataPointsChunkStory {
 
     const actions: any = this.fileDescriptors.map((fileDescriptor: FileDescriptor) => (onFileDescriptorProcessed: Function) => {
       walkFile(fileDescriptor.fullPath, (record, line) => {
+        if (supervisor.abandon) {
+          return onFileDescriptorProcessed(new Error('abandoned by the external reason'));
+        }
+
         for (let ruleWrapper of this.rulesWrappers) {
+          if (supervisor.abandon) {
+            return onFileDescriptorProcessed(new Error('abandoned by the external reason'));
+          }
+
           if (sameTranslation(ruleWrapper.ruleKey, fileDescriptor) || noTranslation(ruleWrapper.ruleKey, fileDescriptor)) {
             if (isRecordRule(ruleWrapper.rule)) {
               const issues = ruleWrapper.rule.recordRule({ddfDataSet, fileDescriptor, record, line});
@@ -59,6 +67,10 @@ export class ProcessOneDataPointsChunkStory {
 
   analyze() {
     for (let ruleWrapper of this.rulesWrappers) {
+      if (supervisor.abandon) {
+        return;
+      }
+
       if (isAggregativeRule(ruleWrapper.rule)) {
         const issues = ruleWrapper.rule.aggregativeRule(ruleWrapper.storage);
 

@@ -26,7 +26,7 @@ process.on('message', (message: any) => {
   const issueEmitter = new EventEmitter();
   const out = [];
 
-  if (isEmpty(message.filesChunks)) {
+  if (isEmpty(message.filesChunks) || message === 'abandon') {
     process.send({err: null, out: [], finish: true});
     process.exit();
   }

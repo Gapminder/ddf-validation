@@ -5,7 +5,7 @@ import { FileDescriptor } from '../data/file-descriptor';
 import { DdfDataSet } from '../ddf-definitions/ddf-data-set';
 import { Issue } from '../ddf-rules/issue';
 import { ProcessOneDataPointsChunkStory } from '../stories/process-one-data-points-chunk';
-import { CONCURRENT_OPERATIONS_AMOUNT } from '../shared';
+import { CONCURRENT_OPERATIONS_AMOUNT, supervisor } from '../shared';
 import { IssuesFilter } from '../utils/issues-filter';
 
 export class DataPointChunksProcessingStory {
@@ -38,7 +38,10 @@ export class DataPointChunksProcessingStory {
 
         this.issueEmitter.emit('chunk-progress');
 
-        onFileCompleteProcessed(null, dataPointsCheckingStory.getTotal());
+        onFileCompleteProcessed(
+          supervisor.abandon ? new Error('abandoned by the external reason') : null,
+          dataPointsCheckingStory.getTotal()
+        );
       });
     });
 

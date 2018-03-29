@@ -87,69 +87,83 @@ export const tags: any = {
 };
 
 export const descriptions = {
-  [UNEXPECTED_DATA]: `Unexpected data: wrong CSV.
-  An issue according to this rule will be fired when filename and header are good but content isn't: content`,
-  [EMPTY_DATA]: `Empty data. An issue according to this rule will be fired when file with true name 
-  and header does not contain any data under the header.`,
-  [NON_DDF_DATA_SET]: 'This data set is not DDF',
-  [INCORRECT_FILE]: 'Incorrect file',
-  [INCORRECT_JSON_FIELD]: 'Incorrect JSON field',
-  [CONCEPT_ID_IS_NOT_UNIQUE]: 'Concept Id is not unique',
-  [INCORRECT_CONCEPT_TYPE]: [`Concept type does not correspond to any of available DDF types: 
-  boolean, string, measure, entity_domain, entity_set, time, year, week, month, day, quarter, interval, role, custom_type`],
-  [EMPTY_CONCEPT_ID]: `Empty concept ID. An issue according to this rule will be fired 
-  when concept ID ('concept' header) is empty`,
-  [INCORRECT_IDENTIFIER]: `Incorrect identifier. 
-  Entity identifiers and concept identifiers can only contain lowercase alphanumeric 
-  characters and underscores.`,
-  [NON_CONCEPT_HEADER]: `Non concept header. 
-  Each part of any header should be concept (is-- fields are excluded in this case)`,
-  [INVALID_DRILL_UP]: `Invalid Drill Up.
-  An issue according to this rule will be fired when drill up in concept is defined and not valid: 
-  not a set of valid concepts`,
-  [MEASURE_VALUE_NOT_NUMERIC]: 'Measure in data point has not numeric type',
-  [DATA_POINT_UNEXPECTED_ENTITY_VALUE]: 'Unexpected entity value in the data point',
-  [DATA_POINT_UNEXPECTED_TIME_VALUE]: 'Unexpected time value in the data point',
-  [WRONG_DATA_POINT_HEADER]: `Invalid part of data point header.
-  Raised when: some parts of the primary key have an incorrect type or primary from datapackage 
-  does not correspond with header from ddf file`,
-  [SAME_KEY_VALUE_CONCEPT]: `Checking for existence of key-value pairs where key is or contains the same concept as value`,
-  [WRONG_ENTITY_IS_HEADER]: `Wrong "is" header. An issue according to this rule 
-  will be fired when 'is-header' in concept is defined and not valid: 
-  not a concept with 'entity_set' type`,
-  [WRONG_ENTITY_IS_VALUE]: `Wrong value for "is" header.
-  An issue according to this rule will be fired when 
-  value under 'is-' header doesn't look like boolean`,
-  [NON_UNIQUE_ENTITY_VALUE]: `Non unique entity value.
-  An issue according to this rule will be fired when id value entity 
-  (under particular kind of entity, geo-country, for example) is not unique.`,
-  [CONCEPT_MANDATORY_FIELD_NOT_FOUND]: `Concept mandatory field is not found. 
-  Mandatory fields for ALL concepts are not defined
-  However, for entity sets and roles a domain is mandatory.
-  So a concept which has 'concept_type' 'entity_set' or 'role', the 'concept' property 'domain' is mandatory.
-  For 'entity_set', 'domain' should be an 'entity_domain' defined elsewhere in the dataset.
-  For 'role', 'domain' should be an 'entity_set' or 'entity_domain' defined elsewhere in the dataset.
-  For 'measure', 'domain' is optional.`,
-  [CONCEPTS_NOT_FOUND]: `Concepts are not found. 
-  An issue according to this rule will be fired when concepts 
-  will not be detected for current DDF dataset.`,
-  [DATAPACKAGE_INCORRECT_FIELDS]: 'Incorrect fields in datapackage.json',
-  [DATAPACKAGE_NON_CONCEPT_FIELD]: 'Non concept primary field in datapackage.json',
-  [DATAPACKAGE_INCORRECT_PRIMARY_KEY]: 'Fields section does not contain primary key',
-  [DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME]: 'Non unique resource name in datapackage.json',
-  [DATAPACKAGE_NON_UNIQUE_RESOURCE_FILE]: 'Non unique resource file in datapackage.json',
-  [UNEXPECTED_TRANSLATION_HEADER]: 'Unexpected translation header',
-  [UNEXPECTED_TRANSLATIONS_DATA]: 'Unexpected translations data: primary key is not consistent',
-  [UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA]: `Unexpected translations datapoint data: 
-  primary key is not consistent`,
-  [DUPLICATED_DATA_POINT_TRANSLATION_KEY]: 'Duplicated data point translation key',
-  [DUPLICATED_TRANSLATION_KEY]: 'Duplicated translation key',
-  [DATA_POINT_WITHOUT_INDICATOR]: 'Datapoint without indicator: primary key is equal fields in datapackage.json resource',
-  [UNEXISTING_CONSTRAINT_VALUE]: 'Constraint value that described in datapackage.json is not a valid entity value',
-  [DATA_POINT_CONSTRAINT_VIOLATION]: 'Constraint violation for particular datapoint. See datapackage.json format.',
-  [DUPLICATED_DATA_POINT_KEY]: 'Duplicated datapoint primary key',
-  [INCORRECT_BOOLEAN_ENTITY]: 'Boolean entitiy field has an incorrect value',
-  [CONCEPT_LOOKS_LIKE_BOOLEAN]: 'Entity contains values that look like boolean, but related entity field has an another type'
+  [UNEXPECTED_DATA]: 'Invalid CSV file is found. Number of columns in header does not match that of each row.',
+  [EMPTY_DATA]: 'Empty data found in CSV. Filename and header are good, but no further data follows.',
+  [NON_DDF_DATA_SET]: 'The folder content is not recognized as a DDFCSV dataset.',
+  [INCORRECT_FILE]: 'Error reading a file.',
+  [INCORRECT_JSON_FIELD]: 'Incorrect JSON field.',
+  [CONCEPT_ID_IS_NOT_UNIQUE]: 'Concept Id is not unique.',
+  [INCORRECT_CONCEPT_TYPE]: 'Concept type does not correspond to any of the available DDF concept types.',
+  [EMPTY_CONCEPT_ID]: 'Empty concept ID is found.',
+  [INCORRECT_IDENTIFIER]: 'Incorrect identifier is found.',
+  [NON_CONCEPT_HEADER]: 'Found a value in header that is not among the concepts.',
+  [INVALID_DRILL_UP]: 'Invalid Drill Up property value is found.',
+  [MEASURE_VALUE_NOT_NUMERIC]: 'Measure has non-numeric value(s).',
+  [DATA_POINT_UNEXPECTED_ENTITY_VALUE]: 'Datapoint refers to a missing or a misspelled entity.',
+  [DATA_POINT_UNEXPECTED_TIME_VALUE]: 'Datapoint has an incorrect time value.',
+  [WRONG_DATA_POINT_HEADER]: 'Invalid datapoint file header. One of the keys has an incorrect concept_type or key from datapackage does not correspond with header of the file.',
+  [SAME_KEY_VALUE_CONCEPT]: 'Datapackage: Key-value pair is found in datapackage.json where the key contains the same concept(s) as does the value.',
+  [WRONG_ENTITY_IS_HEADER]: 'Incorrect "is" entity property header. It may only reference a concept of type "entity_set".',
+  [WRONG_ENTITY_IS_VALUE]: 'Incorrect value found in the column with "is" header. Only boolean values are allowed.',
+  [NON_UNIQUE_ENTITY_VALUE]: 'A non-unique entity value was found within an entity domain.',
+  [CONCEPT_MANDATORY_FIELD_NOT_FOUND]: 'A concept is missing a mandatory property. Mandatory fields are not the same for all concept types.',
+  [CONCEPTS_NOT_FOUND]: 'Concepts are not found.',
+  [DATAPACKAGE_INCORRECT_FIELDS]: 'Datapackage: Incorrect fields found in datapackage.json.',
+  [DATAPACKAGE_NON_CONCEPT_FIELD]: 'Datapackage: Non-concept primary key found in datapackage.json.',
+  [DATAPACKAGE_INCORRECT_PRIMARY_KEY]: 'Datapackage: Fields section does not contain primary key.',
+  [DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME]: 'Datapackage: Non-unique resource name found in datapackage.json.',
+  [DATAPACKAGE_NON_UNIQUE_RESOURCE_FILE]: 'Datapackage: Non-unique resource file found in datapackage.json.',
+  [UNEXPECTED_TRANSLATION_HEADER]: 'Translations: Unexpected header in translation files',
+  [UNEXPECTED_TRANSLATIONS_DATA]: 'Translations: Unexpected translations data: primary key is not consistent.',
+  [UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA]: 'Translations: Unexpected translations datapoint data: primary key is not consistent.',
+  [DUPLICATED_DATA_POINT_TRANSLATION_KEY]: 'Translations: Duplicated data point translation key.',
+  [DUPLICATED_TRANSLATION_KEY]: 'Translations: Duplicated translation key.',
+  [DATA_POINT_WITHOUT_INDICATOR]: 'Datapackage: Found a datapoint file description without an indicator: primary key array is equal to fields array.',
+  [UNEXISTING_CONSTRAINT_VALUE]: 'Datapackage: Constraint value listed in datapackage.json is not a valid entity value.',
+  [DATA_POINT_CONSTRAINT_VIOLATION]: 'Constraint violation for particular datapoint.',
+  [DUPLICATED_DATA_POINT_KEY]: 'Duplicated key is found in datapoint file.',
+  [INCORRECT_BOOLEAN_ENTITY]: 'Boolean entitiy field has an incorrect value.',
+  [CONCEPT_LOOKS_LIKE_BOOLEAN]: 'Entity contains values that look like boolean, but related entity field has a different type.'
+};
+
+export const howToFix = {
+  [UNEXPECTED_DATA]: 'The additional info should tell which CSV file is corrupted. Use csvlint.io to find the issues inside the CSV files.',
+  [EMPTY_DATA]: 'All CSV files in the dataset should have at least one row beyond the header or need to be removed',
+  [NON_DDF_DATA_SET]: 'Pick the folder that contains the DDF dataset. More info can be found under DDFcsv format description here: https://open-numbers.github.io/ddf.html',
+  [INCORRECT_FILE]: 'Check that files do not contain unprintable characters (spaces, tabs etc). The safe bet is when your filenames only contain english alphanumeric characters, underscores, hyphens and a dot before extension',
+  [INCORRECT_JSON_FIELD]: 'A value is suspected to be a JSON but can not be successfully parsed as such. For example, "Congo [DRC]" should rather look like "Congo, DRC"',
+  [CONCEPT_ID_IS_NOT_UNIQUE]: 'Check ddf--concepts.csv file. The values in column "concept" should never repeat.',
+  [INCORRECT_CONCEPT_TYPE]: 'In column "concept_type" only the following options are allowed: boolean, string, measure, entity_domain, entity_set, time, year, week, month, day, quarter, interval, role, custom_type. See the docs about DDF conceptual model for more info https://open-numbers.github.io/ddf.html',
+  [EMPTY_CONCEPT_ID]: 'Check ddf--concepts.csv file. Concept ID should never be empty.',
+  [INCORRECT_IDENTIFIER]: 'Entity and concept identifiers can only contain lowercase alphanumeric english characters and underscores.',
+  [NON_CONCEPT_HEADER]: 'Each part of any header should be a concept in ddf--concepts.csv file ("is--" field is an exception).',
+  [INVALID_DRILL_UP]: 'Check ddf--concepts.csv file, column "drill_up". The value should be an array of existing concepts like "[""concept1"",""concept2""]"',
+  [MEASURE_VALUE_NOT_NUMERIC]: 'Check that every column of concept_type measure contains only numeric values.',
+  [DATA_POINT_UNEXPECTED_ENTITY_VALUE]: 'Check that the entity ID listed in details is present in the entity file and is spelled correctly.',
+  [DATA_POINT_UNEXPECTED_TIME_VALUE]: 'Check that time values are consistently following one of these patterns: 2017, 2017q1, 2017w03, 20170328, 201703. For more info see DDF conceptual model: https://open-numbers.github.io/ddf.html',
+  [WRONG_DATA_POINT_HEADER]: 'Only concepts of types "time", "entity_domain" and "entity_set" are allowed to be used as keys in datapoints files. The header should be correctly reflected in datapackage.json (see how you can rebuild datapackage here: https://github.com/Gapminder/ddf-validation#datapackage)',
+  [SAME_KEY_VALUE_CONCEPT]: 'If a concept is already included in key it should not appear as value in schemas of datapackage.json. You can fix it manually or regenerate datapackage as described here: https://github.com/Gapminder/ddf-validation#datapackage',
+  [WRONG_ENTITY_IS_HEADER]: 'Edit the header to reference one of the entity sets. For example a correct header can be "is--country", where "country" is a concept of type "entity_set". More info in DDF conceptual model: https://open-numbers.github.io/ddf.html',
+  [WRONG_ENTITY_IS_VALUE]: 'Replace values in "is"-column with booleans. Safe to use them in capitals, like TRUE and FALSE. More info in DDF conceptual model: https://open-numbers.github.io/ddf.html',
+  [NON_UNIQUE_ENTITY_VALUE]: 'Entity IDs in one entity domain and all sets in that domain should be unique. Like you can not have two country IDs "korea". But you can have country ID "male" and gender ID "male" since they are in different entity domains. More info in DDF conceptual model: https://open-numbers.github.io/ddf.html',
+  [CONCEPT_MANDATORY_FIELD_NOT_FOUND]: 'Check ddf--concepts.csv file. For all concepts "concept_type" should be defined. For entity sets "domain" is mandatory and should reference an "entity_domain". For roles "domain" is mandatory and should reference an "entity_set" or an "entity_domain". More info in DDF conceptual model: https://open-numbers.github.io/ddf.html',
+  [CONCEPTS_NOT_FOUND]: 'Check ddf--concepts.csv file. It should exist and contain a list with values defined ar least in columns "concept" and "concept_type". More info in DDF conceptual model: https://open-numbers.github.io/ddf.html',
+  [DATAPACKAGE_INCORRECT_FIELDS]: 'Regenerate or update datapackage as described here: https://github.com/Gapminder/ddf-validation#datapackage',
+  [DATAPACKAGE_NON_CONCEPT_FIELD]: 'Regenerate or update datapackage as described here: https://github.com/Gapminder/ddf-validation#datapackage',
+  [DATAPACKAGE_INCORRECT_PRIMARY_KEY]: 'Regenerate or update datapackage as described here: https://github.com/Gapminder/ddf-validation#datapackage',
+  [DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME]: 'Regenerate or update datapackage as described here: https://github.com/Gapminder/ddf-validation#datapackage',
+  [DATAPACKAGE_NON_UNIQUE_RESOURCE_FILE]: 'Regenerate or update datapackage as described here: https://github.com/Gapminder/ddf-validation#datapackage',
+  [UNEXPECTED_TRANSLATION_HEADER]: '',
+  [UNEXPECTED_TRANSLATIONS_DATA]: '',
+  [UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA]: '',
+  [DUPLICATED_DATA_POINT_TRANSLATION_KEY]: '',
+  [DUPLICATED_TRANSLATION_KEY]: '',
+  [DATA_POINT_WITHOUT_INDICATOR]: 'Datapoint files without indicator make no sense and you should remove them. Then regenerate or update datapackage as described here: https://github.com/Gapminder/ddf-validation#datapackage',
+  [UNEXISTING_CONSTRAINT_VALUE]: 'If entity IDs are enumerated in datapoint filenames, check that they are present in the respective entity tables. Enumerated entity constraints in datapackage.json should then match. Regenerate or update datapackage as described here: https://github.com/Gapminder/ddf-validation#datapackage. More info on DDFcsv file naming: https://open-numbers.github.io/ddf.html',
+  [DATA_POINT_CONSTRAINT_VIOLATION]: 'Some datapoints do not conform the entity constraints imposed in their filenames and/or in datapackage.json. More info on DDFcsv file naming: https://open-numbers.github.io/ddf.html',
+  [DUPLICATED_DATA_POINT_KEY]: 'Datapoint files should have unique keys',
+  [INCORRECT_BOOLEAN_ENTITY]: 'Use only TRUE or FALSE values for concepts of type "boolean"',
+  [CONCEPT_LOOKS_LIKE_BOOLEAN]: 'Consider changeing the concept type to "boolean"'
 };
 
 export const getRulesInformation = () => Object.getOwnPropertySymbols(exports.descriptions)
