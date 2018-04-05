@@ -96,6 +96,11 @@ function getDdfSchemaContent(dataset: any, isProgressNeeded, onDdfSchemaReady) {
     // find the domain of this entity resource
 
     const pk = resource.schema.primaryKey[0];
+
+    if (!entityConcepts[pk]) {
+      return onDdfSchemaReady(`Validator internal error: entity concept not found`);
+    }
+
     const domain = (entityConcepts[pk].concept_type == CONCEPT_TYPE_ENTITY_DOMAIN) ? pk : entityConcepts[pk].domain;
 
     // find sets defined in this resource
@@ -302,12 +307,15 @@ export const getDdfSchema = (dataPackageDescriptor: DataPackage, settings: any, 
       ddfDataSet,
       dataPackageDescriptor
     }, settings.isProgressNeeded, (err, ddfSchema) => {
+      if (err) {
+        return onDdfSchemaReady(err);
+      }
 
       ddfSchema.datapoints = getOrderedSection(ddfSchema.datapoints);
       ddfSchema.entities = getOrderedSection(ddfSchema.entities);
       ddfSchema.concepts = getOrderedSection(ddfSchema.concepts);
 
-      onDdfSchemaReady(ddfSchema);
+      onDdfSchemaReady(null, ddfSchema);
     });
   });
 };

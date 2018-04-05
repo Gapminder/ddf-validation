@@ -434,7 +434,11 @@ export class DataPackage {
 
     commandLineSettings.isProgressNeeded = true;
 
-    getDdfSchema(this, commandLineSettings, (ddfSchema: any) => {
+    getDdfSchema(this, commandLineSettings, (error: any, ddfSchema: any) => {
+      if (error) {
+        return onDataPackageFileReady(error);
+      }
+
       const contentToOut = cloneDeep(isBasedOnCurrentDataPackage ? existingDataPackage : this.dataPackageContent);
 
       if (settings.updateDataPackageTranslations) {
