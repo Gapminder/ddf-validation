@@ -9,7 +9,7 @@ export const checkLatestVersion = (currentVersion: string) => {
 
     if (!err && !isEmpty(latestVersion)) {
       if (valid(latestVersion) && lt(currentVersion, latestVersion)) {
-        console.log(`Current version ${red(currentVersion)} is too old. New version is ${green(latestVersion)}. Update please!`);
+        console.log(`Current version ${red(currentVersion)} is too old. New version is ${green(latestVersion)}. To update run "npm i -g ddf-validation"`);
       }
     }
   });
