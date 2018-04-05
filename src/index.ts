@@ -11,10 +11,19 @@ import {
 import { logger, getTransport, settings } from './utils';
 import * as fs from 'fs';
 import { DataPackage, DATA_PACKAGE_FILE } from './data/data-package';
+import { allRules } from './ddf-rules';
 
 const child_process = require('child_process');
 const os = require('os');
 const allCpuCount = os.cpus().length;
+
+const resetGlobals = () => {
+  Object.getOwnPropertySymbols(allRules).forEach(dataPointRuleKey => {
+    if (allRules[dataPointRuleKey].resetStorage) {
+      allRules[dataPointRuleKey].resetStorage();
+    }
+  });
+};
 
 export class ValidatorBase {
   protected messageEmitter: EventEmitter;
@@ -258,5 +267,6 @@ export function createDataPackage(parameters: IDataPackageCreationParameters,
 
 export const validate = validator => {
   supervisor.abandon = false;
+  resetGlobals();
   validator.validate()
 };

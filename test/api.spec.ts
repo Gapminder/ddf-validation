@@ -2,19 +2,10 @@ import * as chai from 'chai';
 import { parallel } from 'async';
 import { head, isEmpty, isEqual } from 'lodash';
 import { JSONValidator, StreamValidator, SimpleValidator, validate } from '../src/index';
-import { allRules } from '../src/ddf-rules';
 
 const expect = chai.expect;
 
 process.env.SILENT_MODE = true;
-
-const resetGlobals = () => {
-  Object.getOwnPropertySymbols(allRules).forEach(dataPointRuleKey => {
-    if (allRules[dataPointRuleKey].resetStorage) {
-      allRules[dataPointRuleKey].resetStorage();
-    }
-  });
-};
 
 describe('api', () => {
   describe('when JSONValidator', () => {
@@ -41,7 +32,6 @@ describe('api', () => {
           done();
         });
 
-        resetGlobals();
         validate(jsonValidator);
       });
     });
@@ -58,7 +48,6 @@ describe('api', () => {
           done();
         });
 
-        resetGlobals();
         validate(jsonValidator);
       });
 
@@ -72,7 +61,6 @@ describe('api', () => {
           done();
         });
 
-        resetGlobals();
         validate(jsonValidator);
       });
 
@@ -92,7 +80,6 @@ describe('api', () => {
           done();
         });
 
-        resetGlobals();
         validate(jsonValidator);
       });
     });
@@ -109,7 +96,6 @@ describe('api', () => {
           done();
         });
 
-        resetGlobals();
         validate(streamValidator);
       });
 
@@ -128,7 +114,6 @@ describe('api', () => {
           done();
         });
 
-        resetGlobals();
         validate(streamValidator);
       });
     });
@@ -145,7 +130,6 @@ describe('api', () => {
           done();
         });
 
-        resetGlobals();
         validate(streamValidator);
       });
 
@@ -164,7 +148,6 @@ describe('api', () => {
           done();
         });
 
-        resetGlobals();
         validate(streamValidator);
       });
 
@@ -188,7 +171,6 @@ describe('api', () => {
           done();
         });
 
-        resetGlobals();
         validate(streamValidator);
       });
 
@@ -209,7 +191,6 @@ describe('api', () => {
           done();
         });
 
-        resetGlobals();
         validate(streamValidator);
       });
     });
@@ -227,7 +208,6 @@ describe('api', () => {
           done();
         });
 
-        resetGlobals();
         validate(fundamentalValidator);
       });
     });
@@ -248,7 +228,6 @@ describe('api', () => {
           done();
         });
 
-        resetGlobals();
         validate(streamValidator);
       });
 
@@ -277,7 +256,6 @@ describe('api', () => {
           done();
         });
 
-        resetGlobals();
         validate(streamValidator);
       });
 
@@ -302,7 +280,6 @@ describe('api', () => {
           done();
         });
 
-        resetGlobals();
         validate(streamValidator);
       });
       it('should correctly validate "sankey" dataset via SimpleValidator', done => {
@@ -316,7 +293,6 @@ describe('api', () => {
           done();
         });
 
-        resetGlobals();
         validate(fundamentalValidator);
       });
     });
@@ -334,7 +310,6 @@ describe('api', () => {
           done();
         });
 
-        resetGlobals();
         validate(fundamentalValidator);
       });
     });
