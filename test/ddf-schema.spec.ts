@@ -11,7 +11,9 @@ describe('ddf schema creation', () => {
     const dataPackage = new DataPackage('./test/fixtures/ddf-schema', {});
 
     dataPackage.take(() => {
-      getDdfSchema(dataPackage, {}, (ddfSchema: any) => {
+      getDdfSchema(dataPackage, {}, (error: any, ddfSchema: any) => {
+        expect(!!error).to.be.false;
+
         expect(ddfSchema.concepts).to.not.be.null;
         expect(ddfSchema.concepts.length).to.be.gt(0);
 

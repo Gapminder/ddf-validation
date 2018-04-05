@@ -232,8 +232,7 @@ export function createDataPackage(parameters: IDataPackageCreationParameters,
     try {
       dataPackageContent = JSON.parse(fs.readFileSync(newDataPackagePath || dataPackagePath, 'utf-8'));
     } catch (err) {
-      onNotice(`datapackage.json error: ${err}.`);
-      return onDataPackageReady(err);
+      return onDataPackageReady(`datapackage.json error: ${err}.`);
     }
   }
 
@@ -248,8 +247,7 @@ export function createDataPackage(parameters: IDataPackageCreationParameters,
 
     dataPackage.write(expectedSettings, dataPackageContent, (err: any, filePath: string) => {
       if (err) {
-        onNotice(`datapackage.json was NOT created: ${err}.`);
-        return onDataPackageReady(err);
+        return onDataPackageReady(`datapackage.json was NOT created: ${err}.`);
       }
 
       onNotice(`${filePath} was created successfully.`);
