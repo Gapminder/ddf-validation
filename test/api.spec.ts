@@ -215,7 +215,7 @@ describe('api', () => {
     describe('and DDF dataset is correct', () => {
       it('should dataset is correct', done => {
         const issues = [];
-        const streamValidator = new StreamValidator('./test/fixtures/good-folder', {});
+        const streamValidator = new StreamValidator('./test/fixtures/good-folder-dp', {});
 
         streamValidator.on('issue', issue => {
           issues.push(issue);
@@ -233,7 +233,7 @@ describe('api', () => {
 
       it('should custom settings be processed correctly (excludeDirs as string)', done => {
         const issues = [];
-        const streamValidator = new StreamValidator('./test/fixtures/good-folder', {
+        const streamValidator = new StreamValidator('./test/fixtures/good-folder-dp', {
           excludeRules: 'WRONG_DATA_POINT_HEADER',
           excludeDirs: '.gitingore, .git',
           isCheckHidden: true
@@ -266,7 +266,7 @@ describe('api', () => {
           excludeDirs: ['.gitingore', '.git'],
           isCheckHidden: true
         };
-        const streamValidator = new StreamValidator('./test/fixtures/good-folder', EXPECTED_SETTINGS);
+        const streamValidator = new StreamValidator('./test/fixtures/good-folder-dp', EXPECTED_SETTINGS);
 
         streamValidator.on('issue', issue => {
           issues.push(issue);
@@ -320,7 +320,7 @@ describe('api', () => {
     const _StreamValidator = require('../lib/index').StreamValidator;
 
     it('should result for generic and multi thread modes be same ', done => {
-      const EXPECTED_ISSUES_COUNT = 4;
+      const EXPECTED_ISSUES_COUNT = 15;
       const DATA_SET_PATH = './test/fixtures/rules-cases/data-point-constraint-violation';
 
       parallel({

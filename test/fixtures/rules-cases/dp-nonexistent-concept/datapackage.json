@@ -1,0 +1,631 @@
+{
+  "name": "dummy-companies-with-dp",
+  "title": "dummy-companies-with-dp",
+  "description": "",
+  "version": "0.0.1",
+  "language": {
+    "id": "en",
+    "name": "English"
+  },
+  "translations": [
+    {
+      "id": "nl-nl",
+      "name": "nl-nl"
+    }
+  ],
+  "license": "",
+  "author": "",
+  "resources": [
+    {
+      "path": "extra companies/ddf--entities--company.csv",
+      "name": "company",
+      "schema": {
+        "fields": [
+          {
+            "name": "company"
+          },
+          {
+            "name": "name"
+          },
+          {
+            "name": "country"
+          }
+        ],
+        "primaryKey": "company"
+      }
+    },
+    {
+      "path": "ddf--concepts.csv",
+      "name": "ddf--concepts-2",
+      "schema": {
+        "fields": [
+          {
+            "name": "concept"
+          },
+          {
+            "name": "concept_type"
+          },
+          {
+            "name": "domain"
+          }
+        ],
+        "primaryKey": "concept"
+      }
+    },
+    {
+      "path": "ddf--datapoints--company_size--by--company--anno.csv",
+      "name": "company_size--by--company--anno-2",
+      "schema": {
+        "fields": [
+          {
+            "name": "company"
+          },
+          {
+            "name": "anno"
+          },
+          {
+            "name": "company_size"
+          }
+        ],
+        "primaryKey": [
+          "company",
+          "anno"
+        ]
+      }
+    },
+    {
+      "path": "ddf--datapoints--company_size_string--by--company--anno.csv",
+      "name": "company_size_string--by--company--anno-2",
+      "schema": {
+        "fields": [
+          {
+            "name": "company"
+          },
+          {
+            "name": "anno"
+          },
+          {
+            "name": "company_size_string"
+          }
+        ],
+        "primaryKey": [
+          "company",
+          "anno"
+        ]
+      }
+    },
+    {
+      "path": "ddf--datapoints--lines_of_code--by--company--anno.csv",
+      "name": "lines_of_code--by--company--anno-2",
+      "schema": {
+        "fields": [
+          {
+            "name": "company"
+          },
+          {
+            "name": "anno"
+          },
+          {
+            "name": "lines_of_code"
+          }
+        ],
+        "primaryKey": [
+          "company",
+          "anno"
+        ]
+      }
+    },
+    {
+      "path": "ddf--datapoints--lines_of_code--by--company--project--anno.csv",
+      "name": "lines_of_code--by--company--project--anno-2",
+      "schema": {
+        "fields": [
+          {
+            "name": "company"
+          },
+          {
+            "name": "project"
+          },
+          {
+            "name": "anno"
+          },
+          {
+            "name": "lines_of_code"
+          }
+        ],
+        "primaryKey": [
+          "company",
+          "project",
+          "anno"
+        ]
+      }
+    },
+    {
+      "path": "ddf--datapoints--lines_of_code--by--company--project.csv",
+      "name": "lines_of_code--by--company--project-2",
+      "schema": {
+        "fields": [
+          {
+            "name": "company"
+          },
+          {
+            "name": "project"
+          },
+          {
+            "name": "lines_of_code"
+          }
+        ],
+        "primaryKey": [
+          "company",
+          "project"
+        ]
+      }
+    },
+    {
+      "path": "ddf--entities--company--english_speaking.csv",
+      "name": "company--english_speaking-2",
+      "schema": {
+        "fields": [
+          {
+            "name": "english_speaking_company"
+          },
+          {
+            "name": "is--english_speaking_company"
+          },
+          {
+            "name": "name"
+          }
+        ],
+        "primaryKey": "english_speaking_company"
+      }
+    },
+    {
+      "path": "ddf--entities--company--foundation.csv",
+      "name": "company--foundation-2",
+      "schema": {
+        "fields": [
+          {
+            "name": "company"
+          },
+          {
+            "name": "is--foundation"
+          }
+        ],
+        "primaryKey": "company"
+      }
+    },
+    {
+      "path": "ddf--entities--company.csv",
+      "name": "company-2",
+      "schema": {
+        "fields": [
+          {
+            "name": "company"
+          },
+          {
+            "name": "name"
+          },
+          {
+            "name": "country"
+          },
+          {
+            "name": "region"
+          }
+        ],
+        "primaryKey": "company"
+      }
+    },
+    {
+      "path": "ddf--entities--company_size.csv",
+      "name": "company_size-2",
+      "schema": {
+        "fields": [
+          {
+            "name": "company_size"
+          },
+          {
+            "name": "full_name"
+          }
+        ],
+        "primaryKey": "company_size"
+      }
+    },
+    {
+      "path": "ddf--entities--project.csv",
+      "name": "project-2",
+      "schema": {
+        "fields": [
+          {
+            "name": "project"
+          }
+        ],
+        "primaryKey": "project"
+      }
+    },
+    {
+      "path": "ddf--entities--region.csv",
+      "name": "region-2",
+      "schema": {
+        "fields": [
+          {
+            "name": "region"
+          },
+          {
+            "name": "name"
+          },
+          {
+            "name": "full_name"
+          },
+          {
+            "name": "size"
+          }
+        ],
+        "primaryKey": "region"
+      }
+    }
+  ],
+  "ddfSchema": {
+    "datapoints": [
+      {
+        "primaryKey": [
+          "anno",
+          "company"
+        ],
+        "value": "company_size",
+        "resources": [
+          "company_size--by--company--anno-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "anno",
+          "company"
+        ],
+        "value": "company_size_string",
+        "resources": [
+          "company_size_string--by--company--anno-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "anno",
+          "company"
+        ],
+        "value": "lines_of_code",
+        "resources": [
+          "lines_of_code--by--company--anno-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "anno",
+          "company",
+          "project"
+        ],
+        "value": "lines_of_code",
+        "resources": [
+          "lines_of_code--by--company--project--anno-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "anno",
+          "english_speaking_company"
+        ],
+        "value": "company_size",
+        "resources": [
+          "company_size--by--company--anno-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "anno",
+          "english_speaking_company"
+        ],
+        "value": "company_size_string",
+        "resources": [
+          "company_size_string--by--company--anno-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "anno",
+          "english_speaking_company"
+        ],
+        "value": "lines_of_code",
+        "resources": [
+          "lines_of_code--by--company--anno-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "anno",
+          "english_speaking_company",
+          "project"
+        ],
+        "value": "lines_of_code",
+        "resources": [
+          "lines_of_code--by--company--project--anno-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "anno",
+          "foundation"
+        ],
+        "value": "company_size",
+        "resources": [
+          "company_size--by--company--anno-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "anno",
+          "foundation"
+        ],
+        "value": "company_size_string",
+        "resources": [
+          "company_size_string--by--company--anno-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "anno",
+          "foundation"
+        ],
+        "value": "lines_of_code",
+        "resources": [
+          "lines_of_code--by--company--anno-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "anno",
+          "foundation",
+          "project"
+        ],
+        "value": "lines_of_code",
+        "resources": [
+          "lines_of_code--by--company--project--anno-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "company",
+          "project"
+        ],
+        "value": "lines_of_code",
+        "resources": [
+          "lines_of_code--by--company--project-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "english_speaking_company",
+          "project"
+        ],
+        "value": "lines_of_code",
+        "resources": [
+          "lines_of_code--by--company--project-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "foundation",
+          "project"
+        ],
+        "value": "lines_of_code",
+        "resources": [
+          "lines_of_code--by--company--project-2"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "primaryKey": [
+          "company"
+        ],
+        "value": "country",
+        "resources": [
+          "company",
+          "company-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "company"
+        ],
+        "value": "is--english_speaking_company",
+        "resources": [
+          "company--english_speaking-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "company"
+        ],
+        "value": "is--foundation",
+        "resources": [
+          "company--foundation-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "company"
+        ],
+        "value": "name",
+        "resources": [
+          "company",
+          "company--english_speaking-2",
+          "company-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "company"
+        ],
+        "value": "region",
+        "resources": [
+          "company-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "company_size"
+        ],
+        "value": "full_name",
+        "resources": [
+          "company_size-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "english_speaking_company"
+        ],
+        "value": "country",
+        "resources": [
+          "company-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "english_speaking_company"
+        ],
+        "value": "is--english_speaking_company",
+        "resources": [
+          "company--english_speaking-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "english_speaking_company"
+        ],
+        "value": "is--foundation",
+        "resources": [
+          "company--foundation-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "english_speaking_company"
+        ],
+        "value": "name",
+        "resources": [
+          "company--english_speaking-2",
+          "company-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "english_speaking_company"
+        ],
+        "value": "region",
+        "resources": [
+          "company-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "foundation"
+        ],
+        "value": "country",
+        "resources": [
+          "company-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "foundation"
+        ],
+        "value": "is--english_speaking_company",
+        "resources": [
+          "company--english_speaking-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "foundation"
+        ],
+        "value": "is--foundation",
+        "resources": [
+          "company--foundation-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "foundation"
+        ],
+        "value": "name",
+        "resources": [
+          "company--english_speaking-2",
+          "company-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "foundation"
+        ],
+        "value": "region",
+        "resources": [
+          "company-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "project"
+        ],
+        "value": null,
+        "resources": [
+          "project-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "region"
+        ],
+        "value": "full_name",
+        "resources": [
+          "region-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "region"
+        ],
+        "value": "name",
+        "resources": [
+          "region-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "region"
+        ],
+        "value": "size",
+        "resources": [
+          "region-2"
+        ]
+      }
+    ],
+    "concepts": [
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "concept_type",
+        "resources": [
+          "ddf--concepts-2"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "domain",
+        "resources": [
+          "ddf--concepts-2"
+        ]
+      }
+    ]
+  }
+}
