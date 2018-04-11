@@ -44,6 +44,7 @@ import { rule as unexpectedTranslationsData } from './translation-rules/unexpect
 import { rule as unexpectedDataPointTranslationsData } from './translation-rules/unexpected-data-point-translations-data';
 import { rule as duplicatedDataPointTranslationKey } from './translation-rules/duplicated-data-point-translation-key';
 import { rule as duplicatedTranslationKey } from './translation-rules/duplicated-translation-key';
+import { rule as entityValueAsEntityName } from './entity-rules/entity-value-as-entity-name';
 
 export const allRules = {
   [registry.CONCEPT_ID_IS_NOT_UNIQUE]: conceptIdIsNotUnique,
@@ -84,5 +85,6 @@ export const allRules = {
   [registry.INCORRECT_BOOLEAN_ENTITY]: incorrectBooleanEntity,
   [registry.CONCEPT_LOOKS_LIKE_BOOLEAN]: conceptLooksLikeBoolean,
   [registry.DATA_POINT_CONSTRAINT_VIOLATION]: dataPointConstraintViolation,
-  [registry.DUPLICATED_DATA_POINT_KEY]: duplicatedDataPointKey
+  [registry.DUPLICATED_DATA_POINT_KEY]: duplicatedDataPointKey,
+  [registry.ENTITY_VALUE_AS_ENTITY_NAME]: entityValueAsEntityName
 };

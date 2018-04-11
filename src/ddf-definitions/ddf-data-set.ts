@@ -1,5 +1,5 @@
 import { parallelLimit } from 'async';
-import { compact, intersection, isEmpty } from 'lodash';
+import { compact, intersection, isEmpty, includes } from 'lodash';
 import { CONCEPT, ENTITY, DATA_POINT } from './constants'
 import { Concept } from './concept';
 import { Entity } from './entity';
@@ -104,6 +104,12 @@ export class DdfDataSet {
   getAllMeasures() {
     return this.getConcept().getAllData()
       .filter(record => record.concept_type === CONCEPT_TYPE_MEASURE)
+      .map(record => record.concept);
+  }
+
+  getConceptsByType(...types: string[]) {
+    return this.getConcept().getAllData()
+      .filter(record => includes(types, record.concept_type))
       .map(record => record.concept);
   }
 

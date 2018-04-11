@@ -37,3 +37,18 @@ export const CONCEPT_TYPES = [
   CONCEPT_TYPE_ROLE,
   CONCEPT_TYPE_CUSTOM_TYPE
 ];
+
+export interface IDataPackageField {
+  name: string
+}
+
+export interface IDataPackageResourceSchema {
+  fields: IDataPackageField[],
+  primaryKey: string | string[]
+}
+
+export interface IDataPackageResourceRecord {
+  path: string,
+  name: string,
+  schema: IDataPackageResourceSchema
+}
