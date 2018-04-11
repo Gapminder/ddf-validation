@@ -8,7 +8,8 @@ import {
   DATAPACKAGE_NON_UNIQUE_RESOURCE_FILE,
   DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME,
   DATA_POINT_WITHOUT_INDICATOR,
-  SAME_KEY_VALUE_CONCEPT
+  SAME_KEY_VALUE_CONCEPT,
+  DATAPACKAGE_NONEXISTENT_RESOURCE, DATAPACKAGE_NONEXISTENT_CONCEPT
 } from '../src/ddf-rules/registry';
 import { DdfDataSet } from '../src/ddf-definitions/ddf-data-set';
 import { Issue } from '../src/ddf-rules/issue';
@@ -363,6 +364,120 @@ describe('ddf datapackage.json validation', () => {
 
         expect(issues.length).to.equal(1);
         expect(isEqual(head(issues).data, expectedData)).to.be.true;
+
+        done();
+      });
+    });
+  });
+
+  describe('when "DATAPACKAGE_NONEXISTENT_RESOURCE" rule', () => {
+    it('any issue should NOT be found for a folder without the problem', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/dummy-companies-with-dp', null);
+
+      ddfDataSet.load(() => {
+        const issues = allRules[DATAPACKAGE_NONEXISTENT_RESOURCE].rule(ddfDataSet);
+
+        expect(issues.length).to.equal(0);
+
+        done();
+      });
+    });
+
+    it('an issue should be found for a folder with the problem', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/dp-nonexistent-resource', null);
+      const expectedData = [
+        {
+          nonexistentResources: [
+            'company_size_string--by--company--anno-2'
+          ],
+          record: {
+            primaryKey: [
+              'anno',
+              'company'
+            ],
+            value: 'company_size_string',
+            resources: [
+              'company_size_string--by--company--anno-2'
+            ]
+          },
+          specific: 'is NOT found in resources, but found in schema section'
+        },
+        {
+          nonexistentResources: [
+            'company_size_string--by--company--anno-2'
+          ],
+          record: {
+            primaryKey: [
+              'anno',
+              'english_speaking_company'
+            ],
+            value: 'company_size_string',
+            resources: [
+              'company_size_string--by--company--anno-2'
+            ]
+          },
+          specific: 'is NOT found in resources, but found in schema section'
+        },
+        {
+          nonexistentResources: [
+            'company_size_string--by--company--anno-2'
+          ],
+          record: {
+            primaryKey: [
+              'anno',
+              'foundation'
+            ],
+            value: 'company_size_string',
+            resources: [
+              'company_size_string--by--company--anno-2'
+            ]
+          },
+          specific: 'is NOT found in resources, but found in schema section'
+        },
+        {
+          resource: 'company_size-2',
+          specific: 'is NOT found in ddfSchema schema, but found in resources section'
+        }
+      ];
+
+      ddfDataSet.load(() => {
+        const issues: Issue[] = allRules[DATAPACKAGE_NONEXISTENT_RESOURCE].rule(ddfDataSet);
+
+        expect(issues.length).to.equal(expectedData.length);
+
+        issues.forEach((issue, order) => {
+          expect(endsWith(issue.path, 'datapackage.json')).to.be.true;
+          expect(issue.data).to.deep.equal(expectedData[order]);
+        });
+
+        done();
+      });
+    });
+  });
+
+  describe('when "DATAPACKAGE_NONEXISTENT_CONCEPT" rule', () => {
+    it('any issue should NOT be found for a folder without the problem', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/dummy-companies-with-dp', null);
+
+      ddfDataSet.load(() => {
+        const issues = allRules[DATAPACKAGE_NONEXISTENT_CONCEPT].rule(ddfDataSet);
+
+        expect(issues.length).to.equal(0);
+
+        done();
+      });
+    });
+
+    it('an issue should be found for a folder with the problem', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/dp-nonexistent-concept', null);
+
+      ddfDataSet.load(() => {
+        const issues: Issue[] = allRules[DATAPACKAGE_NONEXISTENT_CONCEPT].rule(ddfDataSet);
+        const issue = head(issues);
+
+        expect(issues.length).to.equal(1);
+        expect(endsWith(issue.path, 'datapackage.json')).to.be.true;
+        expect(issue.data).to.equal('company_size');
 
         done();
       });

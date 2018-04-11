@@ -24,6 +24,8 @@ export const DATAPACKAGE_NON_CONCEPT_FIELD = Symbol.for('DATAPACKAGE_NON_CONCEPT
 export const DATAPACKAGE_INCORRECT_PRIMARY_KEY = Symbol.for('DATAPACKAGE_INCORRECT_PRIMARY_KEY');
 export const DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME = Symbol.for('DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME');
 export const DATAPACKAGE_NON_UNIQUE_RESOURCE_FILE = Symbol.for('DATAPACKAGE_NON_UNIQUE_RESOURCE_FILE');
+export const DATAPACKAGE_NONEXISTENT_RESOURCE = Symbol.for('DATAPACKAGE_NONEXISTENT_RESOURCE');
+export const DATAPACKAGE_NONEXISTENT_CONCEPT = Symbol.for('DATAPACKAGE_NONEXISTENT_CONCEPT');
 export const UNEXPECTED_TRANSLATION_HEADER = Symbol.for('UNEXPECTED_TRANSLATION_HEADER');
 export const UNEXPECTED_TRANSLATIONS_DATA = Symbol.for('UNEXPECTED_TRANSLATIONS_DATA');
 export const UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA = Symbol.for('UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA');
@@ -63,6 +65,8 @@ export const tags: any = {
   [DATA_POINT_UNEXPECTED_TIME_VALUE]: [DATAPOINT_TAG],
   [WRONG_DATA_POINT_HEADER]: [DATAPOINT_TAG],
   [SAME_KEY_VALUE_CONCEPT]: [DATAPACKAGE_TAG],
+  [DATAPACKAGE_NONEXISTENT_RESOURCE]: [DATAPACKAGE_TAG],
+  [DATAPACKAGE_NONEXISTENT_CONCEPT]: [DATAPACKAGE_TAG],
   [WRONG_ENTITY_IS_HEADER]: [],
   [WRONG_ENTITY_IS_VALUE]: [],
   [NON_UNIQUE_ENTITY_VALUE]: [],
@@ -113,6 +117,8 @@ export const descriptions = {
   [DATAPACKAGE_INCORRECT_PRIMARY_KEY]: 'Datapackage: Fields section does not contain primary key.',
   [DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME]: 'Datapackage: Non-unique resource name found in datapackage.json.',
   [DATAPACKAGE_NON_UNIQUE_RESOURCE_FILE]: 'Datapackage: Non-unique resource file found in datapackage.json.',
+  [DATAPACKAGE_NONEXISTENT_RESOURCE]: 'Resource found in datapackage that is not present in folder',
+  [DATAPACKAGE_NONEXISTENT_CONCEPT]: 'Concept found in datapackage but is not listed in concepts table',
   [UNEXPECTED_TRANSLATION_HEADER]: 'Translations: Unexpected header in translation files',
   [UNEXPECTED_TRANSLATIONS_DATA]: 'Translations: Unexpected translations data: primary key is not consistent.',
   [UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA]: 'Translations: Unexpected translations datapoint data: primary key is not consistent.',
@@ -153,8 +159,10 @@ export const howToFix = {
   [DATAPACKAGE_INCORRECT_PRIMARY_KEY]: 'Regenerate or update datapackage as described here: https://github.com/Gapminder/ddf-validation#datapackage',
   [DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME]: 'Regenerate or update datapackage as described here: https://github.com/Gapminder/ddf-validation#datapackage',
   [DATAPACKAGE_NON_UNIQUE_RESOURCE_FILE]: 'Regenerate or update datapackage as described here: https://github.com/Gapminder/ddf-validation#datapackage',
-  [UNEXPECTED_TRANSLATION_HEADER]: '',
-  [UNEXPECTED_TRANSLATIONS_DATA]: '',
+  [DATAPACKAGE_NONEXISTENT_RESOURCE]: 'Resource found in datapackage that is not present in folder',
+  [DATAPACKAGE_NONEXISTENT_CONCEPT]: 'Concept found in datapackage but is not listed in concepts table',
+  [UNEXPECTED_TRANSLATION_HEADER]: 'Remove the resource from datapackage or restore it in the folder',
+  [UNEXPECTED_TRANSLATIONS_DATA]: 'Remove the resource from datapackage or add it to the concepts table',
   [UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA]: '',
   [DUPLICATED_DATA_POINT_TRANSLATION_KEY]: '',
   [DUPLICATED_TRANSLATION_KEY]: '',
