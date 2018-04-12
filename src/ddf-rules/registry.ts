@@ -37,12 +37,14 @@ export const DATA_POINT_CONSTRAINT_VIOLATION = Symbol.for('DATA_POINT_CONSTRAINT
 export const DUPLICATED_DATA_POINT_KEY = Symbol.for('DUPLICATED_DATA_POINT_KEY');
 export const INCORRECT_BOOLEAN_ENTITY = Symbol.for('INCORRECT_BOOLEAN_ENTITY');
 export const CONCEPT_LOOKS_LIKE_BOOLEAN = Symbol.for('CONCEPT_LOOKS_LIKE_BOOLEAN');
+export const ENTITY_VALUE_AS_ENTITY_NAME = Symbol.for('ENTITY_VALUE_AS_ENTITY_NAME');
 
 export const WARNING_TAG = Symbol.for('WARNING');
 export const FILE_SYSTEM_TAG = Symbol.for('FILE_SYSTEM');
 export const DATAPOINT_TAG = Symbol.for('DATAPOINT');
 export const TRANSLATION_TAG = Symbol.for('TRANSLATION');
 export const DATAPACKAGE_TAG = Symbol.for('DATAPACKAGE_TAG');
+export const WAFFLE_SERVER_TAG = Symbol.for('WAFFLE_SERVER_TAG');
 
 function tagsToString(tags: any[]) {
   return tags.map(tag => Symbol.keyFor(tag));
@@ -87,7 +89,8 @@ export const tags: any = {
   [DATA_POINT_CONSTRAINT_VIOLATION]: [DATAPOINT_TAG],
   [DUPLICATED_DATA_POINT_KEY]: [DATAPOINT_TAG],
   [INCORRECT_BOOLEAN_ENTITY]: [],
-  [CONCEPT_LOOKS_LIKE_BOOLEAN]: [WARNING_TAG]
+  [CONCEPT_LOOKS_LIKE_BOOLEAN]: [WARNING_TAG],
+  [ENTITY_VALUE_AS_ENTITY_NAME]: [WAFFLE_SERVER_TAG, WARNING_TAG]
 };
 
 export const descriptions = {
@@ -129,7 +132,8 @@ export const descriptions = {
   [DATA_POINT_CONSTRAINT_VIOLATION]: 'Constraint violation for particular datapoint.',
   [DUPLICATED_DATA_POINT_KEY]: 'Duplicated key is found in datapoint file.',
   [INCORRECT_BOOLEAN_ENTITY]: 'Boolean entitiy field has an incorrect value.',
-  [CONCEPT_LOOKS_LIKE_BOOLEAN]: 'Entity contains values that look like boolean, but related entity field has a different type.'
+  [CONCEPT_LOOKS_LIKE_BOOLEAN]: 'Entity contains values that look like boolean, but related entity field has a different type.',
+  [ENTITY_VALUE_AS_ENTITY_NAME]: 'Entity value should not be equal to entity domain name or entity set name. This rule providing is critical for DDFQL and DDF reader supporting (on WS).'
 };
 
 export const howToFix = {
@@ -171,7 +175,8 @@ export const howToFix = {
   [DATA_POINT_CONSTRAINT_VIOLATION]: 'Some datapoints do not conform the entity constraints imposed in their filenames and/or in datapackage.json. More info on DDFcsv file naming: https://open-numbers.github.io/ddf.html',
   [DUPLICATED_DATA_POINT_KEY]: 'Datapoint files should have unique keys',
   [INCORRECT_BOOLEAN_ENTITY]: 'Use only TRUE or FALSE values for concepts of type "boolean"',
-  [CONCEPT_LOOKS_LIKE_BOOLEAN]: 'Consider changeing the concept type to "boolean"'
+  [CONCEPT_LOOKS_LIKE_BOOLEAN]: 'Consider changing the concept type to "boolean"',
+  [ENTITY_VALUE_AS_ENTITY_NAME]: 'Simplest way to fix the issue is entity value renaming, in other case domain or entity set name should be changed.'
 };
 
 export const getRulesInformation = () => Object.getOwnPropertySymbols(exports.descriptions)
