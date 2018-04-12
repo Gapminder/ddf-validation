@@ -18,6 +18,7 @@ import { rule as dataPointWithoutIndicator } from './data-package-rules/datapoin
 import { rule as sameKeyValueConcept } from './data-package-rules/same-key-value-concept';
 import { rule as nonexistentResource } from './data-package-rules/nonexistent-resource';
 import { rule as nonexistentConcept } from './data-package-rules/nonexistent-concept';
+import { rule as inconsistentDatapackage } from './data-package-rules/inconsistent-datapackage';
 
 // import { rule as measureValueNotNumeric } from './data-point-rules/measure-value-not-numeric';
 import { rule as unexpectedEntityValue } from './data-point-rules/unexpected-entity-value';
@@ -60,6 +61,7 @@ export const allRules = {
   [registry.DATAPACKAGE_INCORRECT_PRIMARY_KEY]: incorrectPrimaryKey,
   [registry.DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME]: nonUniqueResourceName,
   [registry.DATAPACKAGE_NON_UNIQUE_RESOURCE_FILE]: nonUniqueResourceFile,
+  [registry.INCONSISTENT_DATAPACKAGE]: inconsistentDatapackage,
   [registry.DATA_POINT_WITHOUT_INDICATOR]: dataPointWithoutIndicator,
   // [registry.MEASURE_VALUE_NOT_NUMERIC]: measureValueNotNumeric,
   [registry.DATA_POINT_UNEXPECTED_ENTITY_VALUE]: unexpectedEntityValue,

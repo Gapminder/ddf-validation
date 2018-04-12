@@ -1,51 +1,94 @@
 {
-	"name": "time entity",
-	"title": "time entity",
-	"description": "",
-	"version": "0.0.1",
-	"language": {
-		"id": "en",
-		"name": "English"
-	},
-	"translations": [],
-	"license": "",
-	"author": "",
-	"resources": [
-		{
-			"path": "ddf--concepts.csv",
-			"name": "ddf--concepts",
-			"schema": {
-				"fields": [
-					{
-						"name": "concept"
-					},
-					{
-						"name": "concept_type"
-					},
-					{
-						"name": "domain"
-					}
-				],
-				"primaryKey": "concept"
-			}
-		},
-		{
-			"path": "ddf--entities--year.csv",
-			"name": "ddf--entities--year",
-			"schema": {
-				"fields": [
-					{
-						"name": "year"
-					},
-					{
-						"name": "lex"
-					},
-					{
-						"name": "pop"
-					}
-				],
-				"primaryKey": "year"
-			}
-		}
-	]
+  "name": "unexpected-data-3",
+  "title": "unexpected-data-3",
+  "description": "",
+  "version": "0.0.1",
+  "language": {
+    "id": "en",
+    "name": "English"
+  },
+  "translations": [],
+  "license": "",
+  "author": "",
+  "resources": [
+    {
+      "path": "ddf--concepts.csv",
+      "name": "ddf--concepts",
+      "schema": {
+        "fields": [
+          {
+            "name": "concept"
+          },
+          {
+            "name": "concept_type"
+          },
+          {
+            "name": "domain"
+          }
+        ],
+        "primaryKey": "concept"
+      }
+    },
+    {
+      "path": "ddf--entities--year.csv",
+      "name": "year",
+      "schema": {
+        "fields": [
+          {
+            "name": "year"
+          },
+          {
+            "name": "lex"
+          },
+          {
+            "name": "pop"
+          }
+        ],
+        "primaryKey": "year"
+      }
+    }
+  ],
+  "ddfSchema": {
+    "datapoints": [],
+    "entities": [
+      {
+        "primaryKey": [
+          "year"
+        ],
+        "value": "lex",
+        "resources": [
+          "year"
+        ]
+      },
+      {
+        "primaryKey": [
+          "year"
+        ],
+        "value": "pop",
+        "resources": [
+          "year"
+        ]
+      }
+    ],
+    "concepts": [
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "concept_type",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "domain",
+        "resources": [
+          "ddf--concepts"
+        ]
+      }
+    ]
+  }
 }

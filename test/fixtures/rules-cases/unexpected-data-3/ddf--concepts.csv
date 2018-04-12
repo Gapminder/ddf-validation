@@ -1,5 +1,5 @@
 concept,concept_type,domain
-year,time,,
+year,entity_domain,,
 lex,measure,,
 pop,measure,,
 domain,string,
