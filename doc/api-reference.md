@@ -84,6 +84,7 @@ Also all validators supports validation parameters that corresponds with some pa
 | isCheckHidden     | `hidden`              | boolean                 | allow to validate hidden (starts with '.') folders  |
 | isMultithread     | `multithread` (see 4) | boolean                 | validate datapoints in separate threads             |
 | useAllCpu         | `use-all-cpu `        | boolean                 | use all CPU during validation via multithread mode  |
+| isSummaryNeeded   | `summary`             | boolean                 | show summary information after validation           |
 
 Notes.
 

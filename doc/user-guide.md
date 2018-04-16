@@ -18,6 +18,7 @@ Options:
   --rules                Print information regarding supported rules
   --multithread          Validate datapoints in separate threads
   --use-all-cpu          Use all CPU during validation via multithread mode
+  --summary              Show summary data regarding the issues after validation
   --datapointless        Forget about datapoint validation
   --hidden               Allow hidden folders validation
   --include-tags         Process only issues by selected tags
@@ -34,6 +35,7 @@ Examples:
   validate-ddf ../ddf-example -i --translations --content                            rewrite "translations", "resources" and "ddfSchema" sections in datapackage.json
   validate-ddf ../ddf-example -j                                                     fix JSONs for this DDF dataset
   validate-ddf  --rules                                                              print information regarding supported rules
+  validate-ddf ../ddf-example --summary                                              Show summary data after validation in case of errors are found
   validate-ddf ../ddf-example --multithread                                          validate datapoints for `ddf-example` in separate threads
   validate-ddf ../ddf-example --multithread --use-all-cpu                            use all CPU during validation via multithread mode
   validate-ddf ../ddf-example --datapointless                                        forget about datapoint validation

@@ -13,7 +13,7 @@ import {
 const getGidByResource = (ddfDataSet: DdfDataSet, entitiesPath: string): string => {
   const ddfRoot = ddfDataSet.ddfRoot;
   const parsedEntitiesPath = path.parse(entitiesPath);
-  const relativeDdfPath = path.relative(parsedEntitiesPath.dir, ddfRoot.dataPackageDescriptor.rootFolder);
+  const relativeDdfPath = path.relative(ddfRoot.dataPackageDescriptor.rootFolder, parsedEntitiesPath.dir);
   const dataPackageCompatiblePath = path.join(relativeDdfPath, parsedEntitiesPath.base);
   const resource: IDataPackageResourceRecord[] = ddfRoot.getDataPackageResources()
     .filter(record => record.path === dataPackageCompatiblePath && isString(record.schema.primaryKey));

@@ -142,7 +142,7 @@ export class JSONValidator extends ValidatorBase {
       }
 
       this.errorsSummaryByRuleHash.set(issue.id, this.errorsSummaryByRuleHash.get(issue) + 1);
-      this.summary.warnings++;
+      this.summary.errors++;
     } else {
       if (!this.warningsSummaryByFileHash.has(file)) {
         this.warningsSummaryByFileHash.set(file, 0);
@@ -155,7 +155,7 @@ export class JSONValidator extends ValidatorBase {
       }
 
       this.warningsSummaryByRuleHash.set(issue.id, this.warningsSummaryByRuleHash.get(issue.id) + 1);
-      this.summary.errors++;
+      this.summary.warnings++;
     }
   }
 }
