@@ -1,3 +1,16 @@
+<a name="1.16.0"></a>
+# [1.16.0](https://github.com/Gapminder/ddf-validation/compare/v1.15.2...v1.16.0) (2018-04-16)
+
+
+### Features
+
+* **issues view:** output validation summary before validation errors ([41d4a96](https://github.com/Gapminder/ddf-validation/commit/41d4a96)), closes [#480](https://github.com/Gapminder/ddf-validation/issues/480)
+* **rule:** ENTITY_VALUE_AS_ENTITY_NAME rule implementation ([5875119](https://github.com/Gapminder/ddf-validation/commit/5875119)), closes [#471](https://github.com/Gapminder/ddf-validation/issues/471)
+* **rule:** implement new rule: inconsistent datapackage ([efd0494](https://github.com/Gapminder/ddf-validation/commit/efd0494)), closes [#475](https://github.com/Gapminder/ddf-validation/issues/475)
+* **rules:** Two new datapackage validation rules ([76c0659](https://github.com/Gapminder/ddf-validation/commit/76c0659)), closes [#494](https://github.com/Gapminder/ddf-validation/issues/494)
+
+
+
 <a name="1.15.2"></a>
 ## [1.15.2](https://github.com/Gapminder/ddf-validation/compare/v1.15.1...v1.15.2) (2018-04-05)
 
