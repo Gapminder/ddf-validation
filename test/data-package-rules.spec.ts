@@ -1,5 +1,5 @@
 import * as chai from 'chai';
-import { head, endsWith, isEqual } from 'lodash';
+import { head, last, endsWith, isEqual } from 'lodash';
 import {
   INCORRECT_FILE,
   DATAPACKAGE_INCORRECT_FIELDS,
@@ -9,7 +9,9 @@ import {
   DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME,
   DATA_POINT_WITHOUT_INDICATOR,
   SAME_KEY_VALUE_CONCEPT,
-  DATAPACKAGE_NONEXISTENT_RESOURCE, DATAPACKAGE_NONEXISTENT_CONCEPT
+  DATAPACKAGE_NONEXISTENT_RESOURCE,
+  DATAPACKAGE_NONEXISTENT_CONCEPT,
+  INCONSISTENT_DATAPACKAGE
 } from '../src/ddf-rules/registry';
 import { DdfDataSet } from '../src/ddf-definitions/ddf-data-set';
 import { Issue } from '../src/ddf-rules/issue';
@@ -478,6 +480,58 @@ describe('ddf datapackage.json validation', () => {
         expect(issues.length).to.equal(1);
         expect(endsWith(issue.path, 'datapackage.json')).to.be.true;
         expect(issue.data).to.equal('company_size');
+
+        done();
+      });
+    });
+  });
+
+  describe('when "INCONSISTENT_DATAPACKAGE" rule', () => {
+    it('any issue should NOT be found for a folder without the problem', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder-dp', null);
+
+      ddfDataSet.load(() => {
+        const issues = allRules[INCONSISTENT_DATAPACKAGE].rule(ddfDataSet);
+        console.log(JSON.stringify(issues, null, 2));
+
+        expect(issues.length).to.equal(0);
+
+        done();
+      });
+    });
+
+    it('an issue should be found for a folder with the problem', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/inconsistent-datapackage', null);
+
+      ddfDataSet.load(() => {
+        const issues: Issue[] = allRules[INCONSISTENT_DATAPACKAGE].rule(ddfDataSet);
+        const firstIssue = head(issues);
+        const secondIssue = last(issues);
+
+        expect(issues.length).to.equal(2);
+
+        expect(endsWith(firstIssue.path, 'datapackage.json')).to.be.true;
+        expect(endsWith(secondIssue.path, 'datapackage.json')).to.be.true;
+
+        expect(firstIssue.data).to.deep.equal([
+          'Descriptor validation error:\n        Missing required property: resources\n        at "" in descriptor and\n        at "/required/0" in profile'
+        ]);
+        expect(secondIssue.data).to.deep.equal({reason: 'ddfSchema section is missing or invalid'});
+
+        done();
+      });
+    });
+
+    it('an issue should be found for a folder with an another kind of the problem', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/inconsistent-datapackage-2', null);
+
+      ddfDataSet.load(() => {
+        const issues: Issue[] = allRules[INCONSISTENT_DATAPACKAGE].rule(ddfDataSet);
+        const issue = head(issues);
+
+        expect(issues.length).to.equal(1);
+        expect(endsWith(issue.path, 'datapackage.json')).to.be.true;
+        expect(issue.data).to.deep.equal({reason: 'ddfSchema section is missing or invalid'});
 
         done();
       });

@@ -25,6 +25,7 @@ import {
   DDF_SEPARATOR,
   DDF_DATAPOINT_SEPARATOR
 } from '../ddf-definitions/constants';
+import { validate } from 'datapackage';
 import { Db } from '../data/db';
 import { Concept } from '../ddf-definitions/concept';
 import { readDir, getFileLine, writeFile, fileExists, walkDir } from '../utils/file';
@@ -134,6 +135,7 @@ export class DataPackage {
   public translationFolders: any[];
   public db: Db;
   public settings: any;
+  public consistencyDescriptor: any;
 
   constructor(rootFolder: string, settings: any) {
     this.rootFolder = rootFolder;
@@ -326,8 +328,8 @@ export class DataPackage {
     const getNameSuffix = currentDirectoryIndex => currentDirectoryIndex === 1 ? '' : `-${currentDirectoryIndex}`;
 
     return {
-      name: packageName,
-      title: packageName,
+      name: packageName || 'new_dataset',
+      title: packageName || 'New Dataset',
       description: '',
       version: '0.0.1',
       language: {id: 'en', name: 'English'},
@@ -415,7 +417,15 @@ export class DataPackage {
               this.fillPrimaryKeys(conceptTypeHash);
               this.dataPackageContent = this.getDataPackageObject();
 
-              onDataPackageReady(this.dataPackageContent);
+              validate(this.dataPackageContent).then(consistency => {
+                this.consistencyDescriptor = consistency;
+
+                if (!this.consistencyDescriptor.valid) {
+                  return onDataPackageReady();
+                }
+
+                onDataPackageReady(this.dataPackageContent);
+              });
             });
           });
         }
@@ -488,7 +498,15 @@ export class DataPackage {
 
               this.translationFolders = translationFolders || [];
 
-              onDataPackageReady(this.dataPackageContent);
+              validate(this.dataPackageContent).then(consistency => {
+                this.consistencyDescriptor = consistency;
+
+                if (!this.consistencyDescriptor.valid) {
+                  return onDataPackageReady();
+                }
+
+                onDataPackageReady(this.dataPackageContent);
+              });
             });
         } catch (contentErr) {
           this.errors.push({
@@ -523,6 +541,10 @@ export class DataPackage {
       }
 
       this.read(dataPackage => {
+        if (!dataPackage || !isArray(dataPackage.resources)) {
+          return onDataPackageReady();
+        }
+
         this.fileDescriptors = dataPackage.resources.map(resource => ({
           filename: resource.path,
           name: resource.name,

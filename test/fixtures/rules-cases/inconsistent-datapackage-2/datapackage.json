@@ -1,6 +1,6 @@
 {
-  "name": "duplicated-data-point-key",
-  "title": "duplicated-data-point-key",
+  "name": "good-folder-dp",
+  "title": "good-folder-dp",
   "description": "",
   "version": "0.0.1",
   "language": {
@@ -67,7 +67,7 @@
     }
   ],
   "ddfSchema": {
-    "datapoints": [
+    "...datapoints": [
       {
         "primaryKey": [
           "geo",
@@ -79,7 +79,7 @@
         ]
       }
     ],
-    "entities": [
+    "...entities": [
       {
         "primaryKey": [
           "geo"
@@ -90,7 +90,7 @@
         ]
       }
     ],
-    "concepts": [
+    "...concepts": [
       {
         "primaryKey": [
           "concept"

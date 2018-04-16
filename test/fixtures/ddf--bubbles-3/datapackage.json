@@ -1,0 +1,165 @@
+{
+  "name": "ddf--bubbles-3",
+  "title": "ddf--bubbles-3",
+  "description": "",
+  "version": "0.0.1",
+  "language": {
+    "id": "en",
+    "name": "English"
+  },
+  "translations": [],
+  "license": "",
+  "author": "",
+  "resources": [
+    {
+      "path": "ddf--concepts.csv",
+      "name": "ddf--concepts",
+      "schema": {
+        "fields": [
+          {
+            "name": "concept"
+          },
+          {
+            "name": "concept_type"
+          }
+        ],
+        "primaryKey": "concept"
+      }
+    },
+    {
+      "path": "ddf--datapoints.csv",
+      "name": "ddf--datapoints",
+      "schema": {
+        "fields": [
+          {
+            "name": "country"
+          },
+          {
+            "name": "time"
+          },
+          {
+            "name": "life_expectancy"
+          },
+          {
+            "name": "gdp_per_capita"
+          },
+          {
+            "name": "population"
+          }
+        ],
+        "primaryKey": []
+      }
+    },
+    {
+      "path": "ddf--entities--country.csv",
+      "name": "country",
+      "schema": {
+        "fields": [
+          {
+            "name": "country"
+          },
+          {
+            "name": "name"
+          },
+          {
+            "name": "world_4region"
+          },
+          {
+            "name": "latitude"
+          },
+          {
+            "name": "longitude"
+          }
+        ],
+        "primaryKey": "country"
+      }
+    }
+  ],
+  "ddfSchema": {
+    "datapoints": [],
+    "entities": [
+      {
+        "primaryKey": [],
+        "value": "country",
+        "resources": [
+          "ddf--datapoints"
+        ]
+      },
+      {
+        "primaryKey": [],
+        "value": "gdp_per_capita",
+        "resources": [
+          "ddf--datapoints"
+        ]
+      },
+      {
+        "primaryKey": [],
+        "value": "life_expectancy",
+        "resources": [
+          "ddf--datapoints"
+        ]
+      },
+      {
+        "primaryKey": [],
+        "value": "population",
+        "resources": [
+          "ddf--datapoints"
+        ]
+      },
+      {
+        "primaryKey": [],
+        "value": "time",
+        "resources": [
+          "ddf--datapoints"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "latitude",
+        "resources": [
+          "country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "longitude",
+        "resources": [
+          "country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "name",
+        "resources": [
+          "country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "world_4region",
+        "resources": [
+          "country"
+        ]
+      }
+    ],
+    "concepts": [
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "concept_type",
+        "resources": [
+          "ddf--concepts"
+        ]
+      }
+    ]
+  }
+}

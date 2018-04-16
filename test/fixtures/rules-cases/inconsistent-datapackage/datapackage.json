@@ -1,6 +1,6 @@
 {
-  "name": "duplicated-data-point-key",
-  "title": "duplicated-data-point-key",
+  "name": "good-folder-dp",
+  "title": "good-folder-dp",
   "description": "",
   "version": "0.0.1",
   "language": {
@@ -10,7 +10,7 @@
   "translations": [],
   "license": "",
   "author": "",
-  "resources": [
+  "resources-foo": [
     {
       "path": "ddf--concepts.csv",
       "name": "ddf--concepts",
@@ -66,7 +66,7 @@
       }
     }
   ],
-  "ddfSchema": {
+  "ddfSchema-foo": {
     "datapoints": [
       {
         "primaryKey": [

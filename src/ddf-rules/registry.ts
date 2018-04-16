@@ -26,6 +26,7 @@ export const DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME = Symbol.for('DATAPACKAGE_NON_
 export const DATAPACKAGE_NON_UNIQUE_RESOURCE_FILE = Symbol.for('DATAPACKAGE_NON_UNIQUE_RESOURCE_FILE');
 export const DATAPACKAGE_NONEXISTENT_RESOURCE = Symbol.for('DATAPACKAGE_NONEXISTENT_RESOURCE');
 export const DATAPACKAGE_NONEXISTENT_CONCEPT = Symbol.for('DATAPACKAGE_NONEXISTENT_CONCEPT');
+export const INCONSISTENT_DATAPACKAGE = Symbol.for('INCONSISTENT_DATAPACKAGE');
 export const UNEXPECTED_TRANSLATION_HEADER = Symbol.for('UNEXPECTED_TRANSLATION_HEADER');
 export const UNEXPECTED_TRANSLATIONS_DATA = Symbol.for('UNEXPECTED_TRANSLATIONS_DATA');
 export const UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA = Symbol.for('UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA');
@@ -69,6 +70,7 @@ export const tags: any = {
   [SAME_KEY_VALUE_CONCEPT]: [DATAPACKAGE_TAG],
   [DATAPACKAGE_NONEXISTENT_RESOURCE]: [DATAPACKAGE_TAG],
   [DATAPACKAGE_NONEXISTENT_CONCEPT]: [DATAPACKAGE_TAG],
+  [INCONSISTENT_DATAPACKAGE]: [DATAPACKAGE_TAG],
   [WRONG_ENTITY_IS_HEADER]: [],
   [WRONG_ENTITY_IS_VALUE]: [],
   [NON_UNIQUE_ENTITY_VALUE]: [],
@@ -122,6 +124,7 @@ export const descriptions = {
   [DATAPACKAGE_NON_UNIQUE_RESOURCE_FILE]: 'Datapackage: Non-unique resource file found in datapackage.json.',
   [DATAPACKAGE_NONEXISTENT_RESOURCE]: 'Resource found in datapackage that is not present in folder',
   [DATAPACKAGE_NONEXISTENT_CONCEPT]: 'Concept found in datapackage but is not listed in concepts table',
+  [INCONSISTENT_DATAPACKAGE]: 'datapackage.json does not meet "Data Package" requirements (https://frictionlessdata.io/specs/data-package/) or some mandatory sections are missing',
   [UNEXPECTED_TRANSLATION_HEADER]: 'Translations: Unexpected header in translation files',
   [UNEXPECTED_TRANSLATIONS_DATA]: 'Translations: Unexpected translations data: primary key is not consistent.',
   [UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA]: 'Translations: Unexpected translations datapoint data: primary key is not consistent.',
@@ -165,6 +168,7 @@ export const howToFix = {
   [DATAPACKAGE_NON_UNIQUE_RESOURCE_FILE]: 'Regenerate or update datapackage as described here: https://github.com/Gapminder/ddf-validation#datapackage',
   [DATAPACKAGE_NONEXISTENT_RESOURCE]: 'Resource found in datapackage that is not present in folder',
   [DATAPACKAGE_NONEXISTENT_CONCEPT]: 'Concept found in datapackage but is not listed in concepts table',
+  [INCONSISTENT_DATAPACKAGE]: 'Fix datapackage.json format in accordance with "Data Package" requirements (https://frictionlessdata.io/specs/data-package/) or add mandatory sections (ddfSchema).',
   [UNEXPECTED_TRANSLATION_HEADER]: 'Remove the resource from datapackage or restore it in the folder',
   [UNEXPECTED_TRANSLATIONS_DATA]: 'Remove the resource from datapackage or add it to the concepts table',
   [UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA]: '',
