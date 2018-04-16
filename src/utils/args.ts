@@ -10,6 +10,7 @@ const argv = yargs
   .command('root', 'DDF Root directory')
   .example(`${myName} ../ddf-example`, 'validate DDF datasets for the root')
   .example(`${myName} ../ddf-example -i`, 'generate datapackage.json file')
+  .example(`${myName} ../ddf-example --summary`, 'show summary data regarding the issues after validation')
   .example(`${myName} ../ddf-example -i --translations`, 'update only "translations" section in datapackage.json')
   .example(`${myName} ../ddf-example -i --translations --content`, 'rewrite "translations", "resources" and "ddfSchema" sections in datapackage.json')
   .example(`${myName} ../ddf-example -j`, 'fix JSONs for this DDF dataset')
@@ -34,6 +35,7 @@ const argv = yargs
   .describe('compress-datapackage', 'Compress datapackage.json file')
   .describe('translations', 'Rewrite "translations" section in existing datapackage.json')
   .describe('content', 'Rewrite "resources" and "ddfSchema" sections in existing datapackage.json')
+  .describe('summary', 'Show summary data after validation in case of errors are found')
   .describe('j', 'Fix wrong JSONs')
   .describe('rules', 'print information regarding supported rules')
   .describe('multithread', 'validate datapoints in separate threads')
@@ -70,6 +72,7 @@ export const getSettings = () => {
     settings.silent = !!argv.silent;
     settings.updateDataPackageTranslations = !!argv.translations;
     settings.updateDataPackageContent = !!argv.content;
+    settings.isSummaryNeeded = !!argv.summary;
     settings.isPrintRules = !!argv.rules;
     settings.isCheckHidden = !!argv.hidden;
     settings.isMultithread = !!argv.multithread;

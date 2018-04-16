@@ -25,6 +25,23 @@ const resetGlobals = () => {
   });
 };
 
+function mapToObject(map: Map<string, number>) {
+  return Array.from(map.keys()).reduce((agg, key) => {
+    agg[key] = map.get(key);
+
+    return agg;
+  }, {});
+}
+
+export interface IDdfValidationSummary {
+  errors: number,
+  warnings: number,
+  errorsByFiles: { [file: string]: number },
+  errorsByRuleId: { [ruleId: string]: number },
+  warningsByFiles: { [file: string]: number },
+  warningsByRuleId: { [ruleId: string]: number }
+}
+
 export class ValidatorBase {
   protected messageEmitter: EventEmitter;
 
@@ -56,12 +73,29 @@ export class JSONValidator extends ValidatorBase {
   public issueEmitter: EventEmitter;
   public issuesFilter: IssuesFilter;
   public ddfDataSet: DdfDataSet;
+  public summary: IDdfValidationSummary;
+
+  private errorsSummaryByFileHash = new Map<string, number>();
+  private errorsSummaryByRuleHash = new Map<string, number>();
+  private warningsSummaryByFileHash = new Map<string, number>();
+  private warningsSummaryByRuleHash = new Map<string, number>();
 
   constructor(rootPath, settings) {
     super();
     this.rootPath = rootPath;
     this.settings = settings || {};
     this.issueEmitter = new EventEmitter();
+    this.issueEmitter.on('issue', issue => {
+      this.fillSummary(issue);
+    });
+    this.issueEmitter.on('finish', error => {
+      if (!error) {
+        this.summary.errorsByFiles = mapToObject(this.errorsSummaryByFileHash);
+        this.summary.errorsByRuleId = mapToObject(this.errorsSummaryByRuleHash);
+        this.summary.warningsByFiles = mapToObject(this.warningsSummaryByFileHash);
+        this.summary.warningsByRuleId = mapToObject(this.warningsSummaryByRuleHash);
+      }
+    });
   }
 
   on(type, data) {
@@ -69,12 +103,60 @@ export class JSONValidator extends ValidatorBase {
   }
 
   validate() {
+    this.initSummary();
     this.issuesFilter = new IssuesFilter(this.settings);
     this.ddfDataSet = new DdfDataSet(this.rootPath, this.settings);
 
     this.ddfDataSet.load(() => {
       validationProcess(this, logger, true);
     });
+  }
+
+  private initSummary() {
+    this.summary = {
+      errors: 0,
+      warnings: 0,
+      errorsByFiles: {},
+      errorsByRuleId: {},
+      warningsByFiles: {},
+      warningsByRuleId: {}
+    };
+    this.errorsSummaryByFileHash.clear();
+    this.errorsSummaryByRuleHash.clear();
+    this.warningsSummaryByFileHash.clear();
+    this.warningsSummaryByRuleHash.clear();
+  }
+
+  private fillSummary(issue) {
+    const file = path.relative(this.rootPath, issue.path);
+
+    if (issue.isWarning) {
+      if (!this.errorsSummaryByFileHash.has[file]) {
+        this.errorsSummaryByFileHash.set(file, 0);
+      }
+
+      this.errorsSummaryByFileHash.set(file, this.errorsSummaryByFileHash.get(file) + 1);
+
+      if (!this.errorsSummaryByRuleHash.has(issue.id)) {
+        this.errorsSummaryByRuleHash.set(issue.id, 0);
+      }
+
+      this.errorsSummaryByRuleHash.set(issue.id, this.errorsSummaryByRuleHash.get(issue) + 1);
+      this.summary.warnings++;
+    } else {
+      if (!this.warningsSummaryByFileHash.has(file)) {
+        this.warningsSummaryByFileHash.set(file, 0);
+      }
+
+      this.warningsSummaryByFileHash.set(file, this.warningsSummaryByFileHash.get(file) + 1);
+
+      if (!this.warningsSummaryByRuleHash.has(issue.id)) {
+        this.warningsSummaryByRuleHash.set(issue.id, 0);
+      }
+
+      this.warningsSummaryByRuleHash.set(issue.id, this.warningsSummaryByRuleHash.get(issue.id) + 1);
+      this.summary.errors++;
+    }
   }
 }
 

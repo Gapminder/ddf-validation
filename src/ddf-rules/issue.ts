@@ -1,9 +1,18 @@
-import {isEmpty} from 'lodash';
-import {descriptions, tags, howToFix} from './registry';
+import { isEmpty, includes } from 'lodash';
+import { descriptions, tags, howToFix, WARNING_TAG } from './registry';
+
+export interface IssueView {
+  id: string,
+  type: string,
+  howToFix: string,
+  path: string,
+  data,
+  isWarning: boolean
+}
 
 export class Issue {
   public type: any;
-  public suggestions: Array<any>;
+  public suggestions: any[];
   public path: string;
   public data: any;
 
@@ -32,13 +41,14 @@ export class Issue {
     return this;
   }
 
-  view() {
+  view(): IssueView {
     const result = {
       id: Symbol.keyFor(this.type),
       type: descriptions[this.type],
       howToFix: howToFix[this.type],
       path: this.path,
-      data: this.data
+      data: this.data,
+      isWarning: includes(tags[this.type], WARNING_TAG)
     };
 
     if (this.suggestions && this.suggestions.length > 0) {
