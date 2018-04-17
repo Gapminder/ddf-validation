@@ -425,6 +425,13 @@ export class DataPackage {
                 }
 
                 onDataPackageReady(this.dataPackageContent);
+              }).catch(err => {
+                this.errors.push({
+                  source: err,
+                  reason: `${DATA_PACKAGE_FILE} parsing`
+                });
+
+                onDataPackageReady();
               });
             });
           });
@@ -506,6 +513,8 @@ export class DataPackage {
                 }
 
                 onDataPackageReady(this.dataPackageContent);
+              }).catch(err => {
+                throw err;
               });
             });
         } catch (contentErr) {
