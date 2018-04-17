@@ -81,6 +81,10 @@ function getDdfSchemaContent(dataset: any, isProgressNeeded, onDdfSchemaReady) {
 
   // fetch entity domain and entity set concepts
   for (let resource of dataset.conceptsResources) {
+    if (!dataset.dataHash[resource.path]) {
+      return onDdfSchemaReady(new Error(`ddfSchema creation error: key=${resource.path}`));
+    }
+
     for (let row of dataset.dataHash[resource.path]) {
       if (row.concept_type === CONCEPT_TYPE_ENTITY_DOMAIN || row.concept_type === CONCEPT_TYPE_ENTITY_SET) {
         entityConcepts[row.concept] = row; // entities['geo'] = { concept: "geo", concept_type: "entity_domain", ... }
@@ -113,6 +117,10 @@ function getDdfSchemaContent(dataset: any, isProgressNeeded, onDdfSchemaReady) {
     }
 
     // get set membership per entity in this resource
+    if (!dataset.dataHash[resource.path]) {
+      return onDdfSchemaReady(new Error(`ddfSchema creation error: key=${resource.path}`));
+    }
+
     for (let row of dataset.dataHash[resource.path]) {
       if (!entities[domain]) {
         entities[domain] = {};
