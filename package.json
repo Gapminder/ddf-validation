@@ -12,7 +12,7 @@
     "test-travis": "istanbul cover mocha _mocha -- -R spec --timeout 200000 --compilers ts:ts-node/register --recursive test/**/*.spec.ts && codecov",
     "changelog": "conventional-changelog -i CHANGELOG.md -s -p angular",
     "github-release": "conventional-github-releaser -p angular",
-    "build": "tsc && touch lib/package.json && echo \\{\\\"version\\\": \\\"1.16.1\\\"\\} > lib/package.json",
+    "build": "tsc && touch lib/package.json && echo \\{\\\"version\\\": \\\"1.16.2\\\"\\} > lib/package.json",
     "prepublish": "npm run build",
     "preversion": "npm test",
     "version": "npm run changelog && git add CHANGELOG.md",
