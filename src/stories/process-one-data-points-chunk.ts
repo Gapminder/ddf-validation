@@ -35,17 +35,29 @@ export class ProcessOneDataPointsChunkStory {
   collect(ddfDataSet: DdfDataSet, issuesFilter: IssuesFilter, onDataCollected) {
     this.rulesWrappers = this.getRuleWrappers(issuesFilter);
 
+    let isAbandoned = false;
+
     const actions: any = this.fileDescriptors.map((fileDescriptor: FileDescriptor) => (onFileDescriptorProcessed: Function) => {
+      if (isAbandoned) {
+        return;
+      }
+
+      if (!isAbandoned && supervisor.abandon) {
+        isAbandoned = true;
+        return;
+      }
+
       walkFile(fileDescriptor.fullPath, (record, line) => {
-        if (supervisor.abandon) {
-          return onFileDescriptorProcessed(new Error('abandoned by the external reason'));
+        if (isAbandoned) {
+          return;
+        }
+
+        if (!isAbandoned && supervisor.abandon) {
+          isAbandoned = true;
+          return;
         }
 
         for (let ruleWrapper of this.rulesWrappers) {
-          if (supervisor.abandon) {
-            return onFileDescriptorProcessed(new Error('abandoned by the external reason'));
-          }
-
           if (sameTranslation(ruleWrapper.ruleKey, fileDescriptor) || noTranslation(ruleWrapper.ruleKey, fileDescriptor)) {
             if (isRecordRule(ruleWrapper.rule)) {
               const issues = ruleWrapper.rule.recordRule({ddfDataSet, fileDescriptor, record, line});

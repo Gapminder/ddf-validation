@@ -31,6 +31,10 @@ export class DataPointChunksProcessingStory {
     this.processedIssues = this.totalIssues = 0;
 
     const actions = this.fileDescriptorsChunks.map(fileDescriptors => onFileCompleteProcessed => {
+      if (supervisor.abandon) {
+        return onFileCompleteProcessed(new Error('abandoned by the external reason'), null);
+      }
+
       const dataPointsCheckingStory = new ProcessOneDataPointsChunkStory(fileDescriptors, this.issueEmitter);
 
       dataPointsCheckingStory.withCustomRules(this.customRules).collect(ddfDataSet, issuesFilter, () => {

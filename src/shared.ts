@@ -208,6 +208,11 @@ export const validationProcess = (context, logger, isCollectResultMode?: boolean
       });
 
       context.issueEmitter.on('chunk-progress', () => {
+        if (supervisor.abandon) {
+          context.issueEmitter.emit('finish');
+          return;
+        }
+
         logger.progress();
       });
 
