@@ -2,6 +2,7 @@ import { join, resolve } from 'path';
 import { createReadStream, createWriteStream, readdir, stat, writeFile as writeFileFs } from 'fs';
 import { isPathExpected } from '../data/shared';
 
+const stripBom = require('strip-bom');
 const csv = require('fast-csv');
 const END_OF_LINE = require('os').EOL;
 
@@ -114,7 +115,7 @@ export function getFileLine(filename, lineNo, callback) {
   let fileData = '';
 
   stream.on('data', data => {
-    fileData += data;
+    fileData += stripBom(data);
 
     const lines = fileData.split(END_OF_LINE);
 
