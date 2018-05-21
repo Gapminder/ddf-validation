@@ -3,7 +3,7 @@ import { isEmpty } from 'lodash';
 import { valid, lt } from 'semver';
 import { red, green } from 'chalk';
 
-export const checkLatestVersion = (currentVersion: string) => {
+export const checkLatestVersion = (currentVersion: string, appExitCode?: number) => {
   exec('npm show ddf-validation version', (err: any, _latestVersion: string) => {
     const latestVersion = (_latestVersion || '').trim();
 
@@ -11,6 +11,10 @@ export const checkLatestVersion = (currentVersion: string) => {
       if (valid(latestVersion) && lt(currentVersion, latestVersion)) {
         console.log(`Current version ${red(currentVersion)} is too old. New version is ${green(latestVersion)}. To update run "npm i -g ddf-validation"`);
       }
+    }
+
+    if (!appExitCode && appExitCode !== 0) {
+      process.exit(appExitCode);
     }
   });
 };
