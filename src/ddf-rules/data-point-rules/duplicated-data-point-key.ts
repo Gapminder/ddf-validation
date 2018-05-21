@@ -16,19 +16,19 @@ export const rule = {
 
     if (storage.hash.has(recordHash)) {
       storage.duplicatedHashes.push(recordHash);
+
+      if (!storage.content[recordHash]) {
+        storage.content[recordHash] = [];
+      }
+
+      storage.content[recordHash].push({
+        file: dataPointDescriptor.fileDescriptor.file,
+        record: dataPointDescriptor.record,
+        line: dataPointDescriptor.line
+      });
     }
 
     storage.hash.add(recordHash);
-
-    if (!storage.content[recordHash]) {
-      storage.content[recordHash] = [];
-    }
-
-    storage.content[recordHash].push({
-      file: dataPointDescriptor.fileDescriptor.file,
-      record: dataPointDescriptor.record,
-      line: dataPointDescriptor.line
-    });
   },
   aggregativeRule: (storage) => {
     const duplicates: string[] = <string[]>uniq(storage.duplicatedHashes);

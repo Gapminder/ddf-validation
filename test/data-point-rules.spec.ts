@@ -231,22 +231,13 @@ describe('when "DUPLICATED_KEY" rule', () => {
     const EXPECTED_RESULT = {
       data: [
         {
-          file: 'ddf--datapoints--gas_production_bcf--by--geo--year.csv',
-          record: {
-            geo: 'algeria',
-            year: '1977',
-            gas_production_bcf: '0.74553176325556'
-          },
-          line: 7
-        },
-        {
           "file": "ddf--datapoints--gas_production_bcf--by--geo--year.csv",
-          record: {
-            geo: 'algeria',
-            year: '1977',
-            gas_production_bcf: '1.15619237401781'
+          "record": {
+            "geo": "algeria",
+            "year": "1977",
+            "gas_production_bcf": "1.15619237401781"
           },
-          line: 8
+          "line": 8
         }
       ]
     };
