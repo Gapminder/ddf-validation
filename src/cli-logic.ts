@@ -97,7 +97,7 @@ if (isValidationExpected) {
       console.log('\nValidation was finished successfully.');
     }
 
-    checkLatestVersion(localPackage.version);
+    checkLatestVersion(localPackage.version, hasIssue ? 1 : 0);
   });
 
   validate(validator);
