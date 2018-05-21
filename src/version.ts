@@ -13,7 +13,7 @@ export const checkLatestVersion = (currentVersion: string, appExitCode?: number)
       }
     }
 
-    if (!appExitCode && appExitCode !== 0) {
+    if (appExitCode || appExitCode === 0) {
       process.exit(appExitCode);
     }
   });

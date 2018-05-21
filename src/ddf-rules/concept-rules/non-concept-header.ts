@@ -52,7 +52,7 @@ function isNativeConcept(conceptName) {
 }
 
 function setNonConceptHeaderIssue(conceptIds, detailObject, result) {
-  const header = detailObject.header.replace(/^"/, '').replace(/"$/, '');
+  const header = detailObject.header.replace(/^"/, '').replace(/"$/, '').replace(/^is--/, '');
 
   if (!includes(conceptIds, header) && !isNativeConcept(header)) {
     const suggestions = uniq(
