@@ -63,20 +63,21 @@ if (!isValidationExpected) {
 }
 
 if (isValidationExpected) {
-  const ExpectedValidator = settings.isSummaryNeeded ? JSONValidator : StreamValidator;
+  const ExpectedValidator = settings.isSummaryNeeded || settings.silent ? JSONValidator : StreamValidator;
   const validator = new ExpectedValidator(ddfRootFolder, settings);
+  const issues = [];
 
   let hasIssue = false;
 
   validator.on('issue', (issue: IssueView) => {
     hasIssue = true;
 
-    if (isString(issue)) {
-      logger.notice(issue + '\n');
+    if (validator instanceof StreamValidator) {
+      logger.notice(`${JSON.stringify(issue, null, 2)},\n`);
     }
 
-    if (!isString(issue)) {
-      logger.notice(`${JSON.stringify(issue, null, 2)},\n`);
+    if (validator instanceof JSONValidator) {
+      issues.push(issue);
     }
   });
 
@@ -85,8 +86,12 @@ if (isValidationExpected) {
       throw err;
     }
 
-    if (!settings.silent && hasIssue) {
+    if (!settings.silent && !settings.isSummaryNeeded && hasIssue) {
       console.log(`\nValidation was finished with issues. Details are here: ${validationTransport.file}.`);
+    }
+
+    if (settings.silent && hasIssue) {
+      console.log(JSON.stringify(issues, null, 2));
     }
 
     if (validator instanceof JSONValidator && settings.isSummaryNeeded && hasIssue) {
