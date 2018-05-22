@@ -32,4 +32,16 @@ describe('datapackage validation', () => {
       }, true);
     });
   });
+  describe('when "ddf--ws--testing" dataset', () => {
+    it('should datapackage be created properly', done => {
+      const expectedDatapackage = require('./fixtures/results/datapackage/ddf--ws--testing.json');
+      const dataPackage = new DataPackage('./test/fixtures/ddf--ws--testing/', {});
+
+      dataPackage.take(dataPackageObject => {
+        expect(dataPackageObject).to.deep.equal(expectedDatapackage);
+
+        done();
+      }, true);
+    });
+  });
 });

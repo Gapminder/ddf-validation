@@ -284,27 +284,41 @@ export class DataPackage {
     parallelLimit(headerGetActions, PROCESS_LIMIT, onHeadersReady);
   }
 
-  fillPrimaryKeys(conceptTypeHash) {
-    this.fileDescriptors
-      .forEach(fileDescriptor => {
-        if (fileDescriptor.type === CONCEPT) {
-          fileDescriptor.primaryKey = 'concept';
+  fillPrimaryKeys(conceptTypeHash, conceptDomainHash) {
+    const normalizePrimaryKey = (fileDescriptor: IDdfFileDescriptor): string[] => {
+      if (typeof fileDescriptor.primaryKey === 'string') {
+        return null;
+      }
+
+      return fileDescriptor.primaryKey.map(pkPart => {
+        if (!includes(fileDescriptor.headers, pkPart)) {
+          return conceptDomainHash[pkPart];
         }
 
-        if (fileDescriptor.type === ENTITY) {
-          const entityDomain = fileDescriptor.headers.find(header => conceptTypeHash[header] === CONCEPT_TYPE_ENTITY_DOMAIN);
-          const entitySet = fileDescriptor.headers.find(header => conceptTypeHash[header] === CONCEPT_TYPE_ENTITY_SET);
-
-          fileDescriptor.primaryKey = entityDomain || entitySet;
-        }
-
-        if (fileDescriptor.type === DATA_POINT) {
-          const ddfDataPointSeparatorPos = indexOf(fileDescriptor.parts, DDF_DATAPOINT_SEPARATOR);
-          const primaryKeyPartsCount = fileDescriptor.parts.length - ddfDataPointSeparatorPos - 1;
-
-          fileDescriptor.primaryKey = takeRight(fileDescriptor.parts, primaryKeyPartsCount);
-        }
+        return pkPart;
       });
+    };
+
+    this.fileDescriptors.forEach(fileDescriptor => {
+      if (fileDescriptor.type === CONCEPT) {
+        fileDescriptor.primaryKey = 'concept';
+      }
+
+      if (fileDescriptor.type === ENTITY) {
+        const entityDomain = fileDescriptor.headers.find(header => conceptTypeHash[header] === CONCEPT_TYPE_ENTITY_DOMAIN);
+        const entitySet = fileDescriptor.headers.find(header => conceptTypeHash[header] === CONCEPT_TYPE_ENTITY_SET);
+
+        fileDescriptor.primaryKey = entityDomain || entitySet;
+      }
+
+      if (fileDescriptor.type === DATA_POINT) {
+        const ddfDataPointSeparatorPos = indexOf(fileDescriptor.parts, DDF_DATAPOINT_SEPARATOR);
+        const primaryKeyPartsCount = fileDescriptor.parts.length - ddfDataPointSeparatorPos - 1;
+
+        fileDescriptor.primaryKey = takeRight(fileDescriptor.parts, primaryKeyPartsCount);
+        fileDescriptor.primaryKey = normalizePrimaryKey(fileDescriptor);
+      }
+    });
   }
 
   getDataPackageObject() {
@@ -413,8 +427,9 @@ export class DataPackage {
               }
 
               const conceptTypeHash = concept.getDictionary(null, 'concept_type');
+              const conceptDomainHash = concept.getDictionary(null, 'domain');
 
-              this.fillPrimaryKeys(conceptTypeHash);
+              this.fillPrimaryKeys(conceptTypeHash, conceptDomainHash);
               this.dataPackageContent = this.getDataPackageObject();
 
               validate(this.dataPackageContent).then(consistency => {
