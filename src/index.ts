@@ -128,7 +128,7 @@ export class JSONValidator extends ValidatorBase {
   }
 
   private fillSummary(issue) {
-    const file = path.relative(this.rootPath, issue.path);
+    const file = issue.path ? path.relative(this.rootPath, issue.path) : 'not related to file';
 
     if (issue.isWarning) {
       if (!this.errorsSummaryByFileHash.has[file]) {
