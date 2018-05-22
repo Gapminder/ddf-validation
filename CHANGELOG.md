@@ -1,3 +1,13 @@
+<a name="1.16.5"></a>
+## [1.16.5](https://github.com/Gapminder/ddf-validation/compare/v1.16.4...v1.16.5) (2018-05-22)
+
+
+### Features
+
+* **general:** app exit code ([28a7af5](https://github.com/Gapminder/ddf-validation/commit/28a7af5)), closes [#516](https://github.com/Gapminder/ddf-validation/issues/516)
+
+
+
 <a name="1.16.4"></a>
 ## [1.16.4](https://github.com/Gapminder/ddf-validation/compare/v1.16.3...v1.16.4) (2018-04-24)
 
