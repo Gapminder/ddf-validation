@@ -1,6 +1,7 @@
 export const CONCEPT = Symbol.for('concepts');
 export const ENTITY = Symbol.for('entities');
 export const DATA_POINT = Symbol.for('datapoints');
+export const SYNONYM = Symbol.for('synonyms');
 
 export const LINE_NUM_INCLUDING_HEADER = 2;
 

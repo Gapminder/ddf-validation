@@ -21,6 +21,7 @@ import { resolve, sep } from 'path';
 import {
   CONCEPT,
   ENTITY,
+  SYNONYM,
   DATA_POINT,
   DDF_SEPARATOR,
   DDF_DATAPOINT_SEPARATOR
@@ -56,6 +57,7 @@ const REQUIRED_DDF_FILE_PARTS = 2;
 
 const getConceptType = (fileParts: string[]) => head(fileParts) === 'concepts' ? CONCEPT : null;
 const getEntityType = (fileParts: string[]) => head(fileParts) === 'entities' ? ENTITY : null;
+const getSynonymType = (fileParts: string[]) => head(fileParts) === 'synonyms' ? SYNONYM : null;
 const getDataPointType = (fileParts: string[]) => head(fileParts) === 'datapoints' ? DATA_POINT : null;
 const getDdfParts = (fileParts: string[]) => {
   if (fileParts.length >= REQUIRED_DDF_FILE_PARTS && head(fileParts) === 'ddf') {
@@ -77,7 +79,10 @@ const parseDdfFile = (folder: string, filename: string): IDdfFileDescriptor => {
     return {valid: false};
   }
 
-  const type = getConceptType(ddfParts) || getEntityType(ddfParts) || getDataPointType(ddfParts);
+  const type = getConceptType(ddfParts) ||
+    getEntityType(ddfParts) ||
+    getSynonymType(ddfParts) ||
+    getDataPointType(ddfParts);
 
   if (!type) {
     return {valid: false};
@@ -309,6 +314,13 @@ export class DataPackage {
         const entitySet = fileDescriptor.headers.find(header => conceptTypeHash[header] === CONCEPT_TYPE_ENTITY_SET);
 
         fileDescriptor.primaryKey = entityDomain || entitySet;
+      }
+
+      if (fileDescriptor.type === SYNONYM) {
+        const entityDomain = fileDescriptor.headers.find(header => conceptTypeHash[header] === CONCEPT_TYPE_ENTITY_DOMAIN);
+        const entitySet = fileDescriptor.headers.find(header => conceptTypeHash[header] === CONCEPT_TYPE_ENTITY_SET);
+
+        fileDescriptor.primaryKey = [entityDomain || entitySet || CONCEPT_ID, 'synonym'];
       }
 
       if (fileDescriptor.type === DATA_POINT) {
