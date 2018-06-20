@@ -1,8 +1,9 @@
 import { parallelLimit } from 'async';
 import { compact, intersection, isEmpty, includes } from 'lodash';
-import { CONCEPT, ENTITY, DATA_POINT } from './constants'
+import { CONCEPT, ENTITY, DATA_POINT, SYNONYM } from './constants'
 import { Concept } from './concept';
 import { Entity } from './entity';
+import { Synonym } from './synonym';
 import { DataPoint } from './data-point';
 import { Db } from '../data/db';
 import { DDFRoot } from '../data/ddf-root';
@@ -29,6 +30,7 @@ export class DdfDataSet {
       this.expectedClass = {
         [CONCEPT]: new Concept(this.db),
         [ENTITY]: new Entity(this.db),
+        [SYNONYM]: new Synonym(this.db),
         [DATA_POINT]: new DataPoint()
       };
 
@@ -50,7 +52,7 @@ export class DdfDataSet {
             });
           }
 
-          if (fileDescriptor.is([CONCEPT, ENTITY]) && fileDescriptor.csvChecker.isCorrect()) {
+          if (fileDescriptor.is([CONCEPT, ENTITY, SYNONYM]) && fileDescriptor.csvChecker.isCorrect()) {
             loaders.push(onFileLoaded => {
               fileDescriptor.fillHeaders(() => {
                 this.db.fillCollection(
@@ -58,7 +60,14 @@ export class DdfDataSet {
                   fileDescriptor.fullPath,
                   fileErr => {
                     this.expectedClass[fileDescriptor.type].addFileDescriptor(fileDescriptor);
-                    this.expectedClass[fileDescriptor.type].getTranslationsData(translationsErr => onFileLoaded(fileErr || translationsErr));
+
+                    if (this.expectedClass[fileDescriptor.type].getTranslationsData) {
+                      this.expectedClass[fileDescriptor.type]
+                        .getTranslationsData(translationsErr =>
+                          onFileLoaded(fileErr || translationsErr));
+                    } else {
+                      onFileLoaded(fileErr);
+                    }
 
                     logger.progress();
                   }, false);
@@ -95,6 +104,10 @@ export class DdfDataSet {
 
   getEntity() {
     return this.expectedClass[ENTITY];
+  }
+
+  getSynonym() {
+    return this.expectedClass[SYNONYM];
   }
 
   getDataPoint() {

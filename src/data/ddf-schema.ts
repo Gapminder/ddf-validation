@@ -62,6 +62,8 @@ function getDdfSchemaContent(dataset: any, isProgressNeeded, onDdfSchemaReady) {
   const conceptsFiles = keys(conceptsContent);
   const entitiesContent = dataset.ddfDataSet.getEntity().getDataByFiles();
   const entitiesFiles = keys(entitiesContent);
+  const synonymsContent = dataset.ddfDataSet.getSynonym().getDataByFiles();
+  const synonymsFiles = keys(synonymsContent);
 
   dataset.dataHash = {};
 
@@ -69,6 +71,12 @@ function getDdfSchemaContent(dataset: any, isProgressNeeded, onDdfSchemaReady) {
     const relativePath = getRelativePath(conceptFile, dataset.dataPackageDescriptor.rootFolder);
 
     dataset.dataHash[relativePath] = conceptsContent[conceptFile];
+  }
+
+  for (let synonymFile of synonymsFiles) {
+    const relativePath = getRelativePath(synonymFile, dataset.dataPackageDescriptor.rootFolder);
+
+    dataset.dataHash[relativePath] = synonymsContent[synonymFile];
   }
 
   for (let entityFile of entitiesFiles) {
@@ -260,19 +268,21 @@ function getDdfSchemaContent(dataset: any, isProgressNeeded, onDdfSchemaReady) {
   });
 
   parallelLimit(actions, 10, (err) => {
-    const ddfSchema = {datapoints: [], entities: [], concepts: []};
+    const ddfSchema = {datapoints: [], entities: [], concepts: [], synonyms: []};
 
     for (let key of keys(schema)) {
       const keyValueObject = schema[key];
 
       keyValueObject.resources = Array.from(keyValueObject.resources);
 
-      if (keyValueObject.primaryKey.length === 1 && keyValueObject.primaryKey[0] === 'concept') {
+      if (keyValueObject.primaryKey.length === 2 && includes(keyValueObject.primaryKey, 'synonym')) {
+        ddfSchema.synonyms.push(keyValueObject);
+      } else if (keyValueObject.primaryKey.length === 1 && keyValueObject.primaryKey[0] === 'concept') {
         ddfSchema.concepts.push(keyValueObject);
-      } else if (keyValueObject.primaryKey.length > 1) {
-        ddfSchema.datapoints.push(keyValueObject);
-      } else {
+      } else if (keyValueObject.primaryKey.length === 1 && keyValueObject.primaryKey[0] !== 'concept') {
         ddfSchema.entities.push(keyValueObject);
+      } else {
+        ddfSchema.datapoints.push(keyValueObject);
       }
     }
 
@@ -322,6 +332,7 @@ export const getDdfSchema = (dataPackageDescriptor: DataPackage, settings: any, 
       ddfSchema.datapoints = getOrderedSection(ddfSchema.datapoints);
       ddfSchema.entities = getOrderedSection(ddfSchema.entities);
       ddfSchema.concepts = getOrderedSection(ddfSchema.concepts);
+      ddfSchema.synonyms = getOrderedSection(ddfSchema.synonyms);
 
       onDdfSchemaReady(null, ddfSchema);
     });

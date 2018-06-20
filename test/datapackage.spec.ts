@@ -1,5 +1,6 @@
 import * as chai from 'chai';
 import { DataPackage } from '../src/data/data-package';
+import { getDdfSchema } from '../src/data/ddf-schema';
 
 const expect = chai.expect;
 
@@ -41,6 +42,26 @@ describe('datapackage validation', () => {
         expect(dataPackageObject).to.deep.equal(expectedDatapackage);
 
         done();
+      }, true);
+    });
+  });
+  describe('synonyms supporting', () => {
+    it('should datapackage be created properly', done => {
+      const expectedDatapackage = require('./fixtures/ddf--gapminder--geo_entity_domain/datapackage.json');
+      const dataPackage = new DataPackage('./test/fixtures/ddf--gapminder--geo_entity_domain/', {});
+
+      dataPackage.take(dataPackageObject => {
+        try {
+          expect(dataPackageObject.resources).to.deep.equal(expectedDatapackage.resources);
+
+          getDdfSchema(dataPackage, {}, (error: any, ddfSchema: any) => {
+            expect(ddfSchema).to.deep.equal(expectedDatapackage.ddfSchema);
+
+            done();
+          });
+        } catch (e) {
+          done(e);
+        }
       }, true);
     });
   });
