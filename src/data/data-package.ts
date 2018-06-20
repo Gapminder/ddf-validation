@@ -2,10 +2,8 @@ import * as path from 'path';
 import * as CsvParser from 'papaparse';
 import {
   head,
-  cloneDeep,
   drop,
   split,
-  isArray,
   indexOf,
   flatten,
   last,
@@ -15,7 +13,7 @@ import {
   takeRight,
   tail
 } from 'lodash';
-import { readFile } from 'fs';
+import { readFileSync } from 'fs';
 import { parallelLimit } from 'async';
 import { resolve, sep } from 'path';
 import {
@@ -24,13 +22,15 @@ import {
   SYNONYM,
   DATA_POINT,
   DDF_SEPARATOR,
-  DDF_DATAPOINT_SEPARATOR
+  DDF_DATAPOINT_SEPARATOR,
+  CONCEPT_ID,
+  SYNONYM_ID,
+  CONCEPT_TYPE, DOMAIN_ID
 } from '../ddf-definitions/constants';
 import { validate } from 'datapackage';
 import { Db } from '../data/db';
 import { Concept } from '../ddf-definitions/concept';
-import { readDir, getFileLine, writeFile, fileExists, walkDir } from '../utils/file';
-import { getDdfSchema } from './ddf-schema';
+import { readDir, getFileLine, fileExists, walkDir } from '../utils/file';
 import { getExcludedDirs, isPathExpected } from './shared';
 import { CONCEPT_TYPE_ENTITY_DOMAIN, CONCEPT_TYPE_ENTITY_SET } from '../utils/ddf-things';
 
@@ -39,6 +39,7 @@ export interface IDdfFileDescriptor {
   filename?: string;
   name?: string;
   fullPath?: string;
+  rootFolder?: string;
   type?: symbol;
   parts?: string[];
   constraints?: any;
@@ -50,7 +51,6 @@ export interface IDdfFileDescriptor {
 export const DATA_PACKAGE_FILE = 'datapackage.json';
 
 const PROCESS_LIMIT = 5;
-const CONCEPT_ID = 'concept';
 const LANG_FOLDER = 'lang';
 const CSV_EXTENSION = 'csv';
 const REQUIRED_DDF_FILE_PARTS = 2;
@@ -66,7 +66,7 @@ const getDdfParts = (fileParts: string[]) => {
 
   return null;
 };
-const parseDdfFile = (folder: string, filename: string): IDdfFileDescriptor => {
+const parseDdfFile = (rootFolder: string, folder: string, filename: string): IDdfFileDescriptor => {
   const partsByPoint: string[] = split(filename, '.');
 
   if (partsByPoint.length <= 1 || partsByPoint[1] !== CSV_EXTENSION) {
@@ -95,20 +95,10 @@ const parseDdfFile = (folder: string, filename: string): IDdfFileDescriptor => {
     filename,
     name: head(partsByPoint),
     fullPath,
+    rootFolder,
     type,
     parts: drop(ddfParts)
   };
-};
-const getTypeByResource = (resource: any) => {
-  if (isArray(resource.schema.primaryKey)) {
-    return DATA_POINT;
-  }
-
-  if (!isArray(resource.schema.primaryKey) && resource.schema.primaryKey === CONCEPT_ID) {
-    return CONCEPT;
-  }
-
-  return ENTITY;
 };
 const getActualSubDirectories = (folder: string, settings: any, onSubDirsReady: Function) => {
   walkDir(folder, (err: any, folders: string[]) => {
@@ -135,12 +125,13 @@ export class DataPackage {
   public errors: any[];
   public warnings: any[];
   public fileDescriptors: IDdfFileDescriptor[];
-  public fileDescriptorsHash: Map<string, IDdfFileDescriptor>;
-  public dataPackageContent: any;
   public translationFolders: any[];
   public db: Db;
   public settings: any;
   public consistencyDescriptor: any;
+
+  private dataPackageContent: any;
+  private isNewDataPackage = false;
 
   constructor(rootFolder: string, settings: any) {
     this.rootFolder = rootFolder;
@@ -243,7 +234,7 @@ export class DataPackage {
       const actions = dirs.map(dir => onDirRead => {
         readDir(dir, (err: any, files: string[] = []) => {
           const ddfFileDescriptors: IDdfFileDescriptor[] = files
-            .map(file => this.fillConstraints(parseDdfFile(dir, file)))
+            .map(file => this.fillConstraints(parseDdfFile(this.rootFolder, dir, file)))
             .filter(ddfFile => ddfFile.type);
 
           onDirRead(err, ddfFileDescriptors);
@@ -306,7 +297,7 @@ export class DataPackage {
 
     this.fileDescriptors.forEach(fileDescriptor => {
       if (fileDescriptor.type === CONCEPT) {
-        fileDescriptor.primaryKey = 'concept';
+        fileDescriptor.primaryKey = CONCEPT_ID;
       }
 
       if (fileDescriptor.type === ENTITY) {
@@ -320,7 +311,7 @@ export class DataPackage {
         const entityDomain = fileDescriptor.headers.find(header => conceptTypeHash[header] === CONCEPT_TYPE_ENTITY_DOMAIN);
         const entitySet = fileDescriptor.headers.find(header => conceptTypeHash[header] === CONCEPT_TYPE_ENTITY_SET);
 
-        fileDescriptor.primaryKey = [entityDomain || entitySet || CONCEPT_ID, 'synonym'];
+        fileDescriptor.primaryKey = [entityDomain || entitySet || CONCEPT_ID, SYNONYM_ID];
       }
 
       if (fileDescriptor.type === DATA_POINT) {
@@ -334,6 +325,10 @@ export class DataPackage {
   }
 
   getDataPackageObject() {
+    if (!this.isNewDataPackage) {
+      return this.dataPackageContent;
+    }
+
     const rootFolderParts: string[] = split(this.rootFolder, sep);
     const packageName: string = last(rootFolderParts);
     const prepareField = (header: string, fileDescriptor: IDdfFileDescriptor): any => {
@@ -371,25 +366,12 @@ export class DataPackage {
             fields: (fileDescriptor.headers || []).map(header => prepareField(header, fileDescriptor)),
             primaryKey: fileDescriptor.primaryKey
           }
-        }))
+        })),
+      ddfSchema: this.dataPackageContent.ddfSchema
     };
   }
 
-  getType(filename) {
-    const normalizedFileName = path.resolve(this.rootFolder, filename);
-
-    if (!this.fileDescriptorsHash) {
-      this.fileDescriptorsHash = new Map<string, IDdfFileDescriptor>();
-
-      this.fileDescriptors.forEach(fileDescriptor => {
-        this.fileDescriptorsHash.set(path.resolve(this.rootFolder, fileDescriptor.fullPath), fileDescriptor);
-      });
-    }
-
-    return this.fileDescriptorsHash.get(normalizedFileName).type;
-  }
-
-  build(onDataPackageReady) {
+  buildDataPackageResources(onDataPackageReady) {
     this.db = new Db();
     this.errors = [];
     this.warnings = [];
@@ -438,24 +420,23 @@ export class DataPackage {
                 this.errors.push({source: conceptsErr, reason: 'concepts reading'});
               }
 
-              const conceptTypeHash = concept.getDictionary(null, 'concept_type');
-              const conceptDomainHash = concept.getDictionary(null, 'domain');
+              const conceptTypeHash = concept.getDictionary(null, CONCEPT_TYPE);
+              const conceptDomainHash = concept.getDictionary(null, DOMAIN_ID);
 
               this.fillPrimaryKeys(conceptTypeHash, conceptDomainHash);
-              this.dataPackageContent = this.getDataPackageObject();
 
-              validate(this.dataPackageContent).then(consistency => {
+              validate(this.getDataPackageObject()).then(consistency => {
                 this.consistencyDescriptor = consistency;
 
                 if (!this.consistencyDescriptor.valid) {
                   return onDataPackageReady();
                 }
 
-                onDataPackageReady(this.dataPackageContent);
+                onDataPackageReady(this.getDataPackageObject());
               }).catch(err => {
                 this.errors.push({
-                  source: err,
-                  reason: `${DATA_PACKAGE_FILE} parsing`
+                  source: err.message,
+                  reason: `${DATA_PACKAGE_FILE} frictionless validating`
                 });
 
                 onDataPackageReady();
@@ -467,100 +448,38 @@ export class DataPackage {
     });
   }
 
-  write(settings: any, existingDataPackage: any, onDataPackageFileReady: Function) {
-    const dateLabel = new Date().toISOString().replace(/:/g, '');
-    const isBasedOnCurrentDataPackage =
-      (existingDataPackage && (settings.updateDataPackageTranslations || settings.updateDataPackageContent));
-    const fileName = isBasedOnCurrentDataPackage || (!existingDataPackage || settings._newDataPackagePriority) ?
-      DATA_PACKAGE_FILE : `${DATA_PACKAGE_FILE}.${dateLabel}`;
-    const filePath = resolve(this.rootFolder, fileName);
-    const commandLineSettings = cloneDeep(this.settings);
-
-    commandLineSettings.isProgressNeeded = true;
-
-    getDdfSchema(this, commandLineSettings, (error: any, ddfSchema: any) => {
-      if (error) {
-        return onDataPackageFileReady(error);
-      }
-
-      const contentToOut = cloneDeep(isBasedOnCurrentDataPackage ? existingDataPackage : this.dataPackageContent);
-
-      if (settings.updateDataPackageTranslations) {
-        contentToOut.translations = this.dataPackageContent.translations;
-      }
-
-      if (settings.updateDataPackageContent) {
-        contentToOut.resources = this.dataPackageContent.resources;
-        contentToOut.ddfSchema = ddfSchema;
-      }
-
-      if (!isBasedOnCurrentDataPackage) {
-        contentToOut.ddfSchema = ddfSchema;
-      }
-
-      const content = settings.compressDatapackage ?
-        JSON.stringify(contentToOut) : JSON.stringify(contentToOut, null, 2);
-
-      writeFile(filePath, content, err => onDataPackageFileReady(err, filePath));
-    });
-  }
-
   read(onDataPackageReady) {
     this.errors = [];
     this.warnings = [];
     this.fileDescriptors = [];
 
-    readFile(
-      resolve(this.rootFolder, DATA_PACKAGE_FILE),
-      'utf8',
-      (fileErr, content) => {
-        if (fileErr) {
-          this.errors.push({
-            source: fileErr,
-            reason: `${DATA_PACKAGE_FILE} reading`
-          });
-        }
+    try {
+      const content = readFileSync(resolve(this.rootFolder, DATA_PACKAGE_FILE), 'utf8');
 
-        try {
-          this.dataPackageContent = JSON.parse(content);
-          this.getTranslationFileDescriptors(
-            (translationsErr, translationFolders) => {
-              this.warnings.push({
-                source: translationsErr,
-                reason: 'translation file reading'
-              });
-
-              this.translationFolders = translationFolders || [];
-
-              validate(this.dataPackageContent).then(consistency => {
-                this.consistencyDescriptor = consistency;
-
-                if (!this.consistencyDescriptor.valid) {
-                  return onDataPackageReady();
-                }
-
-                onDataPackageReady(this.dataPackageContent);
-              }).catch(err => {
-                throw err;
-              });
-            });
-        } catch (contentErr) {
-          this.errors.push({
-            source: contentErr,
-            reason: `${DATA_PACKAGE_FILE} parsing`
+      this.dataPackageContent = JSON.parse(content);
+      this.getTranslationFileDescriptors(
+        (translationsErr, translationFolders) => {
+          this.warnings.push({
+            source: translationsErr,
+            reason: 'translation file reading'
           });
 
-          onDataPackageReady();
-        }
+          this.translationFolders = translationFolders || [];
+
+          onDataPackageReady(this.dataPackageContent);
+        });
+    } catch (contentErr) {
+      this.errors.push({
+        source: contentErr,
+        reason: `${DATA_PACKAGE_FILE} parsing`
       });
+
+      onDataPackageReady();
+    }
   }
 
-  getResources() {
-    return this.dataPackageContent.resources;
-  }
-
-  getSchema() {
-    return this.dataPackageContent.ddfSchema;
+  setSchema(ddfSchema) {
+    this.dataPackageContent.ddfSchema = ddfSchema;
   }
 
   getTranslations() {
@@ -570,36 +489,64 @@ export class DataPackage {
   take(onDataPackageReady: Function, ignoreExistingDataPackage: boolean) {
     const filePath = resolve(this.rootFolder, DATA_PACKAGE_FILE);
 
+    this.isNewDataPackage = false;
+
     fileExists(filePath, (err, isExists) => {
       if (err || !isExists || ignoreExistingDataPackage) {
-        this.build(dataPackage => onDataPackageReady(dataPackage));
-        return;
-      }
+        this.isNewDataPackage = true;
+        this.buildDataPackageResources(dataPackage => onDataPackageReady(dataPackage));
+      } else {
+        this.read(dataPackage => {
+          this.getDdfFileDescriptors(this.rootFolder, this.settings, (ddfFileErr: any, ddfFileDescriptors: IDdfFileDescriptor[]) => {
+            if (ddfFileErr) {
+              this.errors.push({
+                source: ddfFileErr,
+                reason: `${DATA_PACKAGE_FILE} processing`
+              });
 
-      this.read(dataPackage => {
-        if (!dataPackage || !isArray(dataPackage.resources)) {
-          return onDataPackageReady();
-        }
+              return onDataPackageReady(dataPackage);
+            }
 
-        this.fileDescriptors = dataPackage.resources.map(resource => ({
-          filename: resource.path,
-          name: resource.name,
-          schema: resource.schema,
-          fullPath: resolve(this.rootFolder, resource.path),
-          type: getTypeByResource(resource)
-        }));
+            this.getTranslationFileDescriptors(
+              (translationsErr, translationFolders) => {
+                this.warnings.push({
+                  source: translationsErr,
+                  reason: 'translation file reading'
+                });
 
-        this.fillHeaders(headersError => {
-          if (headersError) {
-            this.errors.push({
-              source: headersError,
-              reason: 'headers reading'
-            });
-          }
+                this.fileDescriptors = compact(ddfFileDescriptors);
+                this.dataPackageContent = dataPackage;
+                this.translationFolders = translationFolders || [];
 
-          onDataPackageReady(dataPackage);
+                this.fillHeaders(headersError => {
+                  if (headersError) {
+                    this.errors.push({source: headersError, reason: 'headers reading'});
+                  }
+
+                  validate(this.getDataPackageObject()).then(consistency => {
+                    this.consistencyDescriptor = consistency;
+
+                    if (!this.consistencyDescriptor.valid) {
+                      return onDataPackageReady();
+                    }
+
+                    onDataPackageReady(this.getDataPackageObject());
+                  }).catch(err => {
+                    this.errors.push({
+                      source: err.message,
+                      reason: `${DATA_PACKAGE_FILE} frictionless validation`
+                    });
+
+                    onDataPackageReady(dataPackage);
+                  });
+                });
+
+
+              });
+
+          });
         });
-      });
+      }
     });
   }
 

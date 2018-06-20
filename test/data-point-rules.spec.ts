@@ -21,17 +21,22 @@ process.env.SILENT_MODE = true;
 const issuesFilter = new IssuesFilter({});
 
 describe('rules for data points', () => {
-  describe(`when data set is correct ('fixtures/good-folder')`, () => {
+  describe(`when data set is correct ('fixtures/good-folder-dp')`, () => {
     Object.getOwnPropertySymbols(allRules).forEach(dataPointRuleKey => {
       it(`any issue should NOT be found for rule ${Symbol.keyFor(dataPointRuleKey)}`, done => {
-        const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
+        const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder-dp', null);
         const issueEmitter = new EventEmitter();
         const issues: Issue[] = [];
 
         ddfDataSet.load(() => {
           const fileDescriptorsChunks = getAllDataPointFileDescriptorsChunks(ddfDataSet);
+          const finalizer = allRules[dataPointRuleKey].resetStorage;
           const theEnd = () => {
             expect(issues.length).to.equal(0);
+
+            if (finalizer) {
+              finalizer();
+            }
 
             done();
           };

@@ -3,10 +3,11 @@ import { INCORRECT_BOOLEAN_ENTITY } from '../registry';
 import { DdfDataSet } from '../../ddf-definitions/ddf-data-set';
 import { Issue } from '../issue';
 import { CONCEPT_TYPE_BOOLEAN, isDdfBoolean } from '../../utils/ddf-things';
+import { CONCEPT_TYPE } from '../../ddf-definitions/constants';
 
 export const rule = {
   rule: (ddfDataSet: DdfDataSet) => {
-    const typesHash = ddfDataSet.getConcept().getDictionary(null, 'concept_type');
+    const typesHash = ddfDataSet.getConcept().getDictionary(null, CONCEPT_TYPE);
     const booleanConcepts = [];
     const issues = [];
 

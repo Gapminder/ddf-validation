@@ -1,11 +1,16 @@
 import * as path from 'path';
 import { parallelLimit } from 'async';
-import { compact, cloneDeep, isArray, head, keys, includes, sortBy } from 'lodash';
+import { compact, keys, includes } from 'lodash';
 import { readFile } from '../utils/file';
-import { DataPackage } from '../data/data-package';
-import { DdfDataSet } from '../ddf-definitions/ddf-data-set';
 import { getRelativePath } from './shared';
 import { CONCEPT_TYPE_ENTITY_DOMAIN, CONCEPT_TYPE_ENTITY_SET, isDdfTrue, looksLikeIsField } from '../utils/ddf-things';
+import {
+  CONCEPT,
+  DATA_POINT,
+  ENTITY,
+  getTypeByPrimaryKey,
+  SYNONYM
+} from '../ddf-definitions/constants';
 
 const term = require('terminal-kit').terminal;
 const getProgressBar = (isProgressNeeded: boolean = false, config: any): any => {
@@ -56,7 +61,7 @@ function addToSchema(schema, resourceSchema) {
   schema[hash].resources.add(resourceSchema.resource)
 }
 
-function getDdfSchemaContent(dataset: any, isProgressNeeded, onDdfSchemaReady) {
+export function getDdfSchemaContent(dataset: any, isProgressNeeded, onDdfSchemaReady) {
   const entityConcepts = {};
   const conceptsContent = dataset.ddfDataSet.getConcept().getDataByFiles();
   const conceptsFiles = keys(conceptsContent);
@@ -261,7 +266,7 @@ function getDdfSchemaContent(dataset: any, isProgressNeeded, onDdfSchemaReady) {
         }
       }
 
-      progressBar.itemDone(task);
+      progressBar.itemDone();
 
       onResourceProcessed();
     });
@@ -272,69 +277,28 @@ function getDdfSchemaContent(dataset: any, isProgressNeeded, onDdfSchemaReady) {
 
     for (let key of keys(schema)) {
       const keyValueObject = schema[key];
+      const type = getTypeByPrimaryKey(keyValueObject.primaryKey);
 
       keyValueObject.resources = Array.from(keyValueObject.resources);
 
-      if (keyValueObject.primaryKey.length === 2 && includes(keyValueObject.primaryKey, 'synonym')) {
-        ddfSchema.synonyms.push(keyValueObject);
-      } else if (keyValueObject.primaryKey.length === 1 && keyValueObject.primaryKey[0] === 'concept') {
-        ddfSchema.concepts.push(keyValueObject);
-      } else if (keyValueObject.primaryKey.length === 1 && keyValueObject.primaryKey[0] !== 'concept') {
-        ddfSchema.entities.push(keyValueObject);
-      } else {
-        ddfSchema.datapoints.push(keyValueObject);
+      switch (type) {
+        case CONCEPT:
+          ddfSchema.concepts.push(keyValueObject);
+          break;
+        case ENTITY:
+          ddfSchema.entities.push(keyValueObject);
+          break;
+        case SYNONYM:
+          ddfSchema.synonyms.push(keyValueObject);
+          break;
+        case DATA_POINT:
+          ddfSchema.datapoints.push(keyValueObject);
+          break;
+        default:
+          break;
       }
     }
 
     onDdfSchemaReady(err, ddfSchema);
   });
 }
-
-export const getDdfSchema = (dataPackageDescriptor: DataPackage, settings: any, onDdfSchemaReady: Function) => {
-  const ddfDataSet = new DdfDataSet(dataPackageDescriptor.rootFolder, settings, true);
-
-  console.log('loading generic content...');
-
-  ddfDataSet.load(() => {
-    const resources = cloneDeep(dataPackageDescriptor.getResources()).map(resource => {
-      if (!isArray(resource.schema.primaryKey)) {
-        resource.schema.primaryKey = [resource.schema.primaryKey];
-      }
-
-      resource.schema.fields = resource.schema.fields.map(field => field.name);
-
-      return resource;
-    });
-
-    const conceptsResources = resources.filter(resource => head(resource.schema.primaryKey) === 'concept');
-    const entitiesResources = resources.filter(resource => resource.schema.primaryKey.length === 1 && head(resource.schema.primaryKey) !== 'concept');
-    const getOrderedSection = (section: any[]) => {
-      section.forEach(dataPointDescriptor => {
-        dataPointDescriptor.resources = sortBy(dataPointDescriptor.resources);
-      });
-
-      return sortBy(section, ['primaryKey', 'value']);
-    };
-
-    console.log('generating ddfSchema...');
-
-    getDdfSchemaContent({
-      resources,
-      conceptsResources,
-      entitiesResources,
-      ddfDataSet,
-      dataPackageDescriptor
-    }, settings.isProgressNeeded, (err, ddfSchema) => {
-      if (err) {
-        return onDdfSchemaReady(err);
-      }
-
-      ddfSchema.datapoints = getOrderedSection(ddfSchema.datapoints);
-      ddfSchema.entities = getOrderedSection(ddfSchema.entities);
-      ddfSchema.concepts = getOrderedSection(ddfSchema.concepts);
-      ddfSchema.synonyms = getOrderedSection(ddfSchema.synonyms);
-
-      onDdfSchemaReady(null, ddfSchema);
-    });
-  });
-};

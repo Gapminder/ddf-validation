@@ -148,14 +148,20 @@ export function readFile(filePath, onFileRead) {
 }
 
 export function walkFile(filePath, onLineRead, onFileRead) {
-  let line = 0;
+  fileExists(filePath, (err, exists) => {
+    if (err || !exists) {
+      return onFileRead();
+    }
 
-  csv
-    .fromPath(filePath, {headers: true})
-    .on('data', ddfRecord => onLineRead(ddfRecord, line++))
-    .on('end', () => {
-      onFileRead();
-    });
+    let line = 0;
+
+    csv
+      .fromPath(filePath, {headers: true})
+      .on('data', ddfRecord => onLineRead(ddfRecord, line++))
+      .on('end', () => {
+        onFileRead();
+      });
+  });
 }
 
 export function backupFile(filePath, onBackupCreated) {
@@ -180,11 +186,10 @@ export function fileExists(file, onFileChecked) {
   stat(file, (err, stats) => {
     if (err) {
       if (err.code === 'ENOENT') {
-        onFileChecked(null, false);
-        return
+        return onFileChecked(null, false);
       }
-      onFileChecked(err);
-      return;
+
+      return onFileChecked(err);
     }
 
     onFileChecked(null, stats.isFile());

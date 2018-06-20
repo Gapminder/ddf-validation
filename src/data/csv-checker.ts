@@ -25,8 +25,7 @@ export class CsvChecker {
   check(onChecked) {
     readFile(this.filePath, 'utf-8', (err, fileContent) => {
       if (err) {
-        onChecked();
-        return;
+        return onChecked();
       }
 
       CsvParser.parse(fileContent, {
@@ -35,7 +34,7 @@ export class CsvChecker {
         skipEmptyLines: true,
         complete: parsedCsv => {
           this.errors = getErrors(parsedCsv);
-          onChecked();
+          return onChecked();
         }
       });
     });

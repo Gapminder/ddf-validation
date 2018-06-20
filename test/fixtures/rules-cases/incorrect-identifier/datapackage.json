@@ -1,0 +1,221 @@
+{
+  "name": "incorrect-identifier",
+  "title": "incorrect-identifier",
+  "description": "",
+  "version": "0.0.1",
+  "language": {
+    "id": "en",
+    "name": "English"
+  },
+  "translations": [],
+  "license": "",
+  "author": "",
+  "resources": [
+    {
+      "path": "ddf--concepts.csv",
+      "name": "ddf--concepts",
+      "schema": {
+        "fields": [
+          {
+            "name": "concept"
+          },
+          {
+            "name": "concept_type"
+          },
+          {
+            "name": "domain"
+          },
+          {
+            "name": "name"
+          },
+          {
+            "name": "drill_up"
+          }
+        ],
+        "primaryKey": "concept"
+      }
+    },
+    {
+      "path": "ddf--entities--geo--country.csv",
+      "name": "geo--country",
+      "schema": {
+        "fields": [
+          {
+            "name": "geo"
+          },
+          {
+            "name": "name"
+          },
+          {
+            "name": "lat"
+          },
+          {
+            "name": "lng"
+          },
+          {
+            "name": "is--region"
+          },
+          {
+            "name": "is--country"
+          },
+          {
+            "name": "is--capital"
+          }
+        ],
+        "primaryKey": "geo"
+      }
+    }
+  ],
+  "ddfSchema": {
+    "datapoints": [],
+    "entities": [
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "is--capital",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "is--country",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "is--region",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "lat",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "lng",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country"
+        ],
+        "value": "name",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "is--capital",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "is--country",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "is--region",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "lat",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "lng",
+        "resources": [
+          "geo--country"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "name",
+        "resources": [
+          "geo--country"
+        ]
+      }
+    ],
+    "concepts": [
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "concept_type",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "domain",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "drill_up",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "name",
+        "resources": [
+          "ddf--concepts"
+        ]
+      }
+    ],
+    "synonyms": []
+  }
+}

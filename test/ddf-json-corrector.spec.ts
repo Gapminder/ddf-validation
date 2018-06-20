@@ -44,19 +44,23 @@ describe('ddf json corrector', () => {
 
     it('expected file descriptor with CSV content should be found', done => {
       ddfJsonCorrector.correct((correctorError, csvFileDescriptors) => {
-        expect(csvFileDescriptors.length).to.equal(1);
+        try {
+          expect(csvFileDescriptors.length).to.equal(1);
 
-        const csvFileDescriptor: any = head(csvFileDescriptors);
+          const csvFileDescriptor: any = head(csvFileDescriptors);
 
-        csvToJsonByString(csvFileDescriptor.csv, (csvConvertError, expectedJsonContent) => {
-          expect(csvConvertError).to.be.null;
+          csvToJsonByString(csvFileDescriptor.csv, (csvConvertError, expectedJsonContent) => {
+            expect(csvConvertError).to.be.null;
 
-          const differences = diff(expectedJsonContent, ddfJsonCorrector.jsonContent);
+            const differences = diff(expectedJsonContent, ddfJsonCorrector.jsonContent);
 
-          expect(!!differences).to.be.false;
+            expect(!!differences).to.be.false;
 
-          done();
-        });
+            done();
+          });
+        } catch (e) {
+          done(e);
+        }
       });
     });
   });

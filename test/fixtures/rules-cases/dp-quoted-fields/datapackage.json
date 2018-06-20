@@ -106,6 +106,7 @@
             }
         ],
         "entities": [],
-        "datapoints": []
+        "datapoints": [],
+        "synonyms": []
     }
 }

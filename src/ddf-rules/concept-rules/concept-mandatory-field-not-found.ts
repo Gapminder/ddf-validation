@@ -3,6 +3,7 @@ import { CONCEPT_MANDATORY_FIELD_NOT_FOUND } from '../registry';
 import { DdfDataSet } from '../../ddf-definitions/ddf-data-set';
 import { Issue } from '../issue';
 import { CONCEPT_TYPE_ENTITY_DOMAIN, CONCEPT_TYPE_ENTITY_SET, CONCEPT_TYPE_ROLE } from '../../utils/ddf-things';
+import { CONCEPT_TYPE, DOMAIN_ID } from '../../ddf-definitions/constants';
 
 function domainIsNotEntityDomain(domain) {
   return !domain || domain.concept_type !== CONCEPT_TYPE_ENTITY_DOMAIN;
@@ -32,7 +33,7 @@ function getIssueForConceptMandatoryField(ddfDataSet, conceptRecord) {
       .setPath(conceptRecord.$$source)
       .setData({
         line: conceptRecord.$$lineNumber,
-        field: 'concept_type',
+        field: CONCEPT_TYPE,
         value: JSON.stringify(conceptRecord)
       });
   }
@@ -42,7 +43,7 @@ function getIssueForConceptMandatoryField(ddfDataSet, conceptRecord) {
       .setPath(conceptRecord.$$source)
       .setData({
         line: conceptRecord.$$lineNumber,
-        field: 'domain',
+        field: DOMAIN_ID,
         value: domain
       });
   }

@@ -18,7 +18,7 @@
   "resources": [
     {
       "path": "ddf--concepts.csv",
-      "name": "ddf--concepts",
+      "name": "ddf--concepts222",
       "schema": {
         "fields": [
           {
@@ -723,6 +723,7 @@
           "ddf--concepts"
         ]
       }
-    ]
+    ],
+    "synonyms": []
   }
 }

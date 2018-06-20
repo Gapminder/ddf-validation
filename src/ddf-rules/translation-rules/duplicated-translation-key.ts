@@ -7,7 +7,7 @@ import { Issue } from '../issue';
 export const rule = {
   isTranslation: true,
   rule: (ddfDataSet: DdfDataSet) => compact(flattenDeep(
-    ddfDataSet.ddfRoot.fileDescriptors.map(fileDescriptor => {
+    ddfDataSet.fileDescriptors.map(fileDescriptor => {
       return fileDescriptor.getExistingTranslationDescriptors()
         .filter(translationDescriptor => translationDescriptor.type !== DATA_POINT)
         .map(translationDescriptor => {

@@ -4,7 +4,7 @@ import { Issue } from '../issue';
 import { DATAPACKAGE_NONEXISTENT_CONCEPT } from '../registry';
 import { DATA_PACKAGE_FILE } from '../../data/data-package';
 import * as path from 'path';
-import { DDFRoot } from '../../data/ddf-root';
+import { CONCEPT_ID, CONCEPT_TYPE } from '../../ddf-definitions/constants';
 
 const toArray = value => isArray(value) ? value : [value];
 const fillConceptsSetBySchema = (dataPackageSchema, conceptsSet: Set<string>) => {
@@ -20,8 +20,8 @@ const fillConceptsSetBySchema = (dataPackageSchema, conceptsSet: Set<string>) =>
     conceptsSet.add(resource.value);
   });
 };
-const fillResources = (ddfRoot: DDFRoot, conceptsSet: Set<string>) => {
-  ddfRoot.getDataPackageResources().forEach(resource => {
+const fillResources = (ddfDataSet: DdfDataSet, conceptsSet: Set<string>) => {
+  ddfDataSet.getDataPackageResources().forEach(resource => {
     for (const pk of toArray(resource.schema.primaryKey)) {
       conceptsSet.add(pk);
     }
@@ -34,22 +34,21 @@ const fillResources = (ddfRoot: DDFRoot, conceptsSet: Set<string>) => {
 
 export const rule = {
   rule: (ddfDataSet: DdfDataSet) => {
-    const ddfRoot = ddfDataSet.ddfRoot;
-    const dataPackagePath = path.resolve(ddfRoot.dataPackageDescriptor.rootFolder, DATA_PACKAGE_FILE);
+    const dataPackagePath = path.resolve(ddfDataSet.dataPackageDescriptor.rootFolder, DATA_PACKAGE_FILE);
     const conceptsSet = new Set<string>();
-    const dataPackageSchema = ddfRoot.getDataPackageSchema();
+    const dataPackageSchema = ddfDataSet.getDataPackageSchema();
 
     if (dataPackageSchema) {
       fillConceptsSetBySchema(dataPackageSchema, conceptsSet);
     }
 
-    fillResources(ddfRoot, conceptsSet);
+    fillResources(ddfDataSet, conceptsSet);
 
     const originalConcepts = ddfDataSet.getConcept().getAllData().map(record => record.concept);
 
     return compact(Array.from(conceptsSet.values()))
       .map(concept => concept.replace(/^is--/, ''))
-      .filter(concept => concept !== 'concept' && concept !== 'concept_type' && !includes(originalConcepts, concept))
+      .filter(concept => concept !== CONCEPT_ID && concept !== CONCEPT_TYPE && !includes(originalConcepts, concept))
       .map(concept => new Issue(DATAPACKAGE_NONEXISTENT_CONCEPT).setPath(dataPackagePath).setData(concept))
   }
 };

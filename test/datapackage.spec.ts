@@ -1,6 +1,5 @@
 import * as chai from 'chai';
-import { DataPackage } from '../src/data/data-package';
-import { getDdfSchema } from '../src/data/ddf-schema';
+import { DdfDataSet } from '../src/ddf-definitions/ddf-data-set';
 
 const expect = chai.expect;
 
@@ -10,59 +9,69 @@ describe('datapackage validation', () => {
   describe('when "ddf--unpop--wpp_population" dataset', () => {
     it('should datapackage be created properly', done => {
       const dataPackageTemplate = require('./fixtures/data-package/ddf--unpop--wpp_population/datapackage.template.json');
-      const dataPackage = new DataPackage('./test/fixtures/data-package/ddf--unpop--wpp_population/', {});
+      const ddfDataSet = new DdfDataSet('./test/fixtures/data-package/ddf--unpop--wpp_population/', null, true);
 
-      dataPackage.take(dataPackageObject => {
-        expect(dataPackageObject).to.deep.equal(dataPackageTemplate);
+      ddfDataSet.createDataPackage(() => {
+        try {
+          expect(ddfDataSet.dataPackageDescriptor.getDataPackageObject()).to.deep.equal(dataPackageTemplate);
 
-        done();
-      }, true);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      });
     });
   });
   describe('when "ddf--bubbles-3" dataset', () => {
     it('should datapackage be created properly with non strict ddf file names', done => {
-      const dataPackage = new DataPackage('./test/fixtures/ddf--bubbles-3/', {});
+      const ddfDataSet = new DdfDataSet('./test/fixtures/ddf--bubbles-3', null, true);
 
-      dataPackage.take(dataPackageObject => {
+      ddfDataSet.createDataPackage(() => {
         const EXPECTED_RESOURCES_LENGTH = 3;
 
-        expect(!!dataPackageObject.resources).to.be.true;
-        expect(dataPackageObject.resources.length).to.equal(EXPECTED_RESOURCES_LENGTH);
+        try {
+          expect(!!ddfDataSet.getDataPackageResources()).to.be.true;
+          expect(ddfDataSet.getDataPackageResources().length).to.equal(EXPECTED_RESOURCES_LENGTH);
 
-        done();
-      }, true);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      });
     });
   });
   describe('when "ddf--ws--testing" dataset', () => {
     it('should datapackage be created properly', done => {
       const expectedDatapackage = require('./fixtures/results/datapackage/ddf--ws--testing.json');
-      const dataPackage = new DataPackage('./test/fixtures/ddf--ws--testing/', {});
+      const ddfDataSet = new DdfDataSet('./test/fixtures/ddf--ws--testing', null, true);
 
-      dataPackage.take(dataPackageObject => {
-        expect(dataPackageObject).to.deep.equal(expectedDatapackage);
+      ddfDataSet.createDataPackage(() => {
+        try {
+          expect(ddfDataSet.getDataPackageResources()).to.deep.equal(expectedDatapackage.resources);
+          expect(ddfDataSet.getDataPackageSchema()).to.deep.equal(expectedDatapackage.ddfSchema);
 
-        done();
-      }, true);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      });
     });
   });
   describe('synonyms supporting', () => {
     it('should datapackage be created properly', done => {
       const expectedDatapackage = require('./fixtures/ddf--gapminder--geo_entity_domain/datapackage.json');
-      const dataPackage = new DataPackage('./test/fixtures/ddf--gapminder--geo_entity_domain/', {});
+      const ddfDataSet = new DdfDataSet('./test/fixtures/ddf--gapminder--geo_entity_domain', null, true);
 
-      dataPackage.take(dataPackageObject => {
+      ddfDataSet.createDataPackage(() => {
         try {
-          expect(dataPackageObject.resources).to.deep.equal(expectedDatapackage.resources);
+          expect(ddfDataSet.getDataPackageResources()).to.deep.equal(expectedDatapackage.resources);
+          expect(ddfDataSet.getDataPackageSchema()).to.deep.equal(expectedDatapackage.ddfSchema);
 
-          getDdfSchema(dataPackage, {}, (error: any, ddfSchema: any) => {
-            expect(ddfSchema).to.deep.equal(expectedDatapackage.ddfSchema);
-
-            done();
-          });
+          done();
         } catch (e) {
           done(e);
         }
-      }, true);
+      });
     });
   });
 });

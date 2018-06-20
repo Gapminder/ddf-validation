@@ -522,5 +522,94 @@
         "primaryKey": "gender"
       }
     }
-  ]
+  ],
+  "ddfSchema": {
+    "datapoints": [
+      {
+        "primaryKey": [
+          "age",
+          "country_code",
+          "gender",
+          "year"
+        ],
+        "value": "population",
+        "resources": [
+          "population--by--country_code-900--year--gender--age",
+          "population--by--country_code-903--year--gender--age",
+          "population--by--country_code-904--year--gender--age",
+          "population--by--country_code-905--year--gender--age",
+          "population--by--country_code-908--year--gender--age",
+          "population--by--country_code-909--year--gender--age",
+          "population--by--country_code-935--year--gender--age"
+        ]
+      },
+      {
+        "primaryKey": [
+          "age",
+          "country_code",
+          "year"
+        ],
+        "value": "population",
+        "resources": [
+          "population--by--country_code-900--year--age",
+          "population--by--country_code-903--year--age",
+          "population--by--country_code-904--year--age",
+          "population--by--country_code-905--year--age",
+          "population--by--country_code-908--year--age",
+          "population--by--country_code-909--year--age",
+          "population--by--country_code-935--year--age"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "primaryKey": [
+          "age"
+        ],
+        "value": "name",
+        "resources": [
+          "age"
+        ]
+      },
+      {
+        "primaryKey": [
+          "country_code"
+        ],
+        "value": "name",
+        "resources": [
+          "country_code"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gender"
+        ],
+        "value": "name",
+        "resources": [
+          "gender"
+        ]
+      }
+    ],
+    "concepts": [
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "concept_type",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "name",
+        "resources": [
+          "ddf--concepts"
+        ]
+      }
+    ],
+    "synonyms": []
+  }
 }

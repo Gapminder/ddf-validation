@@ -6,35 +6,7 @@ import { INCORRECT_FILE } from '../ddf-rules/registry';
 import { CsvChecker } from './csv-checker';
 import { logger } from '../utils';
 
-const PROCESS_LIMIT = 30;
-
-function getIssueCases(fileDescriptor) {
-  return [
-    cb => {
-      stat(fileDescriptor.fullPath, (err: any, stats) => {
-        if (err) {
-          cb(null, {
-            type: INCORRECT_FILE,
-            data: err.message,
-            path: fileDescriptor.fullPath
-          });
-          return;
-        }
-
-        if (!stats.isFile()) {
-          cb(null, {
-            type: INCORRECT_FILE,
-            data: `${fileDescriptor.fullPath} is not a file`,
-            path: fileDescriptor.fullPath
-          });
-          return;
-        }
-
-        cb(null, {ok: true, stats});
-      });
-    }
-  ];
-}
+const PROCESS_LIMIT = 10;
 
 export class FileDescriptor {
   public dir: string;
@@ -89,33 +61,27 @@ export class FileDescriptor {
   }
 
   check(onFileDescriptorChecked) {
-    parallelLimit(getIssueCases(this), PROCESS_LIMIT, (err, results) => {
-      if (err) {
-        throw err;
+    this.checkFile((fileStateDescriptor) => {
+      if (!fileStateDescriptor.ok) {
+        this.issues.push(fileStateDescriptor);
+        return onFileDescriptorChecked([fileStateDescriptor]);
       }
 
       getFileLine(this.fullPath, 1, (lineErr, line) => {
-        const fileAttributesContainer: any = results.find((result: any) => result.ok);
+        const fileAttributesContainer = fileStateDescriptor;
 
         this.hasFirstLine = !lineErr && !!line;
-        this.issues = compact(results.filter((result: any) => !result.ok));
 
         if (fileAttributesContainer && fileAttributesContainer.stats) {
           this.size = fileAttributesContainer.stats.size;
         }
 
-        if (isEmpty(this.issues)) {
-          this.csvChecker.check(() => {
-            logger.progress();
-            onFileDescriptorChecked();
-          });
-
-          return;
-        }
+        this.csvChecker.check(() => {
+          logger.progress();
+          return onFileDescriptorChecked();
+        });
 
         logger.progress();
-
-        onFileDescriptorChecked(this.issues);
       });
     });
   }
@@ -137,5 +103,29 @@ export class FileDescriptor {
 
   getExistingTranslationDescriptors() {
     return this.transFileDescriptors.filter(transFileDescriptor => isEmpty(transFileDescriptor.issues));
+  }
+
+  private checkFile(onFileChecked: Function) {
+    stat(this.fullPath, (err: any, stats) => {
+      if (err) {
+        onFileChecked({
+          type: INCORRECT_FILE,
+          fullPath: this.fullPath,
+          data: err.message
+        });
+        return;
+      }
+
+      if (!stats.isFile()) {
+        onFileChecked({
+          type: INCORRECT_FILE,
+          fullPath: this.fullPath,
+          data: `${this.fullPath} is not a file`
+        });
+        return;
+      }
+
+      onFileChecked({ok: true, stats});
+    });
   }
 }

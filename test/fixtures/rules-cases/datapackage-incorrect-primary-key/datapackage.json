@@ -65,5 +65,50 @@
 				"primaryKey": "geofoo"
 			}
 		}
-	]
+	],
+	"ddfSchema": {
+		"datapoints": [
+			{
+				"primaryKey": [
+					"geo",
+					"year"
+				],
+				"value": "gas_production_bcf",
+				"resources": [
+					"gas_production_bcf--by--geo--year"
+				]
+			}
+		],
+		"entities": [
+			{
+				"primaryKey": [
+					"geo"
+				],
+				"value": "geo_name",
+				"resources": [
+					"geo"
+				]
+			}
+		],
+		"concepts": [
+			{
+				"primaryKey": [
+					"concept"
+				],
+				"value": "concept_type",
+				"resources": [
+					"ddf--concepts"
+				]
+			},
+			{
+				"primaryKey": [
+					"concept"
+				],
+				"value": "name",
+				"resources": [
+					"ddf--concepts"
+				]
+			}
+		]
+	}
 }

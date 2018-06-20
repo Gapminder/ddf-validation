@@ -39,6 +39,7 @@ export const DUPLICATED_DATA_POINT_KEY = Symbol.for('DUPLICATED_DATA_POINT_KEY')
 export const INCORRECT_BOOLEAN_ENTITY = Symbol.for('INCORRECT_BOOLEAN_ENTITY');
 export const CONCEPT_LOOKS_LIKE_BOOLEAN = Symbol.for('CONCEPT_LOOKS_LIKE_BOOLEAN');
 export const ENTITY_VALUE_AS_ENTITY_NAME = Symbol.for('ENTITY_VALUE_AS_ENTITY_NAME');
+export const DUPLICATED_SYNONYM_KEY = Symbol.for('DUPLICATED_SYNONYM_KEY');
 
 export const WARNING_TAG = Symbol.for('WARNING');
 export const FILE_SYSTEM_TAG = Symbol.for('FILE_SYSTEM');
@@ -92,7 +93,8 @@ export const tags: any = {
   [DUPLICATED_DATA_POINT_KEY]: [DATAPOINT_TAG],
   [INCORRECT_BOOLEAN_ENTITY]: [],
   [CONCEPT_LOOKS_LIKE_BOOLEAN]: [WARNING_TAG],
-  [ENTITY_VALUE_AS_ENTITY_NAME]: [WAFFLE_SERVER_TAG, WARNING_TAG]
+  [ENTITY_VALUE_AS_ENTITY_NAME]: [WAFFLE_SERVER_TAG, WARNING_TAG],
+  [DUPLICATED_SYNONYM_KEY]: []
 };
 
 export const descriptions = {
@@ -136,7 +138,8 @@ export const descriptions = {
   [DUPLICATED_DATA_POINT_KEY]: 'Duplicated key is found in datapoint file.',
   [INCORRECT_BOOLEAN_ENTITY]: 'Boolean entitiy field has an incorrect value.',
   [CONCEPT_LOOKS_LIKE_BOOLEAN]: 'Entity contains values that look like boolean, but related entity field has a different type.',
-  [ENTITY_VALUE_AS_ENTITY_NAME]: 'Entity value should not be equal to entity domain name or entity set name. This rule providing is critical for DDFQL and DDF reader supporting (on WS).'
+  [ENTITY_VALUE_AS_ENTITY_NAME]: 'Entity value should not be equal to entity domain name or entity set name. This rule providing is critical for DDFQL and DDF reader supporting (on WS).',
+  [DUPLICATED_SYNONYM_KEY]: 'Duplicated synonym key'
 };
 
 export const howToFix = {
@@ -180,7 +183,8 @@ export const howToFix = {
   [DUPLICATED_DATA_POINT_KEY]: 'Datapoint files should have unique keys',
   [INCORRECT_BOOLEAN_ENTITY]: 'Use only TRUE or FALSE values for concepts of type "boolean"',
   [CONCEPT_LOOKS_LIKE_BOOLEAN]: 'Consider changing the concept type to "boolean"',
-  [ENTITY_VALUE_AS_ENTITY_NAME]: 'Simplest way to fix the issue is entity value renaming, in other case domain or entity set name should be changed.'
+  [ENTITY_VALUE_AS_ENTITY_NAME]: 'Simplest way to fix the issue is entity value renaming, in other case domain or entity set name should be changed.',
+  [DUPLICATED_SYNONYM_KEY]: 'Remove duplicated key or change it properly'
 };
 
 export const getRulesInformation = () => Object.getOwnPropertySymbols(exports.descriptions)

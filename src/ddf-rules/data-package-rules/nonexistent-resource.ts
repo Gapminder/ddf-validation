@@ -4,20 +4,20 @@ import { DdfDataSet } from '../../ddf-definitions/ddf-data-set';
 import { Issue } from '../issue';
 import { DATAPACKAGE_NONEXISTENT_RESOURCE } from '../registry';
 import { DATA_PACKAGE_FILE } from '../../data/data-package';
-import { DDFRoot } from '../../data/ddf-root';
 
 const getNonexistentResourcesIssues = (
-  ddfRoot: DDFRoot,
+  ddfDataSet: DdfDataSet,
   dataPackagePath: string,
   resourcesMap: Map<string, number>): Issue[] => {
-  if (!ddfRoot.getDataPackageSchema()) {
+  if (!ddfDataSet.getDataPackageSchema()) {
     return [];
   }
 
   return compact([
-    ...ddfRoot.getDataPackageSchema().concepts,
-    ...ddfRoot.getDataPackageSchema().entities,
-    ...ddfRoot.getDataPackageSchema().datapoints
+    ...(ddfDataSet.getDataPackageSchema().concepts || []),
+    ...(ddfDataSet.getDataPackageSchema().entities || []),
+    ...(ddfDataSet.getDataPackageSchema().datapoints || []),
+    ...(ddfDataSet.getDataPackageSchema().synonyms || []),
   ].map(record => {
     const nonexistentResources = record.resources.filter(resource => !resourcesMap.has(resource));
 
@@ -34,15 +34,16 @@ const getNonexistentResourcesIssues = (
   }));
 };
 
-const fillResourceMapCounters = (ddfRoot: DDFRoot, resourcesMap: Map<string, number>) => {
-  if (!ddfRoot.getDataPackageSchema()) {
+const fillResourceMapCounters = (ddfDataSet: DdfDataSet, resourcesMap: Map<string, number>) => {
+  if (!ddfDataSet.getDataPackageSchema()) {
     return [];
   }
 
   [
-    ...ddfRoot.getDataPackageSchema().concepts,
-    ...ddfRoot.getDataPackageSchema().entities,
-    ...ddfRoot.getDataPackageSchema().datapoints
+    ...(ddfDataSet.getDataPackageSchema().concepts || []),
+    ...(ddfDataSet.getDataPackageSchema().entities || []),
+    ...(ddfDataSet.getDataPackageSchema().datapoints || []),
+    ...(ddfDataSet.getDataPackageSchema().synonyms || [])
   ].forEach(record => {
     record.resources.forEach(resource => {
       if (resourcesMap.has(resource)) {
@@ -63,9 +64,8 @@ const getNonexistentSchemaResourcesIssues = (dataPackagePath: string, resourcesM
 
 export const rule = {
   rule: (ddfDataSet: DdfDataSet) => {
-    const ddfRoot = ddfDataSet.ddfRoot;
-    const dataPackagePath = path.resolve(ddfRoot.dataPackageDescriptor.rootFolder, DATA_PACKAGE_FILE);
-    const resourcesMap = ddfRoot.getDataPackageResources()
+    const dataPackagePath = path.resolve(ddfDataSet.dataPackageDescriptor.rootFolder, DATA_PACKAGE_FILE);
+    const resourcesMap = ddfDataSet.getDataPackageResources()
       .map(resource => resource.name)
       .reduce((mapValue, resourceName) => {
         mapValue.set(resourceName, 0);
@@ -73,10 +73,10 @@ export const rule = {
         return mapValue;
       }, new Map<string, number>());
 
-    fillResourceMapCounters(ddfRoot, resourcesMap);
+    fillResourceMapCounters(ddfDataSet, resourcesMap);
 
     return [
-      ...getNonexistentResourcesIssues(ddfRoot, dataPackagePath, resourcesMap),
+      ...getNonexistentResourcesIssues(ddfDataSet, dataPackagePath, resourcesMap),
       ...getNonexistentSchemaResourcesIssues(dataPackagePath, resourcesMap)
     ];
   }

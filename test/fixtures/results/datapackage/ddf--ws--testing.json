@@ -257,5 +257,473 @@
         "primaryKey": "region"
       }
     }
-  ]
+  ],
+  "ddfSchema": {
+    "datapoints": [
+      {
+        "primaryKey": [
+          "anno",
+          "company"
+        ],
+        "value": "company_size",
+        "resources": [
+          "company_size--by--company--anno"
+        ]
+      },
+      {
+        "primaryKey": [
+          "anno",
+          "company"
+        ],
+        "value": "lines_of_code",
+        "resources": [
+          "lines_of_code--by--company--anno"
+        ]
+      },
+      {
+        "primaryKey": [
+          "anno",
+          "company",
+          "project"
+        ],
+        "value": "lines_of_code",
+        "resources": [
+          "lines_of_code--by--company--project--anno"
+        ]
+      },
+      {
+        "primaryKey": [
+          "anno",
+          "english_speaking"
+        ],
+        "value": "company_size",
+        "resources": [
+          "company_size--by--company--anno"
+        ]
+      },
+      {
+        "primaryKey": [
+          "anno",
+          "english_speaking"
+        ],
+        "value": "lines_of_code",
+        "resources": [
+          "lines_of_code--by--company--anno"
+        ]
+      },
+      {
+        "primaryKey": [
+          "anno",
+          "english_speaking",
+          "project"
+        ],
+        "value": "lines_of_code",
+        "resources": [
+          "lines_of_code--by--company--project--anno"
+        ]
+      },
+      {
+        "primaryKey": [
+          "anno",
+          "foundation"
+        ],
+        "value": "company_size",
+        "resources": [
+          "company_size--by--company--anno"
+        ]
+      },
+      {
+        "primaryKey": [
+          "anno",
+          "foundation"
+        ],
+        "value": "lines_of_code",
+        "resources": [
+          "lines_of_code--by--company--anno"
+        ]
+      },
+      {
+        "primaryKey": [
+          "anno",
+          "foundation",
+          "project"
+        ],
+        "value": "lines_of_code",
+        "resources": [
+          "lines_of_code--by--company--project--anno"
+        ]
+      },
+      {
+        "primaryKey": [
+          "company",
+          "project"
+        ],
+        "value": "latitude",
+        "resources": [
+          "num_users--by--company--project"
+        ]
+      },
+      {
+        "primaryKey": [
+          "company",
+          "project"
+        ],
+        "value": "lines_of_code",
+        "resources": [
+          "lines_of_code--by--company--project"
+        ]
+      },
+      {
+        "primaryKey": [
+          "company",
+          "project"
+        ],
+        "value": "longitude",
+        "resources": [
+          "num_users--by--company--project"
+        ]
+      },
+      {
+        "primaryKey": [
+          "company",
+          "project"
+        ],
+        "value": "num_users",
+        "resources": [
+          "num_users--by--company--project"
+        ]
+      },
+      {
+        "primaryKey": [
+          "english_speaking",
+          "project"
+        ],
+        "value": "latitude",
+        "resources": [
+          "num_users--by--company--project"
+        ]
+      },
+      {
+        "primaryKey": [
+          "english_speaking",
+          "project"
+        ],
+        "value": "lines_of_code",
+        "resources": [
+          "lines_of_code--by--company--project"
+        ]
+      },
+      {
+        "primaryKey": [
+          "english_speaking",
+          "project"
+        ],
+        "value": "longitude",
+        "resources": [
+          "num_users--by--company--project"
+        ]
+      },
+      {
+        "primaryKey": [
+          "english_speaking",
+          "project"
+        ],
+        "value": "num_users",
+        "resources": [
+          "num_users--by--company--project"
+        ]
+      },
+      {
+        "primaryKey": [
+          "foundation",
+          "project"
+        ],
+        "value": "latitude",
+        "resources": [
+          "num_users--by--company--project"
+        ]
+      },
+      {
+        "primaryKey": [
+          "foundation",
+          "project"
+        ],
+        "value": "lines_of_code",
+        "resources": [
+          "lines_of_code--by--company--project"
+        ]
+      },
+      {
+        "primaryKey": [
+          "foundation",
+          "project"
+        ],
+        "value": "longitude",
+        "resources": [
+          "num_users--by--company--project"
+        ]
+      },
+      {
+        "primaryKey": [
+          "foundation",
+          "project"
+        ],
+        "value": "num_users",
+        "resources": [
+          "num_users--by--company--project"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "primaryKey": [
+          "company"
+        ],
+        "value": "additional_column",
+        "resources": [
+          "company--english_speaking"
+        ]
+      },
+      {
+        "primaryKey": [
+          "company"
+        ],
+        "value": "country",
+        "resources": [
+          "company"
+        ]
+      },
+      {
+        "primaryKey": [
+          "company"
+        ],
+        "value": "full_name_changed",
+        "resources": [
+          "company--company_size"
+        ]
+      },
+      {
+        "primaryKey": [
+          "company"
+        ],
+        "value": "is--company_size",
+        "resources": [
+          "company--company_size"
+        ]
+      },
+      {
+        "primaryKey": [
+          "company"
+        ],
+        "value": "is--english_speaking",
+        "resources": [
+          "company--english_speaking"
+        ]
+      },
+      {
+        "primaryKey": [
+          "company"
+        ],
+        "value": "is--foundation",
+        "resources": [
+          "company--foundation"
+        ]
+      },
+      {
+        "primaryKey": [
+          "company"
+        ],
+        "value": "name",
+        "resources": [
+          "company",
+          "company--english_speaking"
+        ]
+      },
+      {
+        "primaryKey": [
+          "company"
+        ],
+        "value": "region",
+        "resources": [
+          "company"
+        ]
+      },
+      {
+        "primaryKey": [
+          "company_size"
+        ],
+        "value": "full_name_changed",
+        "resources": [
+          "company--company_size"
+        ]
+      },
+      {
+        "primaryKey": [
+          "company_size"
+        ],
+        "value": "is--company_size",
+        "resources": [
+          "company--company_size"
+        ]
+      },
+      {
+        "primaryKey": [
+          "english_speaking"
+        ],
+        "value": "additional_column",
+        "resources": [
+          "company--english_speaking"
+        ]
+      },
+      {
+        "primaryKey": [
+          "english_speaking"
+        ],
+        "value": "country",
+        "resources": [
+          "company"
+        ]
+      },
+      {
+        "primaryKey": [
+          "english_speaking"
+        ],
+        "value": "is--english_speaking",
+        "resources": [
+          "company--english_speaking"
+        ]
+      },
+      {
+        "primaryKey": [
+          "english_speaking"
+        ],
+        "value": "is--foundation",
+        "resources": [
+          "company--foundation"
+        ]
+      },
+      {
+        "primaryKey": [
+          "english_speaking"
+        ],
+        "value": "name",
+        "resources": [
+          "company",
+          "company--english_speaking"
+        ]
+      },
+      {
+        "primaryKey": [
+          "english_speaking"
+        ],
+        "value": "region",
+        "resources": [
+          "company"
+        ]
+      },
+      {
+        "primaryKey": [
+          "foundation"
+        ],
+        "value": "additional_column",
+        "resources": [
+          "company--english_speaking"
+        ]
+      },
+      {
+        "primaryKey": [
+          "foundation"
+        ],
+        "value": "country",
+        "resources": [
+          "company"
+        ]
+      },
+      {
+        "primaryKey": [
+          "foundation"
+        ],
+        "value": "is--english_speaking",
+        "resources": [
+          "company--english_speaking"
+        ]
+      },
+      {
+        "primaryKey": [
+          "foundation"
+        ],
+        "value": "is--foundation",
+        "resources": [
+          "company--foundation"
+        ]
+      },
+      {
+        "primaryKey": [
+          "foundation"
+        ],
+        "value": "name",
+        "resources": [
+          "company",
+          "company--english_speaking"
+        ]
+      },
+      {
+        "primaryKey": [
+          "foundation"
+        ],
+        "value": "region",
+        "resources": [
+          "company"
+        ]
+      },
+      {
+        "primaryKey": [
+          "project"
+        ],
+        "value": "name",
+        "resources": [
+          "project"
+        ]
+      },
+      {
+        "primaryKey": [
+          "region"
+        ],
+        "value": "full_name_changed",
+        "resources": [
+          "region"
+        ]
+      }
+    ],
+    "concepts": [
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "additional_column",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "concept_type",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "domain",
+        "resources": [
+          "ddf--concepts"
+        ]
+      }
+    ],
+    "synonyms": []
+  }
 }

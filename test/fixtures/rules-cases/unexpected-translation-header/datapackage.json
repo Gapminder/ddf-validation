@@ -147,5 +147,370 @@
 				"primaryKey": "company"
 			}
 		}
-	]
+	],
+	"ddfSchema": {
+		"datapoints": [
+			{
+				"primaryKey": [
+					"anno",
+					"company"
+				],
+				"value": "company_size",
+				"resources": [
+					"company_size--by--company--anno-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"anno",
+					"company"
+				],
+				"value": "company_size_string",
+				"resources": [
+					"company_size_string--by--company--anno-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"anno",
+					"company"
+				],
+				"value": "lines_of_code",
+				"resources": [
+					"lines_of_code--by--company--anno-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"anno",
+					"company",
+					"project"
+				],
+				"value": "lines_of_code",
+				"resources": [
+					"lines_of_code--by--company--project--anno-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"anno",
+					"english_speaking_company"
+				],
+				"value": "company_size",
+				"resources": [
+					"company_size--by--company--anno-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"anno",
+					"english_speaking_company"
+				],
+				"value": "company_size_string",
+				"resources": [
+					"company_size_string--by--company--anno-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"anno",
+					"english_speaking_company"
+				],
+				"value": "lines_of_code",
+				"resources": [
+					"lines_of_code--by--company--anno-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"anno",
+					"english_speaking_company",
+					"project"
+				],
+				"value": "lines_of_code",
+				"resources": [
+					"lines_of_code--by--company--project--anno-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"anno",
+					"foundation"
+				],
+				"value": "company_size",
+				"resources": [
+					"company_size--by--company--anno-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"anno",
+					"foundation"
+				],
+				"value": "company_size_string",
+				"resources": [
+					"company_size_string--by--company--anno-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"anno",
+					"foundation"
+				],
+				"value": "lines_of_code",
+				"resources": [
+					"lines_of_code--by--company--anno-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"anno",
+					"foundation",
+					"project"
+				],
+				"value": "lines_of_code",
+				"resources": [
+					"lines_of_code--by--company--project--anno-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"company",
+					"project"
+				],
+				"value": "lines_of_code",
+				"resources": [
+					"lines_of_code--by--company--project-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"english_speaking_company",
+					"project"
+				],
+				"value": "lines_of_code",
+				"resources": [
+					"lines_of_code--by--company--project-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"foundation",
+					"project"
+				],
+				"value": "lines_of_code",
+				"resources": [
+					"lines_of_code--by--company--project-2"
+				]
+			}
+		],
+		"entities": [
+			{
+				"primaryKey": [
+					"company"
+				],
+				"value": "country",
+				"resources": [
+					"company",
+					"company-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"company"
+				],
+				"value": "is--english_speaking_company",
+				"resources": [
+					"company--english_speaking-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"company"
+				],
+				"value": "is--foundation",
+				"resources": [
+					"company--foundation-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"company"
+				],
+				"value": "name",
+				"resources": [
+					"company",
+					"company--english_speaking-2",
+					"company-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"company"
+				],
+				"value": "region",
+				"resources": [
+					"company-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"company_size"
+				],
+				"value": "full_name",
+				"resources": [
+					"company_size-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"english_speaking_company"
+				],
+				"value": "country",
+				"resources": [
+					"company-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"english_speaking_company"
+				],
+				"value": "is--english_speaking_company",
+				"resources": [
+					"company--english_speaking-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"english_speaking_company"
+				],
+				"value": "is--foundation",
+				"resources": [
+					"company--foundation-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"english_speaking_company"
+				],
+				"value": "name",
+				"resources": [
+					"company--english_speaking-2",
+					"company-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"english_speaking_company"
+				],
+				"value": "region",
+				"resources": [
+					"company-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"foundation"
+				],
+				"value": "country",
+				"resources": [
+					"company-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"foundation"
+				],
+				"value": "is--english_speaking_company",
+				"resources": [
+					"company--english_speaking-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"foundation"
+				],
+				"value": "is--foundation",
+				"resources": [
+					"company--foundation-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"foundation"
+				],
+				"value": "name",
+				"resources": [
+					"company--english_speaking-2",
+					"company-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"foundation"
+				],
+				"value": "region",
+				"resources": [
+					"company-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"project"
+				],
+				"value": null,
+				"resources": [
+					"project-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"region"
+				],
+				"value": "full_name",
+				"resources": [
+					"region-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"region"
+				],
+				"value": "name",
+				"resources": [
+					"region-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"region"
+				],
+				"value": "size",
+				"resources": [
+					"region-2"
+				]
+			}
+		],
+		"concepts": [
+			{
+				"primaryKey": [
+					"concept"
+				],
+				"value": "concept_type",
+				"resources": [
+					"ddf--concepts-2"
+				]
+			},
+			{
+				"primaryKey": [
+					"concept"
+				],
+				"value": "domain",
+				"resources": [
+					"ddf--concepts-2"
+				]
+			}
+		],
+		"synonyms": []
+	}
 }

@@ -1,0 +1,48 @@
+concept,name,concept_type,domain,indicator_url,color,scales,drill_up,unit,tags
+world_6region,World Regions (6 colors),entity_set,geo,https://docs.google.com/spreadsheet/pub?key=phT4mwjvEuGBtdf1ZeO7_PQ,"{""palette"": {""east_asia_pacific"": ""#f03838"", ""sub_saharan_africa"": ""#4e7af0"", ""south_asia"": ""#35d1d1"", ""europe_central_asia"": ""#f49d37"", ""middle_east_north_africa"": ""#5be56b"", ""america"": ""#ebcc21""}, ""selectable"": false}",,,,categorizations
+income_groups,Income groups,entity_set,geo,https://docs.google.com/spreadsheet/pub?key=phT4mwjvEuGCSmAe5aq7HKw,"{""palette"": {""upper_middle_income"": ""#a7cb7d"", ""lower_middle_income"": ""#7ea1d1"", ""high_income"": ""#7bc135"", ""low_income"": ""#4366f4""}}",,,,categorizations
+landlocked,Landlocked,entity_set,geo,https://docs.google.com/spreadsheet/pub?key=rBwKBodk7Y08pGiA4OAfzUA,"{""palette"": {""landlocked"": ""#f05656"", ""coastline"": ""#7487ef""}}",,,,categorizations
+g77_and_oecd_countries,G77 and OECD countries,entity_set,geo,https://docs.google.com/spreadsheet/pub?key=tVI_UCwI1enCk4p61fWxUig,"{""palette"": {""others"": ""#f05656"", ""oecd"": ""#71c44c"", ""g77"": ""#7487ef""}}",,,,categorizations
+main_religion_2008,Main religion 2008,entity_set,geo,https://docs.google.com/spreadsheet/pub?key=0ArtujvvFrPjVdHUzTGVicFJZQ1NjaFhqelV5SDNxMVE,"{""palette"": {""muslim"": ""#71c44c"", ""christian"": ""#7487ef"", ""eastern_religions"": ""#f05656""}, ""selectable"": false}",,,,categorizations
+name,Name,string,,,,,,,_none
+geo,Geographic location,entity_domain,,https://github.com/open-numbers/ddf--gapminder--dim_geo_countries_and_groups/blob/master/ddf--list--geo--country.csv,,,,,_none
+country,Country,entity_set,geo,https://github.com/open-numbers/ddf--gapminder--dim_geo_countries_and_groups/blob/master/ddf--list--geo--country.csv,,,"[""world_6region"", ""income_groups"", ""landlocked"", ""g77_and_oecd_countries"", ""main_religion_2008"", ""world_4region""]",,categorizations
+un_state,UN member states and permanent observers,boolean,,https://github.com/open-numbers/ddf--gapminder--dim_geo_countries_and_groups/blob/master/ddf--list--geo--un_state.csv,,,,,_none
+name_short,Name Short,string,,,,,,,_none
+name_long,Name Long,string,,,,,,,_none
+world_4region,World Regions,entity_set,geo,https://docs.google.com/spreadsheet/pub?key=0ArfEDsV3bBwCdHlocWJBM1Uyd1ZPeHduU3c4WGplMEE,"{""shades"": {""fill3"": 2, ""print_stroke"": 5, ""print_fill"": 4, ""fill2"": 1, ""shade"": 3, ""fill1"": 0}, ""palette"": {""americas"": [""#7feb00"", ""#5de200"", ""#81f201"", ""#00b900"", ""#b5ea32"", ""#008d36""], ""europe"": [""#ffe700"", ""#fbdd00"", ""#fff400"", ""#fbaf09"", ""#ffe700"", ""#b17f4a""], ""africa"": [""#00d5e9"", ""#00c8ec"", ""#00e1ec"", ""#0098df"", ""#77dff7"", ""#0586c6""], ""asia"": [""#ff5872"", ""#ff5178"", ""#ff658a"", ""#da0025"", ""#fa4e73"", ""#b2043a""], ""_default"": [""#ffb600"", ""#ffaa14"", ""#ffc500"", ""#fb6d19"", ""#ffb600"", ""#9b4838""]}, ""selectable"": false}",,,,categorizations
+latitude,Latitude,measure,,https://github.com/open-numbers/ddf--gapminder--dim_geo_countries_and_groups/blob/master/ddf--list--geo--country.csv,,"[""linear""]",,degrees,_none
+longitude,Longitude,measure,,https://github.com/open-numbers/ddf--gapminder--dim_geo_countries_and_groups/blob/master/ddf--list--geo--country.csv,,"[""linear""]",,degrees,_none
+global,World,entity_set,geo,,,,,,_none
+gapminder_list,Gapminder list,string,,,,,,,_none
+alternative_1,Alternative 1,string,,,,,,,_none
+alternative_2,Alternative 2,string,,,,,,,_none
+alternative_3,Alternative 3,string,,,,,,,_none
+alternative_4_cdiac,Alternative 4 (CDIAC),string,,,,,,,_none
+pandg,pandg,string,,,,,,,_none
+god_id,GOD_ID,string,,,,,,,_none
+alt_5,ALT 5,string,,,,,,,_none
+upper_case_name,Upper Case Name,string,,,,,,,_none
+iso3166_1_alpha2,ISO 3166-1 alpha-2,string,,http://www.iso.org/iso/home/standards/country_codes.htm,,,,,_none
+iso3166_1_alpha3,ISO 3166-1 alpha-3,string,,http://www.iso.org/iso/home/standards/country_codes.htm,,,,,_none
+iso3166_1_numeric,ISO 3166-1 numeric,string,,http://www.iso.org/iso/home/standards/country_codes.htm,,,,,_none
+iso3166_2,ISO 3166-2,string,,https://en.wikipedia.org/wiki/ISO_3166-2,,,,,_none
+unicode_region_subtag,Unicode CLDR Region subtag,string,,http://www.unicode.org/reports/tr35/#unicode_region_subtag_validity,,,,,
+gwid,Gwid,string,,,,,,,_none
+arb1,arb1,string,,,,,,,_none
+arb2,arb2,string,,,,,,,_none
+arb3,arb3,string,,,,,,,_none
+arb4,arb4,string,,,,,,,_none
+arb5,arb5,string,,,,,,,_none
+arb6,arb6,string,,,,,,,_none
+description,Description,string,,,,,,,_none
+unit,Unit,string,,,,,,,_none
+color,Color,string,,,,,,,_none
+domain,Domain,string,,,,,,,_none
+indicator_url,Indicator URL,string,,,,,,,_none
+scales,Scales,string,,,,,,,_none
+drill_up,Drill up,string,,,,,,,_none
+shape_lores_svg,Shapes,string,,,,,,,_none
+rank,Ranking order,measure,,,,,,,_none
+tags,Tags,string,,,,,,,_none
+synonym,Synonym,string,,,,,,,_none
