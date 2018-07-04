@@ -1,6 +1,7 @@
-import {isEmpty} from 'lodash';
-import {readFile} from 'fs';
 import * as CsvParser from 'papaparse';
+import { isEmpty } from 'lodash';
+import { readFile } from 'fs';
+import { logger } from '../utils';
 
 const getErrors = parsedCsv => parsedCsv.errors
   .filter(error => error.row >= 0)
@@ -25,6 +26,7 @@ export class CsvChecker {
   check(onChecked) {
     readFile(this.filePath, 'utf-8', (err, fileContent) => {
       if (err) {
+        logger.error(err);
         return onChecked();
       }
 

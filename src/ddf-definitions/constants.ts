@@ -16,7 +16,7 @@ export const CONCEPT_TYPE = 'concept_type';
 export const SYNONYM_ID = 'synonym';
 export const DOMAIN_ID = 'domain';
 export const PREDEFINED_CONCEPTS = [exports.CONCEPT_ID, exports.CONCEPT_TYPE];
-export const TRNSLATIONS_FOLDER = 'lang';
+export const TRANSLATIONS_FOLDER = 'lang';
 
 export const getTypeByPrimaryKey = (primaryKeyParam: string[]) => {
   const primaryKey = getArrayInAnyCase(primaryKeyParam);
@@ -47,3 +47,16 @@ export const getTypeByPrimaryKey = (primaryKeyParam: string[]) => {
 
   return null;
 };
+
+const getDataPackageResourcesExcept = {
+  'object': (dataPackageObject, resourceTypes: Symbol[]) => dataPackageObject.resources.filter(ddfResource =>
+    includes(resourceTypes, getTypeByPrimaryKey(ddfResource.schema.primaryKey))),
+  'symbol': (dataPackageObject, resourceType: Symbol) => dataPackageObject.resources.filter(ddfResource =>
+    getTypeByPrimaryKey(ddfResource.schema.primaryKey) !== resourceType)
+};
+
+export const getDecoratedDataPackageObject = (dataPackageObject) => ({
+  getDataPackageObject: () => dataPackageObject,
+  getAllResources: () => dataPackageObject.resources,
+  getResourcesExcept: (resourceType: Symbol | Symbol[]) => getDataPackageResourcesExcept[typeof resourceType](resourceType)
+});

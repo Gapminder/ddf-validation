@@ -68,6 +68,10 @@ export class FileDescriptor {
       }
 
       getFileLine(this.fullPath, 1, (lineErr, line) => {
+        if (lineErr) {
+          logger.error(lineErr);
+        }
+
         const fileAttributesContainer = fileStateDescriptor;
 
         this.hasFirstLine = !lineErr && !!line;

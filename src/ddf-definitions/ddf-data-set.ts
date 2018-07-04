@@ -5,8 +5,9 @@ import {
   ENTITY,
   DATA_POINT,
   SYNONYM,
-  TRNSLATIONS_FOLDER,
-  getTypeByPrimaryKey
+  TRANSLATIONS_FOLDER,
+  getTypeByPrimaryKey,
+  getDecoratedDataPackageObject
 } from './constants'
 import { Concept } from './concept';
 import { Entity } from './entity';
@@ -159,7 +160,7 @@ export class DdfDataSet {
     const translationsIds = this.dataPackageDescriptor.getTranslations().map(translation => translation.id);
 
     this.fileDescriptors.forEach(fileDescriptor => {
-      const translationFolder = resolve(this.rootPath, TRNSLATIONS_FOLDER);
+      const translationFolder = resolve(this.rootPath, TRANSLATIONS_FOLDER);
 
       fileDescriptor.transFileDescriptors = translationsIds
         .map(translationId =>
@@ -190,8 +191,8 @@ export class DdfDataSet {
         return;
       }
 
-      const expectedResources = !this.settings.datapointlessMode ? dataPackageObject.resources :
-        dataPackageObject.resources.filter(ddfResource => getTypeByPrimaryKey(ddfResource.schema.primaryKey) !== DATA_POINT);
+      const dp = getDecoratedDataPackageObject(dataPackageObject);
+      const expectedResources = this.settings.datapointlessMode ? dp.getResourcesExcept(DATA_POINT) : dp.getAllResources();
 
       this.fileDescriptors = expectedResources.map(ddfResource => this.getFileDescriptor(this.rootPath, ddfResource));
 

@@ -32,6 +32,7 @@ import { Db } from '../data/db';
 import { Concept } from '../ddf-definitions/concept';
 import { readDir, getFileLine, fileExists, walkDir } from '../utils/file';
 import { getExcludedDirs, isPathExpected } from './shared';
+import { logger } from '../utils';
 import { CONCEPT_TYPE_ENTITY_DOMAIN, CONCEPT_TYPE_ENTITY_SET } from '../utils/ddf-things';
 
 export interface IDdfFileDescriptor {
@@ -457,17 +458,6 @@ export class DataPackage {
       const content = readFileSync(resolve(this.rootFolder, DATA_PACKAGE_FILE), 'utf8');
 
       this.dataPackageContent = JSON.parse(content);
-      this.getTranslationFileDescriptors(
-        (translationsErr, translationFolders) => {
-          this.warnings.push({
-            source: translationsErr,
-            reason: 'translation file reading'
-          });
-
-          this.translationFolders = translationFolders || [];
-
-          onDataPackageReady(this.dataPackageContent);
-        });
     } catch (contentErr) {
       this.errors.push({
         source: contentErr,
@@ -476,6 +466,17 @@ export class DataPackage {
 
       onDataPackageReady();
     }
+    this.getTranslationFileDescriptors(
+      (translationsErr, translationFolders) => {
+        this.warnings.push({
+          source: translationsErr,
+          reason: 'translation file reading'
+        });
+
+        this.translationFolders = translationFolders || [];
+
+        onDataPackageReady(this.dataPackageContent);
+      });
   }
 
   setSchema(ddfSchema) {
@@ -493,6 +494,10 @@ export class DataPackage {
 
     fileExists(filePath, (err, isExists) => {
       if (err || !isExists || ignoreExistingDataPackage) {
+        if (err) {
+          logger.error(err);
+        }
+
         this.isNewDataPackage = true;
         this.buildDataPackageResources(dataPackage => onDataPackageReady(dataPackage));
       } else {

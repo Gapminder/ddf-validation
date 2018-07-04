@@ -1,6 +1,7 @@
 import { join, resolve } from 'path';
 import { createReadStream, createWriteStream, readdir, stat, writeFile as writeFileFs } from 'fs';
 import { isPathExpected } from '../data/shared';
+import { logger } from '../utils';
 
 const stripBom = require('strip-bom');
 const csv = require('fast-csv');
@@ -149,6 +150,10 @@ export function readFile(filePath, onFileRead) {
 
 export function walkFile(filePath, onLineRead, onFileRead) {
   fileExists(filePath, (err, exists) => {
+    if (err) {
+      logger.error(err);
+    }
+
     if (err || !exists) {
       return onFileRead();
     }
@@ -160,6 +165,9 @@ export function walkFile(filePath, onLineRead, onFileRead) {
       .on('data', ddfRecord => onLineRead(ddfRecord, line++))
       .on('end', () => {
         onFileRead();
+      })
+      .on('error', err => {
+        logger.error(err);
       });
   });
 }

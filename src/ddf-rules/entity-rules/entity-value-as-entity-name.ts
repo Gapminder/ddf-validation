@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { keys, includes, isString, head } from 'lodash';
+import { keys, includes, head } from 'lodash';
 import { ENTITY_VALUE_AS_ENTITY_NAME } from '../registry';
 import { DdfDataSet } from '../../ddf-definitions/ddf-data-set';
 import { Issue } from '../issue';
@@ -8,14 +8,14 @@ import {
   CONCEPT_TYPE_ENTITY_SET,
   IDataPackageResourceRecord
 } from '../../utils/ddf-things';
-
+import { ENTITY, getTypeByPrimaryKey } from '../../ddf-definitions/constants';
 
 const getGidByResource = (ddfDataSet: DdfDataSet, entitiesPath: string): string => {
   const parsedEntitiesPath = path.parse(entitiesPath);
   const relativeDdfPath = path.relative(ddfDataSet.dataPackageDescriptor.rootFolder, parsedEntitiesPath.dir);
   const dataPackageCompatiblePath = path.join(relativeDdfPath, parsedEntitiesPath.base);
-  const resource: IDataPackageResourceRecord[] = ddfDataSet.getDataPackageResources()
-    .filter(record => record.path === dataPackageCompatiblePath && isString(record.schema.primaryKey));
+  const resource: IDataPackageResourceRecord[] = ddfDataSet.getDataPackageResources().filter(record =>
+    record.path === dataPackageCompatiblePath && getTypeByPrimaryKey(record.schema.primaryKey) === ENTITY);
 
   return <string>head(resource).schema.primaryKey;
 };
