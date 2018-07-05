@@ -1,5 +1,5 @@
 import * as chai from 'chai';
-import { head, last, endsWith, isEqual } from 'lodash';
+import { head, endsWith, isEqual } from 'lodash';
 import {
   INCORRECT_FILE,
   DATAPACKAGE_INCORRECT_FIELDS,
@@ -23,8 +23,8 @@ process.env.SILENT_MODE = true;
 
 describe('ddf datapackage.json validation', () => {
   describe('when INCORRECT_FILE', () => {
-    it('any issue should NOT be found for folder (fixtures/good-folder)', done => {
-      const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
+    it('any issue should NOT be found for folder (fixtures/good-folder-dp)', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder-dp', null);
 
       ddfDataSet.load(() => {
         expect(allRules[INCORRECT_FILE].rule(ddfDataSet).length).to.equal(0);
@@ -37,16 +37,21 @@ describe('ddf datapackage.json validation', () => {
 
       ddfDataSet.load(() => {
         const EXPECTED_INCORRECT_FILE = 'ddf--entities--geo--foo.csv';
-        const results: Array<Issue> = allRules[INCORRECT_FILE].rule(ddfDataSet);
 
-        expect(results.length).to.equal(1);
+        try {
+          const results: Array<Issue> = allRules[INCORRECT_FILE].rule(ddfDataSet);
 
-        const result = head(results);
+          expect(results.length).to.equal(1);
 
-        expect(result.type).to.equal(INCORRECT_FILE);
-        expect(endsWith(result.path, EXPECTED_INCORRECT_FILE)).to.be.true;
+          const result = head(results);
 
-        done();
+          expect(result.type).to.equal(INCORRECT_FILE);
+          expect(endsWith(result.path, EXPECTED_INCORRECT_FILE)).to.be.true;
+
+          done();
+        } catch (e) {
+          done(e);
+        }
       });
     });
 
@@ -81,8 +86,8 @@ describe('ddf datapackage.json validation', () => {
   });
 
   describe('when DATAPACKAGE_CONFUSED_FIELDS', () => {
-    it('any issue should NOT be found for folder (fixtures/good-folder)', done => {
-      const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
+    it('any issue should NOT be found for folder (fixtures/good-folder-dp)', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder-dp', null);
 
       ddfDataSet.load(() => {
         expect(allRules[DATAPACKAGE_INCORRECT_FIELDS].rule(ddfDataSet).length).to.equal(0);
@@ -154,8 +159,8 @@ describe('ddf datapackage.json validation', () => {
     });
   });
   describe('when DATAPACKAGE_NON_CONCEPT_FIELD', () => {
-    it('any issue should NOT be found for folder (fixtures/good-folder)', done => {
-      const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
+    it('any issue should NOT be found for folder (fixtures/good-folder-dp)', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder-dp', null);
 
       ddfDataSet.load(() => {
         expect(allRules[DATAPACKAGE_NON_CONCEPT_FIELD].rule(ddfDataSet).length).to.equal(0);
@@ -193,8 +198,8 @@ describe('ddf datapackage.json validation', () => {
 
 
   describe('when DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME', () => {
-    it('any issue should NOT be found for folder (fixtures/good-folder)', done => {
-      const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
+    it('any issue should NOT be found for folder (fixtures/good-folder-dp)', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder-dp', null);
 
       ddfDataSet.load(() => {
         const results: Array<Issue> = allRules[DATAPACKAGE_NON_UNIQUE_RESOURCE_NAME].rule(ddfDataSet);
@@ -222,8 +227,8 @@ describe('ddf datapackage.json validation', () => {
     });
   });
   describe('when DATAPACKAGE_NON_UNIQUE_RESOURCE_FILE', () => {
-    it('any issue should NOT be found for folder (fixtures/good-folder)', done => {
-      const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
+    it('any issue should NOT be found for folder (fixtures/good-folder-dp)', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder-dp', null);
 
       ddfDataSet.load(() => {
         const results: Array<Issue> = allRules[DATAPACKAGE_NON_UNIQUE_RESOURCE_FILE].rule(ddfDataSet);
@@ -252,8 +257,8 @@ describe('ddf datapackage.json validation', () => {
   });
 
   describe('when DATA_POINT_WITHOUT_INDICATOR', () => {
-    it('any issue should NOT be found for folder (fixtures/good-folder)', done => {
-      const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
+    it('any issue should NOT be found for folder (fixtures/good-folder-dp)', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder-dp', null);
 
       ddfDataSet.load(() => {
         const results: Array<Issue> = allRules[DATA_POINT_WITHOUT_INDICATOR].rule(ddfDataSet);
@@ -284,8 +289,8 @@ describe('ddf datapackage.json validation', () => {
 
 
   describe('when DATAPACKAGE_INCORRECT_PRIMARY_KEY', () => {
-    it('any issue should NOT be found for folder (fixtures/good-folder)', done => {
-      const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
+    it('any issue should NOT be found for folder (fixtures/good-folder-dp)', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder-dp', null);
 
       ddfDataSet.load(() => {
 
@@ -307,7 +312,8 @@ describe('ddf datapackage.json validation', () => {
           ],
           primaryKey: [
             'conceptfoo'
-          ]
+          ],
+          reason: 'Primary key is not a part of fields'
         }, {
           fields: [
             'geo',
@@ -315,7 +321,8 @@ describe('ddf datapackage.json validation', () => {
           ],
           primaryKey: [
             'geofoo'
-          ]
+          ],
+          reason: 'Primary key is not a part of fields'
         }];
 
         const results: Issue[] = allRules[DATAPACKAGE_INCORRECT_PRIMARY_KEY].rule(ddfDataSet);
@@ -324,9 +331,32 @@ describe('ddf datapackage.json validation', () => {
 
         results.forEach((result, index) => {
           expect(result.type).to.equal(DATAPACKAGE_INCORRECT_PRIMARY_KEY);
-          expect(isEqual(result.data.fields, EXPECTED_DATA[index].fields)).to.be.true;
-          expect(isEqual(result.data.primaryKey, EXPECTED_DATA[index].primaryKey)).to.be.true;
+          expect(result.data).to.deep.equal(EXPECTED_DATA[index]);
         });
+
+        done();
+      });
+    });
+    it('any issue should NOT be found for folder (fixtures/ddf--gapminder--geo_entity_domain)', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/ddf--gapminder--geo_entity_domain', null);
+
+      ddfDataSet.load(() => {
+        const results: Issue[] = allRules[DATAPACKAGE_INCORRECT_PRIMARY_KEY].rule(ddfDataSet);
+
+        expect(results.length).to.equal(0);
+
+        done();
+      });
+    });
+    it('some issues should be raised for folder (fixtures/rules-cases/datapackage-incorrect-primary-key-2)', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/datapackage-incorrect-primary-key-2', null);
+
+      ddfDataSet.load(() => {
+        const results: Issue[] = allRules[DATAPACKAGE_INCORRECT_PRIMARY_KEY].rule(ddfDataSet);
+        const result = head(results);
+
+        expect(results.length).to.equal(1);
+        expect(result.data.reason).to.equal('Unclassified primaryKey in ddfSchema');
 
         done();
       });
@@ -491,12 +521,15 @@ describe('ddf datapackage.json validation', () => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder-dp', null);
 
       ddfDataSet.load(() => {
-        const issues = allRules[INCONSISTENT_DATAPACKAGE].rule(ddfDataSet);
-        console.log(JSON.stringify(issues, null, 2));
+        try {
+          const issues = allRules[INCONSISTENT_DATAPACKAGE].rule(ddfDataSet);
 
-        expect(issues.length).to.equal(0);
+          expect(issues.length).to.equal(0);
 
-        done();
+          done();
+        } catch (e) {
+          done(e);
+        }
       });
     });
 
@@ -504,21 +537,30 @@ describe('ddf datapackage.json validation', () => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/inconsistent-datapackage', null);
 
       ddfDataSet.load(() => {
-        const issues: Issue[] = allRules[INCONSISTENT_DATAPACKAGE].rule(ddfDataSet);
-        const firstIssue = head(issues);
-        const secondIssue = last(issues);
+        try {
+          const expectedIssuesData = [
+            [
+              {
+                source: `Cannot read property 'map' of undefined`,
+                reason: 'datapackage.json frictionless validation'
+              }
+            ],
+            [
+              `Descriptor validation error:\n        Missing required property: resources\n        at \"\" in descriptor and\n        at \"/required/0\" in profile`
+            ],
+            {
+              reason: 'ddfSchema section is missing or invalid'
+            }
+          ];
+          const issues: Issue[] = allRules[INCONSISTENT_DATAPACKAGE].rule(ddfDataSet);
+          const issuesData = issues.map(issue => issue.data);
 
-        expect(issues.length).to.equal(2);
+          expect(issuesData).to.deep.equal(expectedIssuesData);
 
-        expect(endsWith(firstIssue.path, 'datapackage.json')).to.be.true;
-        expect(endsWith(secondIssue.path, 'datapackage.json')).to.be.true;
-
-        expect(firstIssue.data).to.deep.equal([
-          'Descriptor validation error:\n        Missing required property: resources\n        at "" in descriptor and\n        at "/required/0" in profile'
-        ]);
-        expect(secondIssue.data).to.deep.equal({reason: 'ddfSchema section is missing or invalid'});
-
-        done();
+          done();
+        } catch (e) {
+          done(e);
+        }
       });
     });
 
@@ -526,14 +568,22 @@ describe('ddf datapackage.json validation', () => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/inconsistent-datapackage-2', null);
 
       ddfDataSet.load(() => {
-        const issues: Issue[] = allRules[INCONSISTENT_DATAPACKAGE].rule(ddfDataSet);
-        const issue = head(issues);
+        try {
+          const expectedIssuesData = [
+            {
+              reason: 'ddfSchema section is missing or invalid'
+            }
+          ];
 
-        expect(issues.length).to.equal(1);
-        expect(endsWith(issue.path, 'datapackage.json')).to.be.true;
-        expect(issue.data).to.deep.equal({reason: 'ddfSchema section is missing or invalid'});
+          const issues: Issue[] = allRules[INCONSISTENT_DATAPACKAGE].rule(ddfDataSet);
+          const issuesData = issues.map(issue => issue.data);
 
-        done();
+          expect(issuesData).to.deep.equal(expectedIssuesData);
+
+          done();
+        } catch (e) {
+          done(e);
+        }
       });
     });
   });

@@ -6,9 +6,9 @@ export const rule = {
   rule: (ddfDataSet: DdfDataSet) => {
     const result = [];
 
-    if (!ddfDataSet.ddfRoot.isDDF) {
+    if (!ddfDataSet.isDDF) {
       const issue = new Issue(NON_DDF_DATA_SET)
-        .setPath(ddfDataSet.ddfRoot.path);
+        .setPath(ddfDataSet.rootPath);
 
       result.push(issue);
     }

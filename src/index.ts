@@ -327,16 +327,16 @@ export function createDataPackage(parameters: IDataPackageCreationParameters,
     }
   }
 
-  const dataPackage = new DataPackage(ddfPath, expectedSettings);
-
   onNotice('datapackage creation started...');
 
-  dataPackage.build(() => {
+  const ddfDataSet = new DdfDataSet(ddfPath, {silent: true});
+
+  ddfDataSet.createDataPackage(() => {
     onNotice('resources are ready');
 
     expectedSettings._newDataPackagePriority = parameters.newDataPackagePriority;
 
-    dataPackage.write(expectedSettings, dataPackageContent, (err: any, filePath: string) => {
+    ddfDataSet.writeDataPackage(expectedSettings, dataPackageContent, (err: any, filePath: string) => {
       if (err) {
         return onDataPackageReady(`datapackage.json was NOT created: ${err}.`);
       }

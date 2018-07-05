@@ -1,4 +1,4 @@
-import { isArray, isEmpty, includes, sortBy, values } from 'lodash';
+import { isArray, isEmpty, includes, sortBy, values, compact } from 'lodash';
 import { allRules as ddfRules } from './ddf-rules';
 import { FileDescriptor } from './data/file-descriptor';
 import { DdfDataSet } from './ddf-definitions/ddf-data-set';
@@ -6,8 +6,9 @@ import { Issue } from './ddf-rules/issue';
 import { IssuesFilter } from './utils/issues-filter';
 import { DataPointChunksProcessingStory } from './stories/data-point-chunks-processing';
 import { DATAPACKAGE_TAG, tags } from './ddf-rules/registry';
+import { DATA_POINT, getTypeByPrimaryKey } from './ddf-definitions/constants';
 
-export const supervisor  = {
+export const supervisor = {
   abandon: false
 };
 
@@ -52,7 +53,7 @@ export const noTranslation = (key, fileDescriptor) => !fileDescriptor.isTranslat
 export const isSimpleRule = ruleObject => !!ruleObject.rule;
 export const getDataPointFileDescriptorsGroups = (ddfDataSet: DdfDataSet, fileDescriptors: FileDescriptor[]): FileDescriptor[][] => {
   const dataPointsGroups = {};
-  const resources = ddfDataSet.getDataPackageDescriptor().dataPackageContent.resources;
+  const resources = ddfDataSet.getDataPackageResources();
   const fileDescriptorsHash = fileDescriptors.reduce((hash, fileDescriptor: FileDescriptor) => {
     hash[fileDescriptor.file] = fileDescriptor;
 
@@ -60,7 +61,7 @@ export const getDataPointFileDescriptorsGroups = (ddfDataSet: DdfDataSet, fileDe
   }, {});
 
   for (let resource of resources) {
-    if (isArray(resource.schema.primaryKey)) {
+    if (getTypeByPrimaryKey(resource.schema.primaryKey) === DATA_POINT) {
       const fields = resource.schema.fields.map(field => {
         let constraint = '';
 
@@ -80,7 +81,7 @@ export const getDataPointFileDescriptorsGroups = (ddfDataSet: DdfDataSet, fileDe
     }
   }
 
-  return <FileDescriptor[][]>values(dataPointsGroups);
+  return <FileDescriptor[][]>compact(values(dataPointsGroups));
 };
 
 export const getAllDataPointFileDescriptorsChunks = (ddfDataSet: DdfDataSet): FileDescriptor[][] => {

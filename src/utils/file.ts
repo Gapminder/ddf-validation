@@ -1,6 +1,7 @@
 import { join, resolve } from 'path';
 import { createReadStream, createWriteStream, readdir, stat, writeFile as writeFileFs } from 'fs';
 import { isPathExpected } from '../data/shared';
+import { logger } from '../utils';
 
 const stripBom = require('strip-bom');
 const csv = require('fast-csv');
@@ -148,14 +149,27 @@ export function readFile(filePath, onFileRead) {
 }
 
 export function walkFile(filePath, onLineRead, onFileRead) {
-  let line = 0;
+  fileExists(filePath, (err, exists) => {
+    if (err) {
+      logger.error(err);
+    }
 
-  csv
-    .fromPath(filePath, {headers: true})
-    .on('data', ddfRecord => onLineRead(ddfRecord, line++))
-    .on('end', () => {
-      onFileRead();
-    });
+    if (err || !exists) {
+      return onFileRead();
+    }
+
+    let line = 0;
+
+    csv
+      .fromPath(filePath, {headers: true})
+      .on('data', ddfRecord => onLineRead(ddfRecord, line++))
+      .on('end', () => {
+        onFileRead();
+      })
+      .on('error', err => {
+        logger.error(err);
+      });
+  });
 }
 
 export function backupFile(filePath, onBackupCreated) {
@@ -180,11 +194,10 @@ export function fileExists(file, onFileChecked) {
   stat(file, (err, stats) => {
     if (err) {
       if (err.code === 'ENOENT') {
-        onFileChecked(null, false);
-        return
+        return onFileChecked(null, false);
       }
-      onFileChecked(err);
-      return;
+
+      return onFileChecked(err);
     }
 
     onFileChecked(null, stats.isFile());

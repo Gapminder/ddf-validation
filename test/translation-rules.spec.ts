@@ -117,30 +117,34 @@ describe('translation rules', () => {
   });
 
   describe('when "UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA" rule', () => {
-    it('any issue should NOT be found for "fixtures/dummy-companies"', done => {
-      const ddfDataSet = new DdfDataSet('./test/fixtures/dummy-companies', null);
+    it('any issue should NOT be found for "fixtures/dummy-companies-with-dp"', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/dummy-companies-with-dp', null);
       const issueEmitter = new EventEmitter();
       const issues: Issue[] = [];
 
       ddfDataSet.load(() => {
-        const fileDescriptorsChunks = getAllDataPointFileDescriptorsChunks(ddfDataSet);
-        const theEnd = () => {
-          expect(issues.length).to.equal(0);
+        try {
+          const fileDescriptorsChunks = getAllDataPointFileDescriptorsChunks(ddfDataSet);
+          const theEnd = () => {
+            expect(issues.length).to.equal(0);
 
-          done();
-        };
+            done();
+          };
 
-        issueEmitter.on('issue', (issue) => {
-          issues.push(issue);
-        });
-        const customRules = [{
-          ruleKey: UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA,
-          rule: allRules[UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA]
-        }];
+          issueEmitter.on('issue', (issue) => {
+            issues.push(issue);
+          });
+          const customRules = [{
+            ruleKey: UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA,
+            rule: allRules[UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA]
+          }];
 
-        const dataPointChunksProcessingStory = new DataPointChunksProcessingStory(fileDescriptorsChunks, issueEmitter);
+          const dataPointChunksProcessingStory = new DataPointChunksProcessingStory(fileDescriptorsChunks, issueEmitter);
 
-        dataPointChunksProcessingStory.withCustomRules(customRules).waitForResult(theEnd).processDataPointChunks(ddfDataSet, issuesFilter);
+          dataPointChunksProcessingStory.withCustomRules(customRules).waitForResult(theEnd).processDataPointChunks(ddfDataSet, issuesFilter);
+        } catch (e) {
+          done(e);
+        }
       });
     });
   });
@@ -159,58 +163,66 @@ describe('translation rules', () => {
       };
 
       ddfDataSet.load(() => {
-        const fileDescriptorsChunks = getAllDataPointFileDescriptorsChunks(ddfDataSet);
-        const theEnd = () => {
-          expect(issues.length).to.equal(1);
+        try {
+          const fileDescriptorsChunks = getAllDataPointFileDescriptorsChunks(ddfDataSet);
+          const theEnd = () => {
+            expect(issues.length).to.equal(1);
 
-          const issue = head(issues);
+            const issue = head(issues);
 
-          expect(endsWith(issue.path, EXPECTED_RESULT.path)).to.be.true;
-          expect(isEqual(issue.data, EXPECTED_RESULT.data)).to.be.true;
+            expect(endsWith(issue.path, EXPECTED_RESULT.path)).to.be.true;
+            expect(isEqual(issue.data, EXPECTED_RESULT.data)).to.be.true;
 
-          done();
-        };
+            done();
+          };
 
-        issueEmitter.on('issue', (issue) => {
-          issues.push(issue);
-        });
-        const customRules = [{
-          ruleKey: UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA,
-          rule: allRules[UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA]
-        }];
+          issueEmitter.on('issue', (issue) => {
+            issues.push(issue);
+          });
+          const customRules = [{
+            ruleKey: UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA,
+            rule: allRules[UNEXPECTED_DATA_POINT_TRANSLATIONS_DATA]
+          }];
 
-        const dataPointChunksProcessingStory = new DataPointChunksProcessingStory(fileDescriptorsChunks, issueEmitter);
+          const dataPointChunksProcessingStory = new DataPointChunksProcessingStory(fileDescriptorsChunks, issueEmitter);
 
-        dataPointChunksProcessingStory.withCustomRules(customRules).waitForResult(theEnd).processDataPointChunks(ddfDataSet, issuesFilter);
+          dataPointChunksProcessingStory.withCustomRules(customRules).waitForResult(theEnd).processDataPointChunks(ddfDataSet, issuesFilter);
+        } catch (e) {
+          done(e);
+        }
       });
     });
   });
 
   describe('when "DUPLICATED_DATA_POINT_TRANSLATION_KEY" rule', () => {
-    it('any issue should NOT be found for "fixtures/dummy-companies"', done => {
-      const ddfDataSet = new DdfDataSet('./test/fixtures/dummy-companies', null);
+    it('any issue should NOT be found for "fixtures/dummy-companies-with-dp"', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/dummy-companies-with-dp', null);
       const issueEmitter = new EventEmitter();
       const issues: Issue[] = [];
 
       ddfDataSet.load(() => {
-        const fileDescriptorsChunks = getAllDataPointFileDescriptorsChunks(ddfDataSet);
-        const theEnd = () => {
-          expect(issues.length).to.equal(0);
+        try {
+          const fileDescriptorsChunks = getAllDataPointFileDescriptorsChunks(ddfDataSet);
+          const theEnd = () => {
+            expect(issues.length).to.equal(0);
 
-          done();
-        };
+            done();
+          };
 
-        issueEmitter.on('issue', (issue) => {
-          issues.push(issue);
-        });
-        const customRules = [{
-          ruleKey: DUPLICATED_DATA_POINT_TRANSLATION_KEY,
-          rule: allRules[DUPLICATED_DATA_POINT_TRANSLATION_KEY]
-        }];
+          issueEmitter.on('issue', (issue) => {
+            issues.push(issue);
+          });
+          const customRules = [{
+            ruleKey: DUPLICATED_DATA_POINT_TRANSLATION_KEY,
+            rule: allRules[DUPLICATED_DATA_POINT_TRANSLATION_KEY]
+          }];
 
-        const dataPointChunksProcessingStory = new DataPointChunksProcessingStory(fileDescriptorsChunks, issueEmitter);
+          const dataPointChunksProcessingStory = new DataPointChunksProcessingStory(fileDescriptorsChunks, issueEmitter);
 
-        dataPointChunksProcessingStory.withCustomRules(customRules).waitForResult(theEnd).processDataPointChunks(ddfDataSet, issuesFilter);
+          dataPointChunksProcessingStory.withCustomRules(customRules).waitForResult(theEnd).processDataPointChunks(ddfDataSet, issuesFilter);
+        } catch (e) {
+          done(e);
+        }
       });
     });
 

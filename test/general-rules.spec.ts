@@ -5,7 +5,7 @@ import {
   NON_DDF_DATA_SET,
   INCORRECT_JSON_FIELD,
   INCORRECT_IDENTIFIER,
-  WRONG_DATA_POINT_HEADER
+  WRONG_DATA_POINT_HEADER, DUPLICATED_SYNONYM_KEY
 } from '../src/ddf-rules/registry';
 import { Issue } from '../src/ddf-rules/issue';
 import { allRules } from '../src/ddf-rules';
@@ -17,7 +17,7 @@ process.env.SILENT_MODE = true;
 describe('general rules', () => {
   describe('when DDF folder is correct', () => {
     it('there should be no issues for "NON_DDF_DATA_SET" rule', done => {
-      const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
+      const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder-dp', null);
 
       ddfDataSet.load(() => {
         const result = allRules[NON_DDF_DATA_SET].rule(ddfDataSet);
@@ -29,7 +29,7 @@ describe('general rules', () => {
     });
 
     it('there should be no issues for "INCORRECT_JSON_FIELD" rule', done => {
-      const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
+      const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder-dp', null);
 
       ddfDataSet.load(() => {
         const result = allRules[INCORRECT_JSON_FIELD].rule(ddfDataSet);
@@ -41,7 +41,7 @@ describe('general rules', () => {
     });
 
     it('there should be no issues for "INCORRECT_IDENTIFIER" rule', done => {
-      const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
+      const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder-dp', null);
 
       ddfDataSet.load(() => {
         const result = allRules[INCORRECT_IDENTIFIER].rule(ddfDataSet);
@@ -170,24 +170,28 @@ describe('general rules', () => {
       ];
 
       ddfDataSet.load(() => {
-        const results = allRules[INCORRECT_IDENTIFIER].rule(ddfDataSet);
+        try {
+          const results = allRules[INCORRECT_IDENTIFIER].rule(ddfDataSet);
 
-        expect(results.length).to.equal(EXPECTED_ISSUES_QUANTITY);
+          expect(results.length).to.equal(EXPECTED_ISSUES_QUANTITY);
 
-        issuesData.forEach((issueData, index) => {
-          expect(results[index].type).to.equal(INCORRECT_IDENTIFIER);
-          expect(endsWith(results[index].path, issueData.file)).to.be.true;
-          expect(isEqual(results[index].data, issueData.data)).to.be.true;
-        });
+          issuesData.forEach((issueData, index) => {
+            expect(results[index].type).to.equal(INCORRECT_IDENTIFIER);
+            expect(endsWith(results[index].path, issueData.file)).to.be.true;
+            expect(isEqual(results[index].data, issueData.data)).to.be.true;
+          });
 
-        done();
+          done();
+        } catch (e) {
+          done(e);
+        }
       });
     });
   });
 
   describe('when "WRONG_DATA_POINT_HEADER" rule', () => {
     it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
-      const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
+      const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder-dp', null);
 
       ddfDataSet.load(() => {
         const results: Issue[] = allRules[WRONG_DATA_POINT_HEADER].rule(ddfDataSet);
@@ -236,6 +240,37 @@ describe('general rules', () => {
           expect(!!result.data).to.be.true;
           expect(isEqual(result.data, EXPECTED_RESULTS[index].data)).to.be.true;
         });
+
+        done();
+      });
+    });
+  });
+
+  describe('when "DUPLICATED_SYNONYM_KEY" rule', () => {
+    it('any issue should NOT be found for folder without the problem (fixtures/ddf--gapminder--geo_entity_domain)', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/ddf--gapminder--geo_entity_domain', null);
+
+      ddfDataSet.load(() => {
+        const results: Issue[] = allRules[DUPLICATED_SYNONYM_KEY].rule(ddfDataSet);
+
+        expect(results.length).to.equal(0);
+
+        done();
+      });
+    });
+
+    it(`an issue should be raised for folder with the problem
+   (fixtures/rules-cases/duplicated-synonym-key)`, done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/duplicated-synonym-key', null);
+
+      ddfDataSet.load(() => {
+        const results: Issue[] = allRules[DUPLICATED_SYNONYM_KEY].rule(ddfDataSet);
+        const result = head(results);
+        const expectedKey = ['afg', 'Afghanistan'];
+
+        expect(results.length).to.equal(1);
+        expect(endsWith(result.path, 'ddf--synonyms--country.csv')).to.be.true;
+        expect(result.data).to.deep.equal(expectedKey);
 
         done();
       });

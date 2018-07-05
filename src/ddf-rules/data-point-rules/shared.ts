@@ -3,6 +3,7 @@ import {
   CONCEPT_TYPE_ENTITY_DOMAIN, CONCEPT_TYPE_ENTITY_SET, isDdfTrue,
   looksLikeIsField
 } from '../../utils/ddf-things';
+import { CONCEPT_TYPE } from '../../ddf-definitions/constants';
 
 export interface IConstraintDescriptor {
   fullPath: string;
@@ -25,7 +26,7 @@ export const cacheFor = {
 
     if (!cache[key]) {
       cache[key] = dataPointDescriptor.ddfDataSet.getConcept()
-        .getDictionary(dataPointDescriptor.fileDescriptor.headers, 'concept_type');
+        .getDictionary(dataPointDescriptor.fileDescriptor.headers, CONCEPT_TYPE);
     }
 
     return cache[key];
@@ -43,17 +44,19 @@ export const cacheFor = {
     return cache[key];
   },
   constraintsByFileDescriptor: (dataPointDescriptor): IConstraintDescriptor[] => {
-    const forExpectedFile = (currentFileDescriptor: any) => dataPointDescriptor.fileDescriptor.file === currentFileDescriptor.filename;
+    const forExpectedFile = (resourceRecord: any) => dataPointDescriptor.fileDescriptor.file === resourceRecord.path;
     const hasConstraints = (field: any) => field.constraints;
-    const getSchemaFields = (fileDescriptor: any) => fileDescriptor.schema && fileDescriptor.schema.fields ? fileDescriptor.schema.fields : [];
-    const key = `${dataPointDescriptor.ddfDataSet.ddfRoot.path}@Constraints@${dataPointDescriptor.fileDescriptor.file}`;
+    const getSchemaFields = (resourceRecord: any) => resourceRecord.schema && resourceRecord.schema.fields ? resourceRecord.schema.fields : [];
+    const key = `${dataPointDescriptor.ddfDataSet.rootPath}@Constraints@${dataPointDescriptor.fileDescriptor.file}`;
 
     if (!cache[key]) {
       const dataPackageDescriptor = dataPointDescriptor.ddfDataSet.getDataPackageDescriptor();
 
+      const res = dataPackageDescriptor.getDataPackageObject().resources;
+
       cache[key] = compact(flattenDeep(
-        dataPackageDescriptor.fileDescriptors.filter(forExpectedFile).map((fileDescriptor: any) =>
-          getSchemaFields(fileDescriptor).filter(hasConstraints).map((field: any) => ({
+        res.filter(forExpectedFile).map((resourceRecord: any) =>
+          getSchemaFields(resourceRecord).filter(hasConstraints).map((field: any) => ({
             fullPath: dataPointDescriptor.fileDescriptor.fullPath,
             file: dataPointDescriptor.fileDescriptor.file,
             fieldName: field.name,

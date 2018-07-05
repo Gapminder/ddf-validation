@@ -3,6 +3,7 @@ import { NON_CONCEPT_HEADER } from '../registry';
 import { DdfDataSet } from '../../ddf-definitions/ddf-data-set';
 import { Issue } from '../issue';
 import { looksLikeIsField } from '../../utils/ddf-things';
+import { CONCEPT_ID, CONCEPT_TYPE } from '../../ddf-definitions/constants';
 
 const Levenshtein = require('levenshtein');
 const SUGGEST_TOLERANCE = 3;
@@ -12,7 +13,7 @@ function getConceptHeaderDetails(ddfDataSet) {
 
   ddfDataSet.getConcept().fileDescriptors.forEach(fileDescriptor =>
     (fileDescriptor.headers || [])
-      .filter(header => header !== 'concept' && header !== 'concept_type')
+      .filter(header => header !== CONCEPT_ID && header !== CONCEPT_TYPE)
       .forEach(header => result.push({header, fileDescriptor})));
 
   return result;
@@ -48,7 +49,7 @@ function getHeaderDetailObjects(ddfDataSet) {
 }
 
 function isNativeConcept(conceptName) {
-  return conceptName === 'concept' || conceptName === 'concept_type';
+  return conceptName === CONCEPT_ID || conceptName === CONCEPT_TYPE;
 }
 
 function setNonConceptHeaderIssue(conceptIds, detailObject, result) {

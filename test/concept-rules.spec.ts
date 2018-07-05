@@ -22,8 +22,8 @@ describe('rules for concept', () => {
   let ddfDataSet = null;
 
   describe('when "CONCEPT_ID_IS_NOT_UNIQUE" rule', () => {
-    it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
-      ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
+    it('any issue should NOT be found for folder without the problem (fixtures/good-folder-dp)', done => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/good-folder-dp', null);
       ddfDataSet.load(() => {
         expect(allRules[CONCEPT_ID_IS_NOT_UNIQUE].rule(ddfDataSet)).to.be.null;
 
@@ -48,8 +48,8 @@ describe('rules for concept', () => {
   });
 
   describe('when "INCORRECT_CONCEPT_TYPE" rule', () => {
-    it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
-      ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
+    it('any issue should NOT be found for folder without the problem (fixtures/good-folder-dp)', done => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/good-folder-dp', null);
       ddfDataSet.load(() => {
         const result = allRules[INCORRECT_CONCEPT_TYPE].rule(ddfDataSet);
 
@@ -63,21 +63,25 @@ describe('rules for concept', () => {
     (fixtures/rules-cases/incorrect-concept-type)`, done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/incorrect-concept-type', null);
       ddfDataSet.load(() => {
-        const result = allRules[INCORRECT_CONCEPT_TYPE].rule(ddfDataSet);
-        const data = result.map((issue: Issue) => issue.data);
-        const expectedData = [{lineNumber: 8, type: ''}, {lineNumber: 10, type: 'incorrect_type!'}];
+        try {
+          const result = allRules[INCORRECT_CONCEPT_TYPE].rule(ddfDataSet);
+          const data = result.map((issue: Issue) => issue.data);
+          const expectedData = [{lineNumber: 8, type: ''}, {lineNumber: 10, type: 'incorrect_type!'}];
 
-        expect(result).to.be.not.null;
-        expect(data).to.deep.equal(expectedData);
+          expect(result).to.be.not.null;
+          expect(data).to.deep.equal(expectedData);
 
-        done();
+          done();
+        } catch (e) {
+          done(e);
+        }
       });
     });
   });
 
   describe('when "EMPTY_CONCEPT_ID" rule', () => {
-    it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
-      ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
+    it('any issue should NOT be found for folder without the problem (fixtures/good-folder-dp)', done => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/good-folder-dp', null);
       ddfDataSet.load(() => {
         expect(allRules[EMPTY_CONCEPT_ID].rule(ddfDataSet).length).to.equal(0);
 
@@ -89,23 +93,27 @@ describe('rules for concept', () => {
     (fixtures/rules-cases/empty-concept-id)`, done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/empty-concept-id', null);
       ddfDataSet.load(() => {
-        const EXPECTED_CSV_LINE = 2;
-        const results: Array<Issue> = allRules[EMPTY_CONCEPT_ID].rule(ddfDataSet);
-        const result = head(results);
+        try {
+          const EXPECTED_CSV_LINE = 2;
+          const results: Array<Issue> = allRules[EMPTY_CONCEPT_ID].rule(ddfDataSet);
+          const result = head(results);
 
-        expect(results).to.be.not.null;
-        expect(results.length).to.equal(1);
-        expect(result.type).to.equal(EMPTY_CONCEPT_ID);
-        expect(result.data.line).to.equal(EXPECTED_CSV_LINE);
+          expect(results).to.be.not.null;
+          expect(results.length).to.equal(1);
+          expect(result.type).to.equal(EMPTY_CONCEPT_ID);
+          expect(result.data.line).to.equal(EXPECTED_CSV_LINE);
 
-        done();
+          done();
+        } catch (e) {
+          done(e);
+        }
       });
     });
   });
 
   describe('when "NON_CONCEPT_HEADER" rule', () => {
-    it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
-      ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
+    it('any issue should NOT be found for folder without the problem (fixtures/good-folder-dp)', done => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/good-folder-dp', null);
       ddfDataSet.load(() => {
         expect(allRules[NON_CONCEPT_HEADER].rule(ddfDataSet).length).to.equal(0);
 
@@ -117,39 +125,43 @@ describe('rules for concept', () => {
     (fixtures/rules-cases/non-concept-header)`, done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/non-concept-header', null);
       ddfDataSet.load(() => {
-        const result = allRules[NON_CONCEPT_HEADER].rule(ddfDataSet);
-        const issuesData = [
-          {
-            wrongHeaderDetails: 'wrong-header-1',
-            suggestions: []
-          },
-          {
-            wrongHeaderDetails: 'xgeo',
-            suggestions: ['geo']
-          },
-          {
-            wrongHeaderDetails: 'domain',
-            suggestions: []
-          }
-        ];
+        try {
+          const result = allRules[NON_CONCEPT_HEADER].rule(ddfDataSet);
+          const issuesData = [
+            {
+              wrongHeaderDetails: 'wrong-header-1',
+              suggestions: []
+            },
+            {
+              wrongHeaderDetails: 'xgeo',
+              suggestions: ['geo']
+            },
+            {
+              wrongHeaderDetails: 'domain',
+              suggestions: []
+            }
+          ];
 
-        expect(result).to.be.not.null;
+          expect(result).to.be.not.null;
 
-        issuesData.forEach((issueData, index) => {
-          expect(result[index].type).to.equal(NON_CONCEPT_HEADER);
-          expect(!!result[index].data).to.be.true;
-          expect(result[index].data).to.equal(issueData.wrongHeaderDetails);
-          expect(head(result[index].suggestions)).to.equal(head(issueData.suggestions));
-        });
+          issuesData.forEach((issueData, index) => {
+            expect(result[index].type).to.equal(NON_CONCEPT_HEADER);
+            expect(!!result[index].data).to.be.true;
+            expect(result[index].data).to.equal(issueData.wrongHeaderDetails);
+            expect(head(result[index].suggestions)).to.equal(head(issueData.suggestions));
+          });
 
-        done();
+          done();
+        } catch (e) {
+          done(e);
+        }
       });
     });
   });
 
   describe('when "CONCEPT_MANDATORY_FIELD_NOT_FOUND" rule', () => {
-    it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
-      ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
+    it('any issue should NOT be found for folder without the problem (fixtures/good-folder-dp)', done => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/good-folder-dp', null);
       ddfDataSet.load(() => {
         expect(allRules[CONCEPT_MANDATORY_FIELD_NOT_FOUND].rule(ddfDataSet).length).to.equal(0);
 
@@ -198,8 +210,8 @@ describe('rules for concept', () => {
   });
 
   describe('when "CONCEPTS_NOT_FOUND" rule', () => {
-    it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
-      ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
+    it('any issue should NOT be found for folder without the problem (fixtures/good-folder-dp)', done => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/good-folder-dp', null);
       ddfDataSet.load(() => {
         const result = allRules[CONCEPTS_NOT_FOUND].rule(ddfDataSet);
 
@@ -224,8 +236,8 @@ describe('rules for concept', () => {
   });
 
   describe('when "INVALID_DRILL_UP" rule', () => {
-    it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
-      ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
+    it('any issue should NOT be found for folder without the problem (fixtures/good-folder-dp)', done => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/good-folder-dp', null);
       ddfDataSet.load(() => {
         const results = allRules[INVALID_DRILL_UP].rule(ddfDataSet);
 
@@ -239,33 +251,37 @@ describe('rules for concept', () => {
      (fixtures/rules-cases/invalid-drill-up)`, done => {
       ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/invalid-drill-up', null);
       ddfDataSet.load(() => {
-        const results: Array<Issue> = allRules[INVALID_DRILL_UP].rule(ddfDataSet);
-        const expectedReasons = [
-          {
-            conceptDomain: 'geo2',
-            expectedDomain: 'geo',
-            reason: 'Domain in a Drillup is not a domain of a concept having this Drillup belongs to'
-          },
-          {
-            drillUpName: 'foo',
-            reason: 'Concept for Drillup is not found'
-          },
-          {
-            conceptDomain: 'geo2',
-            expectedDomain: 'geo',
-            reason: 'Entity domain in Drillup should be same as Entity domain for current Concept'
-          }
-        ];
+        try {
+          const results: Array<Issue> = allRules[INVALID_DRILL_UP].rule(ddfDataSet);
+          const expectedReasons = [
+            {
+              conceptDomain: 'geo2',
+              expectedDomain: 'geo',
+              reason: 'Domain in a Drillup is not a domain of a concept having this Drillup belongs to'
+            },
+            {
+              drillUpName: 'foo',
+              reason: 'Concept for Drillup is not found'
+            },
+            {
+              conceptDomain: 'geo2',
+              expectedDomain: 'geo',
+              reason: 'Entity domain in Drillup should be same as Entity domain for current Concept'
+            }
+          ];
 
-        expect(isEmpty(results)).to.be.false;
-        expect(results.length).to.equal(1);
+          expect(isEmpty(results)).to.be.false;
+          expect(results.length).to.equal(1);
 
-        const result = head(results);
+          const result = head(results);
 
-        expect(result.type).to.equal(INVALID_DRILL_UP);
-        expect(isEqual(result.data.reasons, expectedReasons)).to.be.true;
+          expect(result.type).to.equal(INVALID_DRILL_UP);
+          expect(isEqual(result.data.reasons, expectedReasons)).to.be.true;
 
-        done();
+          done();
+        } catch (e) {
+          done(e);
+        }
       });
     });
   });

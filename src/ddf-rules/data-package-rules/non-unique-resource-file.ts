@@ -12,7 +12,7 @@ export const rule = {
 
     if (!isEmpty(duplicates)) {
       issue = new Issue(DATAPACKAGE_NON_UNIQUE_RESOURCE_FILE)
-        .setPath(ddfDataSet.ddfRoot.path)
+        .setPath(ddfDataSet.rootPath)
         .setData({duplicates});
     }
 

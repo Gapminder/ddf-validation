@@ -10,7 +10,7 @@ function getAsArray(value) {
 export const rule: any = {
   isTranslation: true,
   rule: (ddfDataSet: DdfDataSet) => compact(flattenDeep(
-    ddfDataSet.ddfRoot.fileDescriptors.map(fileDescriptor =>
+    ddfDataSet.fileDescriptors.map(fileDescriptor =>
       fileDescriptor.getExistingTranslationDescriptors().map(translationDescriptor => {
         const headersDiff = intersection(fileDescriptor.headers, translationDescriptor.headers);
         const primaryKey = getAsArray(fileDescriptor.primaryKey);

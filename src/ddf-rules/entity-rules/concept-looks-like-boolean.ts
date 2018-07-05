@@ -3,12 +3,13 @@ import { CONCEPT_LOOKS_LIKE_BOOLEAN } from '../registry';
 import { DdfDataSet } from '../../ddf-definitions/ddf-data-set';
 import { Issue } from '../issue';
 import { CONCEPT_TYPE_BOOLEAN, isDdfBoolean, looksLikeIsField } from '../../utils/ddf-things';
+import { CONCEPT_TYPE } from '../../ddf-definitions/constants';
 
 const getBooleanValues = (values: string[]) => values.filter(value => isDdfBoolean(value));
 
 export const rule = {
   rule: (ddfDataSet: DdfDataSet) => {
-    const typesHash = ddfDataSet.getConcept().getDictionary(null, 'concept_type');
+    const typesHash = ddfDataSet.getConcept().getDictionary(null, CONCEPT_TYPE);
     const booleanConcepts = [];
     const issues = [];
 

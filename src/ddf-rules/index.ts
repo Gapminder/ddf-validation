@@ -19,6 +19,7 @@ import { rule as sameKeyValueConcept } from './data-package-rules/same-key-value
 import { rule as nonexistentResource } from './data-package-rules/nonexistent-resource';
 import { rule as nonexistentConcept } from './data-package-rules/nonexistent-concept';
 import { rule as inconsistentDatapackage } from './data-package-rules/inconsistent-datapackage';
+import { rule as duplicatedSynonymKey } from './general-rules/duplicated-synonym-key';
 
 // import { rule as measureValueNotNumeric } from './data-point-rules/measure-value-not-numeric';
 import { rule as unexpectedEntityValue } from './data-point-rules/unexpected-entity-value';
@@ -33,7 +34,6 @@ import { rule as unexistingConstraintValueRule } from './entity-rules/unexisting
 import { rule as incorrectBooleanEntity } from './entity-rules/incorrect-boolean-entity';
 import { rule as conceptLooksLikeBoolean } from './entity-rules/concept-looks-like-boolean';
 
-import { rule as emptyData } from './general-rules/empty-data';
 import { rule as unexpectedData } from './general-rules/unexpected-data';
 import { rule as wrongDataPointHeader } from './general-rules/wrong-data-point-header';
 import { rule as incorrectIdentifier } from './general-rules/incorrect-identifier';
@@ -72,7 +72,6 @@ export const allRules = {
   [registry.WRONG_ENTITY_IS_HEADER]: wrongEntityIsHeader,
   [registry.WRONG_ENTITY_IS_VALUE]: wrongEntityIsValue,
   [registry.NON_UNIQUE_ENTITY_VALUE]: nonUniqueEntityValue,
-  [registry.EMPTY_DATA]: emptyData,
   [registry.UNEXPECTED_DATA]: unexpectedData,
   [registry.NON_DDF_DATA_SET]: nonDdfDataset,
   [registry.WRONG_DATA_POINT_HEADER]: wrongDataPointHeader,
@@ -88,5 +87,6 @@ export const allRules = {
   [registry.CONCEPT_LOOKS_LIKE_BOOLEAN]: conceptLooksLikeBoolean,
   [registry.DATA_POINT_CONSTRAINT_VIOLATION]: dataPointConstraintViolation,
   [registry.DUPLICATED_DATA_POINT_KEY]: duplicatedDataPointKey,
-  [registry.ENTITY_VALUE_AS_ENTITY_NAME]: entityValueAsEntityName
+  [registry.ENTITY_VALUE_AS_ENTITY_NAME]: entityValueAsEntityName,
+  [registry.DUPLICATED_SYNONYM_KEY]: duplicatedSynonymKey
 };

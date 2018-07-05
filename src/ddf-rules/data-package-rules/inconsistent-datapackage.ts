@@ -12,16 +12,14 @@ const isDdfSchemaValid = (dataPackageContent): boolean => {
 
 export const rule = {
   rule: (ddfDataSet: DdfDataSet) => {
-    const ddfRoot = ddfDataSet.ddfRoot;
-    const dataPackagePath = path.resolve(ddfRoot.dataPackageDescriptor.rootFolder, DATA_PACKAGE_FILE);
-    const consistencyDescriptor = ddfRoot.dataPackageDescriptor.consistencyDescriptor;
-    const dataPackageErrors = ddfRoot.dataPackageDescriptor.errors;
+    const dataPackagePath = path.resolve(ddfDataSet.dataPackageDescriptor.rootFolder, DATA_PACKAGE_FILE);
+    const consistencyDescriptor = ddfDataSet.dataPackageDescriptor.consistencyDescriptor;
+    const dataPackageErrors = ddfDataSet.dataPackageDescriptor.errors;
+    const issues = [];
 
     if (!isEmpty(dataPackageErrors)) {
-      return [new Issue(INCONSISTENT_DATAPACKAGE).setPath(dataPackagePath).setData(dataPackageErrors)];
+      issues.push(new Issue(INCONSISTENT_DATAPACKAGE).setPath(dataPackagePath).setData(dataPackageErrors));
     }
-
-    const issues = [];
 
     if (!consistencyDescriptor.valid) {
       const errors = consistencyDescriptor.errors.map(error => error.message);
@@ -29,7 +27,7 @@ export const rule = {
       issues.push(new Issue(INCONSISTENT_DATAPACKAGE).setPath(dataPackagePath).setData(errors));
     }
 
-    if (!isDdfSchemaValid(ddfRoot.dataPackageDescriptor.dataPackageContent)) {
+    if (!isDdfSchemaValid(ddfDataSet.dataPackageDescriptor.getDataPackageObject())) {
       issues.push(new Issue(INCONSISTENT_DATAPACKAGE)
         .setPath(dataPackagePath).setData({reason: 'ddfSchema section is missing or invalid'}))
     }

@@ -78,5 +78,214 @@
 				"primaryKey": "region"
 			}
 		}
-	]
+	],
+	"ddfSchema": {
+		"datapoints": [],
+		"entities": [
+			{
+				"primaryKey": [
+					"company"
+				],
+				"value": "country",
+				"resources": [
+					"company"
+				]
+			},
+			{
+				"primaryKey": [
+					"company"
+				],
+				"value": "is--english_speaking_company",
+				"resources": [
+					"company--english_speaking"
+				]
+			},
+			{
+				"primaryKey": [
+					"company"
+				],
+				"value": "is--foundation",
+				"resources": [
+					"company--foundation"
+				]
+			},
+			{
+				"primaryKey": [
+					"company"
+				],
+				"value": "name",
+				"resources": [
+					"company",
+					"company--english_speaking"
+				]
+			},
+			{
+				"primaryKey": [
+					"company"
+				],
+				"value": "region",
+				"resources": [
+					"company"
+				]
+			},
+			{
+				"primaryKey": [
+					"company_size"
+				],
+				"value": "full_name",
+				"resources": [
+					"company_size"
+				]
+			},
+			{
+				"primaryKey": [
+					"english_speaking_company"
+				],
+				"value": "country",
+				"resources": [
+					"company"
+				]
+			},
+			{
+				"primaryKey": [
+					"english_speaking_company"
+				],
+				"value": "is--english_speaking_company",
+				"resources": [
+					"company--english_speaking"
+				]
+			},
+			{
+				"primaryKey": [
+					"english_speaking_company"
+				],
+				"value": "is--foundation",
+				"resources": [
+					"company--foundation"
+				]
+			},
+			{
+				"primaryKey": [
+					"english_speaking_company"
+				],
+				"value": "name",
+				"resources": [
+					"company",
+					"company--english_speaking"
+				]
+			},
+			{
+				"primaryKey": [
+					"english_speaking_company"
+				],
+				"value": "region",
+				"resources": [
+					"company"
+				]
+			},
+			{
+				"primaryKey": [
+					"foundation"
+				],
+				"value": "country",
+				"resources": [
+					"company"
+				]
+			},
+			{
+				"primaryKey": [
+					"foundation"
+				],
+				"value": "is--english_speaking_company",
+				"resources": [
+					"company--english_speaking"
+				]
+			},
+			{
+				"primaryKey": [
+					"foundation"
+				],
+				"value": "is--foundation",
+				"resources": [
+					"company--foundation"
+				]
+			},
+			{
+				"primaryKey": [
+					"foundation"
+				],
+				"value": "name",
+				"resources": [
+					"company",
+					"company--english_speaking"
+				]
+			},
+			{
+				"primaryKey": [
+					"foundation"
+				],
+				"value": "region",
+				"resources": [
+					"company"
+				]
+			},
+			{
+				"primaryKey": [
+					"project"
+				],
+				"value": null,
+				"resources": [
+					"project"
+				]
+			},
+			{
+				"primaryKey": [
+					"region"
+				],
+				"value": "full_name",
+				"resources": [
+					"region"
+				]
+			},
+			{
+				"primaryKey": [
+					"region"
+				],
+				"value": "name",
+				"resources": [
+					"region"
+				]
+			},
+			{
+				"primaryKey": [
+					"region"
+				],
+				"value": "size",
+				"resources": [
+					"region"
+				]
+			}
+		],
+		"concepts": [
+			{
+				"primaryKey": [
+					"concept"
+				],
+				"value": "concept_type",
+				"resources": [
+					"ddf--concepts"
+				]
+			},
+			{
+				"primaryKey": [
+					"concept"
+				],
+				"value": "domain",
+				"resources": [
+					"ddf--concepts"
+				]
+			}
+		],
+		"synonyms": []
+	}
 }

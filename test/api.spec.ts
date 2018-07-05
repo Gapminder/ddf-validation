@@ -320,7 +320,7 @@ describe('api', () => {
     const _StreamValidator = require('../lib/index').StreamValidator;
 
     it('should result for generic and multi thread modes be same ', done => {
-      const EXPECTED_ISSUES_COUNT = 15;
+      const EXPECTED_ISSUES_COUNT = 4;
       const DATA_SET_PATH = './test/fixtures/rules-cases/data-point-constraint-violation';
 
       parallel({

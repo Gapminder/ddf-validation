@@ -4,6 +4,7 @@ import { WRONG_ENTITY_IS_HEADER } from '../registry';
 import { DdfDataSet } from '../../ddf-definitions/ddf-data-set';
 import { Issue } from '../issue';
 import { CONCEPT_TYPE_ENTITY_SET, fieldIsPrefix, looksLikeIsField } from '../../utils/ddf-things';
+import { DOMAIN_ID } from "../../ddf-definitions/constants";
 
 const SUGGEST_TOLERANCE = 5;
 
@@ -23,7 +24,7 @@ const getInformationAboutWrongNonEntityConcept = (ddfDataSet, actualHeaderDetail
 };
 
 const getInformationForbiddenDomain = (ddfDataSet, actualHeader, fileDescriptor) => {
-  const domainTypeHash = ddfDataSet.getConcept().getDictionary(null, 'domain');
+  const domainTypeHash = ddfDataSet.getConcept().getDictionary(null, DOMAIN_ID);
   const primaryKeyDomain = domainTypeHash[fileDescriptor.primaryKey] || fileDescriptor.primaryKey;
   const currentDomain = domainTypeHash[actualHeader];
   const isCurrentDomainExists = includes(ddfDataSet.getConcept().getAllData().map(record => record.concept), currentDomain);

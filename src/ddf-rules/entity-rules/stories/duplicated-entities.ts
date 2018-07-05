@@ -1,7 +1,6 @@
 import {
   compact,
   head,
-  startsWith,
   endsWith
 } from 'lodash';
 import { NON_UNIQUE_ENTITY_VALUE } from '../../registry';
@@ -13,6 +12,7 @@ import {
   isDdfTrue,
   looksLikeIsField
 } from '../../../utils/ddf-things';
+import { CONCEPT_TYPE, DOMAIN_ID } from '../../../ddf-definitions/constants';
 
 const isEntityDomainField = (conceptTypes, field) => conceptTypes[field] === CONCEPT_TYPE_ENTITY_DOMAIN;
 const isEntitySetField = (conceptTypes, field) => conceptTypes[field] === CONCEPT_TYPE_ENTITY_SET;
@@ -51,8 +51,8 @@ export class SearchUniqueEntitiesStory {
   }
 
   fillServiceData(): SearchUniqueEntitiesStory {
-    this.serviceData.conceptTypeHash = this.ddfDataSet.getConcept().getDictionary(null, 'concept_type');
-    this.serviceData.domainTypeHash = this.ddfDataSet.getConcept().getDictionary(null, 'domain');
+    this.serviceData.conceptTypeHash = this.ddfDataSet.getConcept().getDictionary(null, CONCEPT_TYPE);
+    this.serviceData.domainTypeHash = this.ddfDataSet.getConcept().getDictionary(null, DOMAIN_ID);
     this.serviceData.entities = this.ddfDataSet.getEntity().getDataByFiles();
     this.serviceData.entityFiles = Object.keys(this.serviceData.entities);
 
@@ -66,7 +66,7 @@ export class SearchUniqueEntitiesStory {
       const firstRecord = head(this.serviceData.entities[entityFile]);
       const allFields = Object.keys(firstRecord);
       const entitySetFields = [];
-      const dataPackageResource: any = head(this.ddfDataSet.ddfRoot.getDataPackageResources()
+      const dataPackageResource: any = head(this.ddfDataSet.getDataPackageResources()
         .filter(resource => endsWith(entityFile, resource.path)));
       const entityIdField = dataPackageResource.schema.primaryKey;
 

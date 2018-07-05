@@ -12,7 +12,7 @@ process.env.SILENT_MODE = true;
 describe('general rules', () => {
   describe('when "UNEXPECTED_DATA" rule', () => {
     it('any issue should NOT be found for folder without the problem (fixtures/good-folder)', done => {
-      const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder', null);
+      const ddfDataSet = new DdfDataSet('./test/fixtures/good-folder-dp', null);
 
       ddfDataSet.load(() => {
         const results = allRules[UNEXPECTED_DATA].rule(ddfDataSet);
@@ -28,25 +28,29 @@ describe('general rules', () => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/unexpected-data/with-dp', null);
 
       ddfDataSet.load(() => {
-        const results = allRules[UNEXPECTED_DATA].rule(ddfDataSet);
-        const expectedResult = [{
-          path: 'ddf--concepts.csv',
-          data: [{
-            message: 'Too few fields: expected 3 fields but parsed 1',
-            row: 1,
-            type: 'FieldMismatch/TooFewFields',
-            data: {concept: 'foo'}
-          }]
-        }];
+        try {
+          const results = allRules[UNEXPECTED_DATA].rule(ddfDataSet);
+          const expectedResult = [{
+            path: 'ddf--concepts.csv',
+            data: [{
+              message: 'Too few fields: expected 3 fields but parsed 1',
+              row: 1,
+              type: 'FieldMismatch/TooFewFields',
+              data: {concept: 'foo'}
+            }]
+          }];
 
-        expect(results.length).to.equal(expectedResult.length);
+          expect(results.length).to.equal(expectedResult.length);
 
-        results.forEach((result, index) => {
-          expect(endsWith(result.path, expectedResult[index].path)).to.be.true;
-          expect(isEqual(result.data, expectedResult[index].data)).to.be.true;
-        });
+          results.forEach((result, index) => {
+            expect(endsWith(result.path, expectedResult[index].path)).to.be.true;
+            expect(isEqual(result.data, expectedResult[index].data)).to.be.true;
+          });
 
-        done();
+          done();
+        } catch (e) {
+          done(e);
+        }
       });
     });
     it(`issues should be found for indexless folder with the problem

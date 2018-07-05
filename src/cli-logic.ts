@@ -1,5 +1,4 @@
 import * as v8 from 'v8';
-import { isString } from 'lodash';
 import { logger, settings, ddfRootFolder } from './utils';
 import { validationTransport } from './utils/logger';
 import { getRulesInformation } from './ddf-rules/registry';
@@ -24,7 +23,7 @@ if (settings.heap) {
 
 if (settings.isDataPackageGenerationMode && !settings.versionShouldBePrinted) {
   createDataPackage({ddfRootFolder}, (message) => {
-    logger.notice(message);
+    console.log(message);
   }, (err) => {
     if (err) {
       console.log(err);

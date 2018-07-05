@@ -16,13 +16,13 @@ export const rule = {
 
       if (isEmpty(dataPackageFields)) {
         issue = new Issue(DATAPACKAGE_NON_CONCEPT_FIELD)
-          .setPath(resolve(ddfDataSet.ddfRoot.path, resource.path))
+          .setPath(resolve(ddfDataSet.rootPath, resource.path))
           .setData({reason: 'fields section in datapackage is empty'});
       }
 
       if (!isEmpty(nonConcepts) && !issue) {
         issue = new Issue(DATAPACKAGE_NON_CONCEPT_FIELD)
-          .setPath(resolve(ddfDataSet.ddfRoot.path, resource.path))
+          .setPath(resolve(ddfDataSet.rootPath, resource.path))
           .setData({nonConcepts});
       }
 
