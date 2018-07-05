@@ -1,3 +1,14 @@
+<a name="1.18.0"></a>
+# [1.18.0](https://github.com/Gapminder/ddf-validation/compare/v1.17.2...v1.18.0) (2018-07-05)
+
+
+### Features
+
+* **datapackage creation:** synonym supporting for datapackage.json ([1787bf4](https://github.com/Gapminder/ddf-validation/commit/1787bf4)), closes [#523](https://github.com/Gapminder/ddf-validation/issues/523)
+* **rules:** new resource type: synonyms ([d9b4822](https://github.com/Gapminder/ddf-validation/commit/d9b4822)), closes [#521](https://github.com/Gapminder/ddf-validation/issues/521)
+
+
+
 <a name="1.17.2"></a>
 ## [1.17.2](https://github.com/Gapminder/ddf-validation/compare/v1.17.1...v1.17.2) (2018-06-11)
 
