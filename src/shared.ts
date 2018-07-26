@@ -46,7 +46,7 @@ const injectTranslations = (fileDescriptors: FileDescriptor[]) => {
   fileDescriptors.push(...translationDescriptors);
 };
 
-export const CONCURRENT_OPERATIONS_AMOUNT = 30;
+export const CONCURRENT_OPERATIONS_AMOUNT = 2;
 
 export const sameTranslation = (key, fileDescriptor) => fileDescriptor.isTranslation === ddfRules[key].isTranslation;
 export const noTranslation = (key, fileDescriptor) => !fileDescriptor.isTranslation && !ddfRules[key].isTranslation;
