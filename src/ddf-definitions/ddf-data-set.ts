@@ -192,7 +192,7 @@ export class DdfDataSet {
       }
 
       const dp = getDecoratedDataPackageObject(dataPackageObject);
-      const expectedResources = this.settings.datapointlessMode ? dp.getResourcesExcept(DATA_POINT) : dp.getAllResources();
+      const expectedResources = dp.getAllResources();
 
       this.fileDescriptors = expectedResources.map(ddfResource => this.getFileDescriptor(this.rootPath, ddfResource));
 
