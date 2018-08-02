@@ -22,6 +22,20 @@ describe('api', () => {
         validate(jsonValidator);
       });
 
+      it('should NOT emit error on datapointless mode', done => {
+        const jsonValidator = new JSONValidator('./test/fixtures/good-folder-dp', {
+          datapointlessMode: true
+        });
+
+        jsonValidator.on('finish', err => {
+          expect(!!err).to.be.false;
+
+          done();
+        });
+
+        validate(jsonValidator);
+      });
+
       it('should have NO issues', done => {
         const jsonValidator = new JSONValidator('./test/fixtures/good-folder-dp', null);
 

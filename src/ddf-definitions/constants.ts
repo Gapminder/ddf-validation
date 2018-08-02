@@ -48,15 +48,7 @@ export const getTypeByPrimaryKey = (primaryKeyParam: string[]) => {
   return null;
 };
 
-const getDataPackageResourcesExcept = {
-  'object': (dataPackageObject, resourceTypes: Symbol[]) => dataPackageObject.resources.filter(ddfResource =>
-    includes(resourceTypes, getTypeByPrimaryKey(ddfResource.schema.primaryKey))),
-  'symbol': (dataPackageObject, resourceType: Symbol) => dataPackageObject.resources.filter(ddfResource =>
-    getTypeByPrimaryKey(ddfResource.schema.primaryKey) !== resourceType)
-};
-
 export const getDecoratedDataPackageObject = (dataPackageObject) => ({
   getDataPackageObject: () => dataPackageObject,
-  getAllResources: () => dataPackageObject.resources,
-  getResourcesExcept: (resourceType: Symbol | Symbol[]) => getDataPackageResourcesExcept[typeof resourceType](resourceType)
+  getAllResources: () => dataPackageObject.resources
 });
