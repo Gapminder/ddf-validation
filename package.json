@@ -1,6 +1,6 @@
 {
   "name": "ddf-validation",
-  "version": "1.18.5",
+  "version": "1.18.2",
   "description": "DDF validion tool",
   "main": "./lib/index.js",
   "bin": {
@@ -12,7 +12,7 @@
     "test-travis": "istanbul cover mocha _mocha -- -R spec --exit --timeout 200000 --require ts-node/register --recursive test/**/*.spec.ts && codecov",
     "changelog": "conventional-changelog -i CHANGELOG.md -s -p angular",
     "github-release": "conventional-github-releaser -p angular",
-    "build": "tsc && touch lib/package.json && echo \\{\\\"version\\\": \\\"1.18.2\\\"\\} > lib/package.json",
+    "build": "tsc && touch lib/package.json && echo \\{\\\"version\\\": \\\"1.18.3\\\"\\} > lib/package.json",
     "prepublish": "npm run build",
     "preversion": "npm test",
     "version": "npm run changelog && git add CHANGELOG.md",
