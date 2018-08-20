@@ -23,6 +23,7 @@ import { getExcludedDirs } from '../data/shared';
 import { resolve } from 'path';
 import { getDdfSchemaContent } from '../data/ddf-schema';
 import { writeFile } from '../utils/file';
+import { INCORRECT_FILE } from '../ddf-rules/registry';
 
 const PROCESS_LIMIT = 30;
 
@@ -37,6 +38,7 @@ export class DdfDataSet {
   public isEmpty: boolean;
   public isDDF: boolean;
   public fileDescriptors: FileDescriptor[];
+  public wrongFileDescriptors: FileDescriptor[];
 
   constructor(public rootPath: string, settings: any, ignoreExistingDataPackage: boolean = false) {
     this.db = new Db();
@@ -47,6 +49,7 @@ export class DdfDataSet {
     this.isEmpty = false;
     this.isDDF = true;
     this.fileDescriptors = [];
+    this.wrongFileDescriptors = [];
     this.expectedClass = {
       [CONCEPT]: new Concept(this.db),
       [ENTITY]: new Entity(this.db),
@@ -61,6 +64,8 @@ export class DdfDataSet {
 
       if (this.isDDF) {
         const expectedFileDescriptors = this.fileDescriptors.filter(fileDescriptor => isEmpty(fileDescriptor.issues));
+
+        this.wrongFileDescriptors = this.fileDescriptors.filter(fileDescriptor => !isEmpty(fileDescriptor.issues));
 
         logger.progressInit('dataset loading', {total: expectedFileDescriptors.length});
 
