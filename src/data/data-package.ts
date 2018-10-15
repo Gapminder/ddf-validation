@@ -302,10 +302,9 @@ export class DataPackage {
       }
 
       if (fileDescriptor.type === ENTITY) {
-        const entityDomain = fileDescriptor.headers.find(header => conceptTypeHash[header] === CONCEPT_TYPE_ENTITY_DOMAIN);
-        const entitySet = fileDescriptor.headers.find(header => conceptTypeHash[header] === CONCEPT_TYPE_ENTITY_SET);
+        const [domain, set] = fileDescriptor.parts;
 
-        fileDescriptor.primaryKey = entityDomain || entitySet;
+        fileDescriptor.primaryKey = fileDescriptor.headers.indexOf(set) > -1 ? set : domain;
       }
 
       if (fileDescriptor.type === SYNONYM) {
