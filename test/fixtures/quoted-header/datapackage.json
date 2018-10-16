@@ -1,0 +1,115 @@
+{
+  "name": "ddf_quoted_header_test_case",
+  "title": "ddf_quoted_header_test_case",
+  "description": "",
+  "version": "0.0.1",
+  "language": {
+    "id": "en",
+    "name": "English"
+  },
+  "translations": [],
+  "license": "",
+  "author": "",
+  "resources": [
+    {
+      "path": "ddf--concepts.csv",
+      "name": "ddf--concepts",
+      "schema": {
+        "fields": [
+          {
+            "name": "concept"
+          },
+          {
+            "name": "concept_type"
+          },
+          {
+            "name": "name"
+          }
+        ],
+        "primaryKey": "concept"
+      }
+    },
+    {
+      "path": "ddf--datapoints--income_per_person_gdppercapita_ppp_inflation_adjusted--by--geo--time.csv",
+      "name": "income_per_person_gdppercapita_ppp_inflation_adjusted--by--geo--time",
+      "schema": {
+        "fields": [
+          {
+            "name": "geo"
+          },
+          {
+            "name": "time"
+          },
+          {
+            "name": "income_per_person_gdppercapita_ppp_inflation_adjusted"
+          }
+        ],
+        "primaryKey": [
+          "geo",
+          "time"
+        ]
+      }
+    },
+    {
+      "path": "ddf--entities--geo.csv",
+      "name": "geo",
+      "schema": {
+        "fields": [
+          {
+            "name": "geo"
+          },
+          {
+            "name": "name"
+          }
+        ],
+        "primaryKey": "geo"
+      }
+    }
+  ],
+  "ddfSchema": {
+    "datapoints": [
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "income_per_person_gdppercapita_ppp_inflation_adjusted",
+        "resources": [
+          "income_per_person_gdppercapita_ppp_inflation_adjusted--by--geo--time"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "name",
+        "resources": [
+          "geo"
+        ]
+      }
+    ],
+    "concepts": [
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "concept_type",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "name",
+        "resources": [
+          "ddf--concepts"
+        ]
+      }
+    ],
+    "synonyms": []
+  }
+}

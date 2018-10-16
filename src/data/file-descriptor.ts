@@ -46,7 +46,7 @@ export class FileDescriptor {
         return;
       }
 
-      this.headers = line.split(',').map(header => header.trim());
+      this.headers = line.split(',').map(header => header.trim().replace(/^"|"$/g, ''));
 
       onHeadersReady();
     });

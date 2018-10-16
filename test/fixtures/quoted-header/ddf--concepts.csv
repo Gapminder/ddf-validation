@@ -1,0 +1,5 @@
+﻿concept,concept_type,name
+income_per_person_gdppercapita_ppp_inflation_adjusted,measure,"Income per person (GDP/capita, PPP$ inflation-adjusted)"
+name,string,Name
+geo,entity_domain,Geographic area
+time,time,Year

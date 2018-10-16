@@ -202,6 +202,18 @@ describe('general rules', () => {
       });
     });
 
+    it('any issue should NOT be found for folder with quoted header (fixtures/good-folder)', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/quoted-header', null);
+
+      ddfDataSet.load(() => {
+        const results: Issue[] = allRules[WRONG_DATA_POINT_HEADER].rule(ddfDataSet);
+
+        expect(results.length).to.equal(0);
+
+        done();
+      });
+    });
+
     it(`issues should be found for folder with the problem
    (fixtures/rules-cases/wrong-data-point-header)`, done => {
       const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/wrong-data-point-header', null);
