@@ -1,5 +1,6 @@
+import * as Papa from 'papaparse';
 import { parallelLimit } from 'async';
-import { isArray, includes, compact, isEmpty } from 'lodash';
+import { isArray, includes, isEmpty } from 'lodash';
 import { stat } from 'fs';
 import { getFileLine } from '../utils/file';
 import { INCORRECT_FILE } from '../ddf-rules/registry';
@@ -46,7 +47,7 @@ export class FileDescriptor {
         return;
       }
 
-      this.headers = line.split(',').map(header => header.trim().replace(/^"|"$/g, ''));
+      this.headers = Papa.parse(line, {header: true}).meta.fields;
 
       onHeadersReady();
     });
