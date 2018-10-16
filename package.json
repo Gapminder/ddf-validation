@@ -1,6 +1,6 @@
 {
   "name": "ddf-validation",
-  "version": "1.18.4",
+  "version": "1.18.5",
   "description": "DDF validion tool",
   "main": "./lib/index.js",
   "bin": {
