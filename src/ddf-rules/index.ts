@@ -2,6 +2,7 @@ import * as registry from './registry';
 
 import { rule as conceptIdIsNotUnique } from './concept-rules/concept-id-is-not-unique';
 import { rule as emptyConceptId } from './concept-rules/empty-concept-id';
+import { rule as emptyEntityId } from './entity-rules/empty-entity-id';
 import { rule as incorrectConceptType } from './concept-rules/incorrect-concept-type';
 import { rule as nonConceptHeader } from './concept-rules/non-concept-header';
 import { rule as conceptMandatoryFieldNotFound } from './concept-rules/concept-mandatory-field-not-found';
@@ -50,6 +51,7 @@ import { rule as entityValueAsEntityName } from './entity-rules/entity-value-as-
 export const allRules = {
   [registry.CONCEPT_ID_IS_NOT_UNIQUE]: conceptIdIsNotUnique,
   [registry.EMPTY_CONCEPT_ID]: emptyConceptId,
+  [registry.EMPTY_ENTITY_ID]: emptyEntityId,
   [registry.INCORRECT_CONCEPT_TYPE]: incorrectConceptType,
   [registry.NON_CONCEPT_HEADER]: nonConceptHeader,
   [registry.CONCEPT_MANDATORY_FIELD_NOT_FOUND]: conceptMandatoryFieldNotFound,

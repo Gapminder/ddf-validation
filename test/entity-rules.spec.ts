@@ -8,7 +8,8 @@ import {
   UNEXISTING_CONSTRAINT_VALUE,
   INCORRECT_BOOLEAN_ENTITY,
   CONCEPT_LOOKS_LIKE_BOOLEAN,
-  ENTITY_VALUE_AS_ENTITY_NAME
+  ENTITY_VALUE_AS_ENTITY_NAME,
+  EMPTY_ENTITY_ID
 } from '../src/ddf-rules/registry';
 import { Issue } from '../src/ddf-rules/issue';
 import { allRules } from '../src/ddf-rules';
@@ -468,6 +469,43 @@ describe('rules for entry', () => {
         expect(issue.data.entityRecord.geo_name).to.equal('Georgia');
         expect(issue.data.entityRecord.$$source).to.equal(issue.path);
         expect(issue.data.entityRecord.$$lineNumber).to.equal(4);
+
+        done();
+      });
+    });
+  });
+
+  describe('when "EMPTY_ENTITY_ID" rule', () => {
+    it('any issue should NOT be found for a folder without the problem (SG)', done => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/good-folder-dp', null);
+      ddfDataSet.load(() => {
+        expect(allRules[EMPTY_ENTITY_ID].rule(ddfDataSet).length).to.equal(0);
+
+        done();
+      });
+    });
+
+    it('an issue should be found for a folder with the problem', done => {
+      ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/empty-entity-id', null);
+      ddfDataSet.load(() => {
+        const issues = <Issue[]>allRules[EMPTY_ENTITY_ID].rule(ddfDataSet);
+        const expectedData = [
+          {
+            path: 'ddf--entities--geo--country.csv',
+            data: {line: 2}
+          },
+          {
+            path: 'ddf--entities--geo--country.csv',
+            data: {line: 3}
+          }
+        ];
+
+        expect(issues.length).to.equal(expectedData.length);
+
+        issues.forEach((issue: Issue, i: number) => {
+          expect(endsWith(issue.path, expectedData[i].path)).to.be.true;
+          expect(issue.data).to.deep.equal(expectedData[i].data);
+        });
 
         done();
       });

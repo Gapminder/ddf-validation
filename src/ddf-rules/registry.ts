@@ -6,6 +6,7 @@ export const INCORRECT_JSON_FIELD = Symbol.for('INCORRECT_JSON_FIELD');
 export const CONCEPT_ID_IS_NOT_UNIQUE = Symbol.for('CONCEPT_ID_IS_NOT_UNIQUE');
 export const INCORRECT_CONCEPT_TYPE = Symbol.for('INCORRECT_CONCEPT_TYPE');
 export const EMPTY_CONCEPT_ID = Symbol.for('EMPTY_CONCEPT_ID');
+export const EMPTY_ENTITY_ID = Symbol.for('EMPTY_ENTITY_ID');
 export const INCORRECT_IDENTIFIER = Symbol.for('INCORRECT_IDENTIFIER');
 export const NON_CONCEPT_HEADER = Symbol.for('NON_CONCEPT_HEADER');
 export const INVALID_DRILL_UP = Symbol.for('INVALID_DRILL_UP');
@@ -61,6 +62,7 @@ export const tags: any = {
   [CONCEPT_ID_IS_NOT_UNIQUE]: [],
   [INCORRECT_CONCEPT_TYPE]: [],
   [EMPTY_CONCEPT_ID]: [],
+  [EMPTY_ENTITY_ID]: [],
   [INCORRECT_IDENTIFIER]: [],
   [NON_CONCEPT_HEADER]: [],
   [INVALID_DRILL_UP]: [],
@@ -106,6 +108,7 @@ export const descriptions = {
   [CONCEPT_ID_IS_NOT_UNIQUE]: 'Concept Id is not unique.',
   [INCORRECT_CONCEPT_TYPE]: 'Concept type does not correspond to any of the available DDF concept types.',
   [EMPTY_CONCEPT_ID]: 'Empty concept ID is found.',
+  [EMPTY_ENTITY_ID]: 'Empty entity ID is found.',
   [INCORRECT_IDENTIFIER]: 'Incorrect identifier is found.',
   [NON_CONCEPT_HEADER]: 'Found a value in header that is not among the concepts.',
   [INVALID_DRILL_UP]: 'Invalid Drill Up property value is found.',
@@ -151,6 +154,7 @@ export const howToFix = {
   [CONCEPT_ID_IS_NOT_UNIQUE]: 'Check ddf--concepts.csv file. The values in column "concept" should never repeat.',
   [INCORRECT_CONCEPT_TYPE]: 'In column "concept_type" only the following options are allowed: boolean, string, measure, entity_domain, entity_set, time, year, week, month, day, quarter, interval, role, custom_type. See the docs about DDF conceptual model for more info https://open-numbers.github.io/ddf.html',
   [EMPTY_CONCEPT_ID]: 'Check ddf--concepts.csv file. Concept ID should never be empty.',
+  [EMPTY_ENTITY_ID]: 'Check ddf--entities-xxx.csv file. Entity ID should never be empty.',
   [INCORRECT_IDENTIFIER]: 'Entity and concept identifiers can only contain lowercase alphanumeric english characters and underscores.',
   [NON_CONCEPT_HEADER]: 'Each part of any header should be a concept in ddf--concepts.csv file ("is--" field is an exception).',
   [INVALID_DRILL_UP]: 'Check ddf--concepts.csv file, column "drill_up". The value should be an array of existing concepts like "[""concept1"",""concept2""]"',
