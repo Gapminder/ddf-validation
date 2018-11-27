@@ -23,7 +23,6 @@ import { getExcludedDirs } from '../data/shared';
 import { resolve } from 'path';
 import { getDdfSchemaContent } from '../data/ddf-schema';
 import { writeFile } from '../utils/file';
-import { INCORRECT_FILE } from '../ddf-rules/registry';
 
 const PROCESS_LIMIT = 30;
 
@@ -298,7 +297,7 @@ export class DdfDataSet {
       entitiesResources,
       ddfDataSet: this,
       dataPackageDescriptor: this.dataPackageDescriptor
-    }, settings.isProgressNeeded, (err, ddfSchema) => {
+    }, (err, ddfSchema) => {
       if (err) {
         return onDdfSchemaReady(err);
       }
