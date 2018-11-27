@@ -11,16 +11,9 @@ import {
   getTypeByPrimaryKey,
   SYNONYM
 } from '../ddf-definitions/constants';
+import { getSettings } from '../utils/args';
 
-const term = require('terminal-kit').terminal;
-const getProgressBar = (isProgressNeeded: boolean = false, config: any): any => {
-  return isProgressNeeded ? term.progressBar(config) : {
-    startItem: () => {
-    },
-    itemDone: () => {
-    }
-  };
-};
+const settings = getSettings();
 
 function recursivePermutation(pkSets) {
   // end of recursion
@@ -61,7 +54,7 @@ function addToSchema(schema, resourceSchema) {
   schema[hash].resources.add(resourceSchema.resource)
 }
 
-export function getDdfSchemaContent(dataset: any, isProgressNeeded, onDdfSchemaReady) {
+export function getDdfSchemaContent(dataset: any, onDdfSchemaReady) {
   const entityConcepts = {};
   const conceptsContent = dataset.ddfDataSet.getConcept().getDataByFiles();
   const conceptsFiles = keys(conceptsContent);
@@ -69,6 +62,13 @@ export function getDdfSchemaContent(dataset: any, isProgressNeeded, onDdfSchemaR
   const entitiesFiles = keys(entitiesContent);
   const synonymsContent = dataset.ddfDataSet.getSynonym().getDataByFiles();
   const synonymsFiles = keys(synonymsContent);
+  const getProgressBar = (config: any): any => settings.isDataPackageGenerationMode && !settings.silent ?
+    require('terminal-kit').terminal.progressBar(config) : {
+      startItem: () => {
+      },
+      itemDone: () => {
+      }
+    };
 
   dataset.dataHash = {};
 
@@ -165,7 +165,7 @@ export function getDdfSchemaContent(dataset: any, isProgressNeeded, onDdfSchemaR
   const schema = {};
 
   const tasks = dataset.resources.map(resource => resource.name);
-  const progressBar = getProgressBar(isProgressNeeded, {
+  const progressBar = getProgressBar({
     width: 80,
     title: 'resources hash processing:',
     eta: true,
