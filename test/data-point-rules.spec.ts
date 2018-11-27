@@ -61,26 +61,30 @@ describe('rules for data points', () => {
   describe('when data set is NOT correct', () => {
     it(`an issue should be found for rule 'DATA_POINT_UNEXPECTED_ENTITY_VALUE'
    (fixtures/rules-cases/data-point-unexpected-entity-value)`, done => {
-      const EXPECTED_FILE = 'ddf--datapoints--pop--by--country--year.csv';
       const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/data-point-unexpected-entity-value', null);
       const issueEmitter = new EventEmitter();
       const issues: Issue[] = [];
-      const expectedConcept = 'country';
-      const expectedLine = 2;
-      const expectedValue = 'non-usa';
+      const expectedData = [
+        {
+          id: 'DATA_POINT_UNEXPECTED_ENTITY_VALUE',
+          path: 'ddf--datapoints--pop--by--country--year.csv',
+          data: {concept: 'country', line: 2, value: 'non-usa'}
+        },
+        {
+          path: 'ddf--datapoints--pop--by--country--year.csv',
+          data: {concept: 'country', line: 4, value: ''}
+        }
+      ];
 
       ddfDataSet.load(() => {
         const fileDescriptorsChunks = getAllDataPointFileDescriptorsChunks(ddfDataSet);
         const theEnd = () => {
-          expect(issues.length).to.equal(1);
+          expect(issues.length).to.equal(expectedData.length);
 
-          const issue = head(issues);
-
-          expect(issue.path.endsWith(EXPECTED_FILE)).to.be.true;
-          expect(!!issue.data).to.be.true;
-          expect(issue.data.concept).to.equal(expectedConcept);
-          expect(issue.data.line).to.equal(expectedLine);
-          expect(issue.data.value).to.equal(expectedValue);
+          issues.forEach((issue: Issue, i: number) => {
+            expect(issue.path.endsWith(expectedData[i].path)).to.be.true;
+            expect(issue.data).to.deep.equal(expectedData[i].data);
+          });
 
           done();
         };
