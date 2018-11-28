@@ -15,6 +15,7 @@ const argv = yargs
   .example(`${myName} ../ddf-example -i --translations --content`, 'rewrite "translations", "resources" and "ddfSchema" sections in datapackage.json')
   .example(`${myName} ../ddf-example -j`, 'fix JSONs for this DDF dataset')
   .example(`${myName} --rules`, 'print information regarding supported rules')
+  .example(`${myName} ../ddf-example --ws`, 'apply Waffle Server specific rules. See WAFFLE_SERVER_TAG tag based rules in the rules list (--rules flag)')
   .example(`${myName} ../ddf-example --multithread`,
     'validate datapoints for `ddf-example` in separate threads')
   .example(`${myName} ../ddf-example --multithread --use-all-cpu`,
@@ -43,6 +44,7 @@ const argv = yargs
   .describe('datapointless', 'forget about datapoint validation')
   .describe('silent', `don't show progress of validation and print issues to the screen`)
   .describe('hidden', 'allow hidden folders validation')
+  .describe('ws', 'apply Waffle Server specific rules')
   .describe('include-tags', 'Process only issues by selected tags')
   .describe('exclude-tags', 'Process all tags except selected')
   .describe('include-rules', 'Process only issues by selected rules')
@@ -76,6 +78,7 @@ export const getSettings = () => {
     settings.isPrintRules = !!argv.rules;
     settings.isCheckHidden = !!argv.hidden;
     settings.isMultithread = !!argv.multithread;
+    settings.isWaffleServer = !!argv.ws;
     settings.useAllCpu = !!argv['use-all-cpu'];
     settings.compressDatapackage = argv['compress-datapackage'];
   };
@@ -84,6 +87,10 @@ export const getSettings = () => {
 
   options.forEach(option => {
     settings[camelCase(option)] = argv[option];
+
+    if (option === 'exclude-tags' && !settings.isWaffleServer) {
+      settings[camelCase(option)] += ' WAFFLE_SERVER_TAG';
+    }
   });
 
   settings.excludeDirs = getExcludedDirs(settings);
