@@ -21,6 +21,7 @@ import { rule as nonexistentResource } from './data-package-rules/nonexistent-re
 import { rule as nonexistentConcept } from './data-package-rules/nonexistent-concept';
 import { rule as inconsistentDatapackage } from './data-package-rules/inconsistent-datapackage';
 import { rule as duplicatedSynonymKey } from './general-rules/duplicated-synonym-key';
+import { rule as inconsistentSynonymKey} from './general-rules/inconsistent-synonym-key';
 
 // import { rule as measureValueNotNumeric } from './data-point-rules/measure-value-not-numeric';
 import { rule as unexpectedEntityValue } from './data-point-rules/unexpected-entity-value';
@@ -90,5 +91,6 @@ export const allRules = {
   [registry.DATA_POINT_CONSTRAINT_VIOLATION]: dataPointConstraintViolation,
   [registry.DUPLICATED_DATA_POINT_KEY]: duplicatedDataPointKey,
   [registry.ENTITY_VALUE_AS_ENTITY_NAME]: entityValueAsEntityName,
-  [registry.DUPLICATED_SYNONYM_KEY]: duplicatedSynonymKey
+  [registry.DUPLICATED_SYNONYM_KEY]: duplicatedSynonymKey,
+  [registry.INCONSISTENT_SYNONYM_KEY]: inconsistentSynonymKey
 };

@@ -41,6 +41,7 @@ export const INCORRECT_BOOLEAN_ENTITY = Symbol.for('INCORRECT_BOOLEAN_ENTITY');
 export const CONCEPT_LOOKS_LIKE_BOOLEAN = Symbol.for('CONCEPT_LOOKS_LIKE_BOOLEAN');
 export const ENTITY_VALUE_AS_ENTITY_NAME = Symbol.for('ENTITY_VALUE_AS_ENTITY_NAME');
 export const DUPLICATED_SYNONYM_KEY = Symbol.for('DUPLICATED_SYNONYM_KEY');
+export const INCONSISTENT_SYNONYM_KEY = Symbol.for('INCONSISTENT_SYNONYM_KEY');
 
 export const WARNING_TAG = Symbol.for('WARNING');
 export const FILE_SYSTEM_TAG = Symbol.for('FILE_SYSTEM');
@@ -96,7 +97,8 @@ export const tags: any = {
   [INCORRECT_BOOLEAN_ENTITY]: [],
   [CONCEPT_LOOKS_LIKE_BOOLEAN]: [WARNING_TAG],
   [ENTITY_VALUE_AS_ENTITY_NAME]: [WAFFLE_SERVER_TAG, WARNING_TAG],
-  [DUPLICATED_SYNONYM_KEY]: []
+  [DUPLICATED_SYNONYM_KEY]: [],
+  [INCONSISTENT_SYNONYM_KEY]: []
 };
 
 export const descriptions = {
@@ -142,7 +144,8 @@ export const descriptions = {
   [INCORRECT_BOOLEAN_ENTITY]: 'Boolean entitiy field has an incorrect value.',
   [CONCEPT_LOOKS_LIKE_BOOLEAN]: 'Entity contains values that look like boolean, but related entity field has a different type.',
   [ENTITY_VALUE_AS_ENTITY_NAME]: 'Entity value should not be equal to entity domain name or entity set name. This rule providing is critical for DDFQL and DDF reader supporting (on WS).',
-  [DUPLICATED_SYNONYM_KEY]: 'Duplicated synonym key'
+  [DUPLICATED_SYNONYM_KEY]: 'Duplicated synonym key',
+  [INCONSISTENT_SYNONYM_KEY]: 'Inconsistent Synonym key'
 };
 
 export const howToFix = {
@@ -188,7 +191,8 @@ export const howToFix = {
   [INCORRECT_BOOLEAN_ENTITY]: 'Use only TRUE or FALSE values for concepts of type "boolean"',
   [CONCEPT_LOOKS_LIKE_BOOLEAN]: 'Consider changing the concept type to "boolean"',
   [ENTITY_VALUE_AS_ENTITY_NAME]: 'Simplest way to fix the issue is entity value renaming, in other case domain or entity set name should be changed.',
-  [DUPLICATED_SYNONYM_KEY]: 'Remove duplicated key or change it properly'
+  [DUPLICATED_SYNONYM_KEY]: 'Remove duplicated key or change it properly',
+  [INCONSISTENT_SYNONYM_KEY]: 'Correct key as (entity and synonym should be defined) in a related ddf--synonyms--xxx.csv file'
 };
 
 export const getRulesInformation = () => Object.getOwnPropertySymbols(exports.descriptions)

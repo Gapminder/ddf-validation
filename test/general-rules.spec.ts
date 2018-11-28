@@ -5,7 +5,9 @@ import {
   NON_DDF_DATA_SET,
   INCORRECT_JSON_FIELD,
   INCORRECT_IDENTIFIER,
-  WRONG_DATA_POINT_HEADER, DUPLICATED_SYNONYM_KEY
+  WRONG_DATA_POINT_HEADER,
+  DUPLICATED_SYNONYM_KEY,
+  INCONSISTENT_SYNONYM_KEY
 } from '../src/ddf-rules/registry';
 import { Issue } from '../src/ddf-rules/issue';
 import { allRules } from '../src/ddf-rules';
@@ -283,6 +285,96 @@ describe('general rules', () => {
         expect(results.length).to.equal(1);
         expect(endsWith(result.path, 'ddf--synonyms--country.csv')).to.be.true;
         expect(result.data).to.deep.equal(expectedKey);
+
+        done();
+      });
+    });
+  });
+
+  describe('when "INCONSISTENT_SYNONYM_KEY" rule', () => {
+    it('any issue should NOT be found for folder without the problem (fixtures/good-synonyms)', done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/good-synonyms', null);
+
+      ddfDataSet.load(() => {
+        const results: Issue[] = allRules[INCONSISTENT_SYNONYM_KEY].rule(ddfDataSet);
+
+        expect(results.length).to.equal(0);
+
+        done();
+      });
+    });
+
+    it(`an issue should be raised for folder with the problem
+   (fixtures/rules-cases/inconsistent-synonym-key)`, done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/inconsistent-synonym-key', null);
+
+      ddfDataSet.load(() => {
+        const expectedData = [
+          {
+            path: 'ddf--synonyms--country.csv',
+            data: {
+              line: 3,
+              undefinedKeyParts: [
+                'synonym'
+              ]
+            }
+          },
+          {
+            path: 'ddf--synonyms--country.csv',
+            data: {
+              line: 4,
+              undefinedKeyParts: [
+                'country'
+              ]
+            }
+          }
+        ];
+        const issues: Issue[] = allRules[INCONSISTENT_SYNONYM_KEY].rule(ddfDataSet);
+
+        expect(issues.length).to.be.equals(expectedData.length);
+
+        issues.forEach((issue: Issue, i: number) => {
+          expect(endsWith(issue.path, expectedData[i].path)).to.be.true;
+          expect(issue.data).to.deep.equal(expectedData[i].data);
+        });
+
+        done();
+      });
+    });
+
+    it(`an issue should be raised for folder with the problem
+   (fixtures/rules-cases/inconsistent-synonym-key-2)`, done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/rules-cases/inconsistent-synonym-key-2', null);
+
+      ddfDataSet.load(() => {
+        const expectedData = [
+          {
+            path: 'ddf--synonyms--country.csv',
+            data: {
+              line: 1,
+              undefinedKeyParts: [
+                'synonym'
+              ]
+            }
+          },
+          {
+            path: 'ddf--synonyms--country.csv',
+            data: {
+              line: 2,
+              undefinedKeyParts: [
+                'synonym'
+              ]
+            }
+          }
+        ];
+        const issues: Issue[] = allRules[INCONSISTENT_SYNONYM_KEY].rule(ddfDataSet);
+
+        expect(issues.length).to.be.equals(expectedData.length);
+
+        issues.forEach((issue: Issue, i: number) => {
+          expect(endsWith(issue.path, expectedData[i].path)).to.be.true;
+          expect(issue.data).to.deep.equal(expectedData[i].data);
+        });
 
         done();
       });
