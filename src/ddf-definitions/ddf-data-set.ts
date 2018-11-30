@@ -268,13 +268,15 @@ export class DdfDataSet {
     }
 
     const resources = this.getDataPackageResources().map(resource => {
-      if (!isArray(resource.schema.primaryKey)) {
-        resource.schema.primaryKey = [resource.schema.primaryKey];
+      const simplifiedResource = cloneDeep(resource);
+
+      if (!isArray(simplifiedResource.schema.primaryKey)) {
+        simplifiedResource.schema.primaryKey = [simplifiedResource.schema.primaryKey];
       }
 
-      resource.schema.fields = resource.schema.fields.map(field => field.name);
+      simplifiedResource.schema.fields = simplifiedResource.schema.fields.map(field => field.name);
 
-      return resource;
+      return simplifiedResource;
     });
 
     const conceptsResources = resources.filter(resource => getTypeByPrimaryKey(resource.schema.primaryKey) === CONCEPT);

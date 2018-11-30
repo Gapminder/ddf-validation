@@ -12,6 +12,7 @@ import { logger, getTransport, settings } from './utils';
 import * as fs from 'fs';
 import { DataPackage, DATA_PACKAGE_FILE } from './data/data-package';
 import { allRules } from './ddf-rules';
+import { difference, includes, isEmpty } from 'lodash';
 
 const child_process = require('child_process');
 const os = require('os');
@@ -345,6 +346,40 @@ export function createDataPackage(parameters: IDataPackageCreationParameters,
       onDataPackageReady();
     });
   });
+}
+
+export function getDataPackageActuality(parameters: IDataPackageCreationParameters, cb: Function) {
+  let {ddfPath, dataPackagePath, exists} = getDataPackageInfo(parameters.ddfRootFolder);
+
+  if (!exists) {
+    return cb('datapackage does not exist!');
+  }
+
+  let dataPackageContent = null;
+
+  try {
+    dataPackageContent = JSON.parse(fs.readFileSync(dataPackagePath, 'utf-8'));
+  } catch (err) {
+    cb(err.toString());
+  }
+
+
+  const dataPackage = new DataPackage(ddfPath, {silent: true});
+
+  dataPackage.take(() => {
+    const newDataPackageContent = dataPackage.getDataPackageObject();
+    const generatedResources = newDataPackageContent.resources.map(r => r.name);
+    const currentResources = dataPackageContent.resources.map(r => r.name);
+    const diff = difference(generatedResources, currentResources);
+
+    const newResources = diff.filter(r => includes(generatedResources, r));
+
+    if (!isEmpty(newResources)) {
+      cb(`datapackage is not actual: more details:\n${JSON.stringify(newResources, null, 2)}`);
+    } else {
+      cb(`\ndatapackage is actual\n`);
+    }
+  }, true);
 }
 
 export const validate = validator => {

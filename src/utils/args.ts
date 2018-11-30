@@ -13,6 +13,7 @@ const argv = yargs
   .example(`${myName} ../ddf-example --summary`, 'show summary data regarding the issues after validation')
   .example(`${myName} ../ddf-example -i --translations`, 'update only "translations" section in datapackage.json')
   .example(`${myName} ../ddf-example -i --translations --content`, 'rewrite "translations", "resources" and "ddfSchema" sections in datapackage.json')
+  .example(`${myName} ../ddf-example -a`, 'check if datapackage.json in ../ddf-example folder actual')
   .example(`${myName} ../ddf-example -j`, 'fix JSONs for this DDF dataset')
   .example(`${myName} --rules`, 'print information regarding supported rules')
   .example(`${myName} ../ddf-example --ws`, 'apply Waffle Server specific rules. See WAFFLE_SERVER_TAG tag based rules in the rules list (--rules flag)')
@@ -33,6 +34,7 @@ const argv = yargs
     'validate "ddf-example" and its subdirectories that contain spaces: case 2')
   .example(`${myName} ../ddf-example -i --compress-datapackage --heap 4096`, 'Create compressed datapackage.json via 4Gb heap')
   .describe('i', 'Generate datapackage.json file')
+  .describe('a', 'Check datapackage.json file actuality')
   .describe('compress-datapackage', 'Compress datapackage.json file')
   .describe('translations', 'Rewrite "translations" section in existing datapackage.json')
   .describe('content', 'Rewrite "resources" and "ddfSchema" sections in existing datapackage.json')
@@ -68,6 +70,7 @@ export const getSettings = () => {
   const options = ['include-tags', 'exclude-tags', 'include-rules', 'exclude-rules', 'exclude-dirs', 'heap'];
   const setMiscSettings = () => {
     settings.isDataPackageGenerationMode = !!argv.i;
+    settings.isDataPackageActual = !!argv.a;
     settings.isJsonAutoCorrectionMode = !!argv.j;
     settings.versionShouldBePrinted = !!argv.v;
     settings.datapointlessMode = !!argv.datapointless;
