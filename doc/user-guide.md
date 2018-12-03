@@ -11,6 +11,7 @@ Commands:
 Options:
   -v                     Print current version
   -i                     Generate datapackage.json
+  -a                     Check datapackage.json file actuality
   --compress-datapackage Compress datapackage.json file
   --translations         Rewrite "translations" section in existing datapackage.json
   --content              Rewrite "resources" and "ddfSchema" sections in existing datapackage.json
@@ -34,6 +35,7 @@ Examples:
   validate-ddf ../ddf-example -i                                                     generate datapackage.json file
   validate-ddf ../ddf-example -i --translations                                      update only "translations" section in datapackage.json
   validate-ddf ../ddf-example -i --translations --content                            rewrite "translations", "resources" and "ddfSchema" sections in datapackage.json
+  validate-ddf ../ddf-example -a                                                     check if datapackage.json in ../ddf-example folder actual
   validate-ddf ../ddf-example -j                                                     fix JSONs for this DDF dataset
   validate-ddf  --rules                                                              print information regarding supported rules
   validate-ddf ../ddf-example --summary      

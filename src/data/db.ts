@@ -1,4 +1,4 @@
-import {createReadStream} from 'fs';
+import { createReadStream } from 'fs';
 
 const csv = require('fast-csv');
 
@@ -20,6 +20,7 @@ export class Db {
     let header = [];
     let ddfRecord = {};
     let lineNumber = 1;
+    let isError = false;
 
     fileStream.on('error', error => {
       onCollectionReady(error, []);
@@ -39,7 +40,15 @@ export class Db {
         ddfRecord = {};
         lineNumber++;
       })
-      .on('end', () => onCollectionReady(null, header));
+      .on('end', () => {
+        onCollectionReady(null, header);
+      })
+      .on('error', err => {
+        if (!isError) {
+          onCollectionReady(err);
+          isError = true;
+        }
+      });
   }
 
   getCollection(collectionName) {

@@ -3,7 +3,7 @@ import { logger, settings, ddfRootFolder } from './utils';
 import { validationTransport } from './utils/logger';
 import { getRulesInformation } from './ddf-rules/registry';
 import { DdfJsonCorrector } from './ddf-definitions/ddf-json-corrector';
-import { StreamValidator, JSONValidator, validate, createDataPackage } from './index';
+import { StreamValidator, JSONValidator, validate, createDataPackage, getDataPackageActuality } from './index';
 import { checkLatestVersion } from './version';
 import { IssueView } from './ddf-rules/issue';
 
@@ -19,6 +19,16 @@ if (settings.versionShouldBePrinted) {
 
 if (settings.heap) {
   v8.setFlagsFromString(`--max-old-space-size=${settings.heap}`);
+}
+
+if (settings.isDataPackageActual && !settings.versionShouldBePrinted) {
+  isValidationExpected = false;
+
+  getDataPackageActuality({ddfRootFolder}, (message) => {
+    console.log(message);
+
+    process.exit(0);
+  });
 }
 
 if (settings.isDataPackageGenerationMode && !settings.versionShouldBePrinted) {
