@@ -10,7 +10,7 @@ import {
 } from './shared';
 import { logger, getTransport, settings } from './utils';
 import * as fs from 'fs';
-import { DataPackage, DATA_PACKAGE_FILE } from './data/data-package';
+import { DataPackage, DATA_PACKAGE_FILE, stripDdfPrefix } from './data/data-package';
 import { allRules } from './ddf-rules';
 import { difference, includes, isEmpty } from 'lodash';
 
@@ -368,8 +368,8 @@ export function getDataPackageActuality(parameters: IDataPackageCreationParamete
 
   dataPackage.take(() => {
     const newDataPackageContent = dataPackage.getDataPackageObject();
-    const generatedResources = newDataPackageContent.resources.map(r => r.name);
-    const currentResources = dataPackageContent.resources.map(r => r.name);
+    const generatedResources = newDataPackageContent.resources.map(r => stripDdfPrefix(r.name));
+    const currentResources = dataPackageContent.resources.map(r => stripDdfPrefix(r.name));
     const diff = difference(generatedResources, currentResources);
 
     const newResources = diff.filter(r => includes(generatedResources, r));

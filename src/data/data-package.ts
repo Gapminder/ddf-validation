@@ -51,6 +51,8 @@ export interface IDdfFileDescriptor {
 
 export const DATA_PACKAGE_FILE = 'datapackage.json';
 
+export const stripDdfPrefix = filename => filename.replace(/ddf--(entities|datapoints)--/, '');
+
 const PROCESS_LIMIT = 5;
 const LANG_FOLDER = 'lang';
 const CSV_EXTENSION = 'csv';
@@ -345,7 +347,6 @@ export class DataPackage {
 
       return isEmpty(relativeDir) ? '' : `${relativeDir}/`;
     };
-    // const stripDdfPrefix = filename => filename.replace(/ddf--(entities|datapoints)--/, '');
     const getNameSuffix = currentDirectoryIndex => currentDirectoryIndex === 1 ? '' : `-${currentDirectoryIndex}`;
 
     return {
@@ -361,8 +362,7 @@ export class DataPackage {
       resources: this.fileDescriptors
         .map((fileDescriptor: IDdfFileDescriptor) => ({
           path: `${getRelativeDir(fileDescriptor.fullPath)}${fileDescriptor.filename}`,
-          // name: `${stripDdfPrefix(fileDescriptor.name)}${getNameSuffix(fileDescriptor.directoryIndex)}`,
-          name: `${fileDescriptor.name}${getNameSuffix(fileDescriptor.directoryIndex)}`,
+          name: `${stripDdfPrefix(fileDescriptor.name)}${getNameSuffix(fileDescriptor.directoryIndex)}`,
           schema: {
             fields: (fileDescriptor.headers || []).map(header => prepareField(header, fileDescriptor)),
             primaryKey: fileDescriptor.primaryKey
