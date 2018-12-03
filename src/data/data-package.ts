@@ -345,7 +345,7 @@ export class DataPackage {
 
       return isEmpty(relativeDir) ? '' : `${relativeDir}/`;
     };
-    const stripDdfPrefix = filename => filename.replace(/ddf--(entities|datapoints)--/, '');
+    // const stripDdfPrefix = filename => filename.replace(/ddf--(entities|datapoints)--/, '');
     const getNameSuffix = currentDirectoryIndex => currentDirectoryIndex === 1 ? '' : `-${currentDirectoryIndex}`;
 
     return {
@@ -361,7 +361,8 @@ export class DataPackage {
       resources: this.fileDescriptors
         .map((fileDescriptor: IDdfFileDescriptor) => ({
           path: `${getRelativeDir(fileDescriptor.fullPath)}${fileDescriptor.filename}`,
-          name: `${stripDdfPrefix(fileDescriptor.name)}${getNameSuffix(fileDescriptor.directoryIndex)}`,
+          // name: `${stripDdfPrefix(fileDescriptor.name)}${getNameSuffix(fileDescriptor.directoryIndex)}`,
+          name: `${fileDescriptor.name}${getNameSuffix(fileDescriptor.directoryIndex)}`,
           schema: {
             fields: (fileDescriptor.headers || []).map(header => prepareField(header, fileDescriptor)),
             primaryKey: fileDescriptor.primaryKey
