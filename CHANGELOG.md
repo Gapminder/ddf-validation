@@ -1,3 +1,16 @@
+<a name="1.19.0"></a>
+# [1.19.0](https://github.com/Gapminder/ddf-validation/compare/v1.18.6...v1.19.0) (2018-12-03)
+
+
+### Features
+
+* **datapackage:** check datapackage actuality ([fd2e689](https://github.com/Gapminder/ddf-validation/commit/fd2e689)), closes [#544](https://github.com/Gapminder/ddf-validation/issues/544)
+* **new rule:** Don't allow empty (entity) ids ([621db9e](https://github.com/Gapminder/ddf-validation/commit/621db9e)), closes [#536](https://github.com/Gapminder/ddf-validation/issues/536)
+* **new rule:** provide new rule INCONSISTENT_SYNONYM_KEY ([7f0ebba](https://github.com/Gapminder/ddf-validation/commit/7f0ebba)), closes [#542](https://github.com/Gapminder/ddf-validation/issues/542)
+* **run parameters:** Don't include `WAFFLE_SERVER_TAG` validation in normal validation ([2227230](https://github.com/Gapminder/ddf-validation/commit/2227230)), closes [#533](https://github.com/Gapminder/ddf-validation/issues/533)
+
+
+
 <a name="1.18.6"></a>
 ## [1.18.6](https://github.com/Gapminder/ddf-validation/compare/v1.18.5...v1.18.6) (2018-10-16)
 
