@@ -60,6 +60,7 @@ export class DdfDataSet {
   load(onDataSetLoaded) {
     this.check(() => {
       const loaders = [];
+      const csvErrors: FileDescriptor[] = [];
 
       if (this.isDDF) {
         const expectedFileDescriptors = this.fileDescriptors.filter(fileDescriptor => isEmpty(fileDescriptor.issues));
@@ -79,6 +80,8 @@ export class DdfDataSet {
                 onFileLoaded();
               });
             });
+          } else if (fileDescriptor.is(DATA_POINT) && !fileDescriptor.csvChecker.isCorrect()) {
+            csvErrors.push(fileDescriptor);
           }
 
           if (fileDescriptor.is([CONCEPT, ENTITY, SYNONYM]) && fileDescriptor.csvChecker.isCorrect()) {
@@ -102,8 +105,14 @@ export class DdfDataSet {
                   }, false);
               });
             });
+          } else if (fileDescriptor.is([CONCEPT, ENTITY, SYNONYM]) && !fileDescriptor.csvChecker.isCorrect()) {
+            csvErrors.push(fileDescriptor);
           }
         });
+      }
+
+      if (!isEmpty(csvErrors)) {
+        return onDataSetLoaded(csvErrors);
       }
 
       parallelLimit(loaders, 10, (err, definitions) => {

@@ -12,7 +12,10 @@ import { logger, getTransport, settings } from './utils';
 import * as fs from 'fs';
 import { DataPackage, DATA_PACKAGE_FILE, stripDdfPrefix } from './data/data-package';
 import { allRules } from './ddf-rules';
-import { difference, includes, isEmpty } from 'lodash';
+import { difference, includes, isEmpty, isArray } from 'lodash';
+import { Issue } from './ddf-rules/issue';
+import { UNEXPECTED_DATA } from './ddf-rules/registry';
+import { FileDescriptor } from "./data/file-descriptor";
 
 const child_process = require('child_process');
 const os = require('os');
@@ -32,6 +35,19 @@ function mapToObject(map: Map<string, number>) {
 
     return agg;
   }, {});
+}
+
+function emitUrgentIssues(context, err: FileDescriptor[]) {
+  if (isArray(err)) {
+    for (const fileDescriptor of err) {
+      context.issueEmitter.emit('issue', new Issue(UNEXPECTED_DATA)
+        .setPath(fileDescriptor.fullPath).setData(fileDescriptor.csvChecker.errors).view());
+    }
+  } else {
+    console.log(err);
+  }
+
+  context.issueEmitter.emit('finish');
 }
 
 export interface IDdfValidationSummary {
@@ -108,7 +124,11 @@ export class JSONValidator extends ValidatorBase {
     this.issuesFilter = new IssuesFilter(this.settings);
     this.ddfDataSet = new DdfDataSet(this.rootPath, this.settings);
 
-    this.ddfDataSet.load(() => {
+    this.ddfDataSet.load((err) => {
+      if (err) {
+        return emitUrgentIssues(this, err);
+      }
+
       validationProcess(this, logger, true);
     });
   }
@@ -236,7 +256,11 @@ export class StreamValidator extends ValidatorBase {
     this.sendMessage('loading dataset...');
     this.issuesFilter = new IssuesFilter(this.settings);
     this.ddfDataSet = new DdfDataSet(this.rootPath, this.settings);
-    this.ddfDataSet.load(() => {
+    this.ddfDataSet.load((err) => {
+      if (err) {
+        return emitUrgentIssues(this, err);
+      }
+
       validationProcess(this, logger);
     });
   }
@@ -276,7 +300,11 @@ export class SimpleValidator extends ValidatorBase {
     this.issuesFilter = new IssuesFilter(this.settings);
     this.ddfDataSet = new DdfDataSet(this.rootPath, this.settings);
 
-    this.ddfDataSet.load(() => {
+    this.ddfDataSet.load((err) => {
+      if (err) {
+        return emitUrgentIssues(this, err);
+      }
+
       simpleValidationProcess(this);
     });
   }
@@ -332,7 +360,11 @@ export function createDataPackage(parameters: IDataPackageCreationParameters,
 
   const ddfDataSet = new DdfDataSet(ddfPath, {silent: true});
 
-  ddfDataSet.createDataPackage(() => {
+  ddfDataSet.createDataPackage((err) => {
+    if (err) {
+      return onDataPackageReady(`datapackage.json was NOT created: ${JSON.stringify(err, null,2)}.`);
+    }
+
     onNotice('resources are ready');
 
     expectedSettings._newDataPackagePriority = parameters.newDataPackagePriority;

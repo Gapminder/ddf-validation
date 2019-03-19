@@ -1,0 +1,17 @@
+tag,name,parent
+geography,Geography,
+education,Education,
+education_by_levels,Education levels,education
+employment,Employment,
+population_by_4income_groups,Four income groups,income
+income_by_gender,by gender,income
+income,Income,
+migration_by_gender,by gender,migration
+migration,Migration,
+migration_by_employment_by_gender,by gender,migration_by_employment
+migration_by_employment,Migration — employed,
+migration_by_education_by_gender,by gender,migration_by_education
+migration_by_education,Migration — educated,
+housing, Housing
+cars, Cars
+other, Other variables
