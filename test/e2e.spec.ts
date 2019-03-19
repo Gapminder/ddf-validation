@@ -1,8 +1,39 @@
 import * as chai from 'chai';
-import { head } from 'lodash';
+import { head, isArray } from 'lodash';
 import { exec } from 'child_process';
 
 const expect = chai.expect;
+
+export const expectedWringCsvData = [
+  {
+    message: 'Too few fields: expected 3 fields but parsed 2',
+    row: 13,
+    type: 'FieldMismatch/TooFewFields',
+    data: {
+      tag: 'housing',
+      name: ' Housing'
+    }
+  },
+  {
+    message: 'Too few fields: expected 3 fields but parsed 2',
+    row: 14,
+    type: 'FieldMismatch/TooFewFields',
+    data: {
+      tag: 'cars',
+      name: ' Cars'
+    }
+  },
+  {
+    message: 'Too few fields: expected 3 fields but parsed 2',
+    row: 15,
+    type: 'FieldMismatch/TooFewFields',
+    data: {
+      tag: 'other',
+      name: ' Other variables'
+    }
+  }
+];
+
 
 function execute(command, callback) {
   exec(command, function (error, stdout, stderr) {
@@ -55,6 +86,47 @@ describe('e2e', () => {
       execute('./src/cli.js ./test/fixtures/outdated-datapackage --silent -a', (error, stdout, stderr) => {
         expect(!!error).to.be.false;
         expect(stdout).to.be.equal("datapackage is not actual: more details:\n[\n  \"gas_production_bcf--by--geo--year\"\n]\n");
+
+        done();
+      });
+    });
+  });
+
+  describe('csv errors', () => {
+    it('an attempt to validate ds with wrong csv file', done => {
+      execute('./src/cli.js ./test/fixtures/wrong-csv --silent', (error, stdout) => {
+        expect(!!error).to.be.true;
+
+        const issueDetails = JSON.parse(stdout);
+
+        expect(isArray(issueDetails)).to.be.true;
+
+        const issue: any = head(issueDetails);
+
+        expect(issue.id).to.be.equal('UNEXPECTED_DATA');
+        expect(issue.path).to.be.contains('ddf--entities--tag.csv');
+        expect(issue.data).to.be.deep.equal(expectedWringCsvData);
+
+        done();
+      });
+    });
+
+    it('an attempt to create datapackage on ds with wrong csv file', done => {
+      execute('./src/cli.js ./test/fixtures/wrong-csv -i', (error, stdout) => {
+        expect(!!error).to.be.true;
+
+        const messageStartMarker = 'datapackage.json was NOT created: ';
+        const pos = stdout.indexOf(messageStartMarker);
+
+        const messageContent = stdout.substring(pos + messageStartMarker.length, stdout.length - 2);
+        const issueDetails = JSON.parse(messageContent);
+
+        expect(isArray(issueDetails)).to.be.true;
+
+        const issue: any = head(issueDetails);
+
+        expect(issue.file).to.be.contains('ddf--entities--tag.csv');
+        expect(issue.csvChecker.errors).to.be.deep.equal(expectedWringCsvData);
 
         done();
       });

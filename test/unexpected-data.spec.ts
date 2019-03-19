@@ -1,9 +1,10 @@
 import * as chai from 'chai';
-import { endsWith, isEqual, head } from 'lodash';
+import { endsWith, isEqual, head, isArray } from 'lodash';
 import { DdfDataSet } from '../src/ddf-definitions/ddf-data-set';
 import { UNEXPECTED_DATA } from '../src/ddf-rules/registry';
 import { allRules } from '../src/ddf-rules';
 import { Issue } from "../src/ddf-rules/issue";
+import { expectedWringCsvData } from "./e2e.spec";
 
 const expect = chai.expect;
 
@@ -158,6 +159,22 @@ describe('general rules', () => {
           expect(item.row).to.equal(row);
           expect(item.type).to.equal(expectedData.type);
         });
+
+        done();
+      });
+    });
+
+    it(`issues should be found for a folder with inconsistent columns in csv (fixtures/wrong-csv)`, done => {
+      const ddfDataSet = new DdfDataSet('./test/fixtures/wrong-csv', null);
+
+      ddfDataSet.load((err) => {
+        expect(!!err).to.be.true;
+        expect(isArray(err)).to.be.true;
+
+        const issue: any = head(err);
+
+        expect(issue.file).to.be.contains('ddf--entities--tag.csv');
+        expect(issue.csvChecker.errors).to.be.deep.equal(expectedWringCsvData);
 
         done();
       });
