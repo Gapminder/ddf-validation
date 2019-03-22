@@ -1,10 +1,17 @@
+import * as readline from 'readline';
+import { parse } from 'papaparse';
 import { join, resolve } from 'path';
-import { createReadStream, createWriteStream, readdir, stat, writeFile as writeFileFs } from 'fs';
+import {
+  createReadStream,
+  createWriteStream,
+  readdir,
+  stat,
+  readFile as readFileFs,
+  writeFile as writeFileFs
+} from 'fs';
 import { isPathExpected } from '../data/shared';
 import { logger } from '../utils';
 
-const stripBom = require('strip-bom');
-const csv = require('fast-csv');
 const END_OF_LINE = require('os').EOL;
 
 /* eslint-disable */
@@ -30,6 +37,14 @@ function copyFile(source, target, onFileCopied) {
       cbCalled = true;
     }
   }
+}
+
+export function stripBom(s) {
+  if (s.charCodeAt(0) === 0xFEFF) {
+    return s.slice(1);
+  }
+
+  return s;
 }
 
 export function norm(folder) {
@@ -138,14 +153,19 @@ export function getFileLine(filename, lineNo, callback) {
 }
 
 export function readFile(filePath, onFileRead) {
-  const content = [];
+  readFileFs(filePath, 'utf-8', (fileErr, data) => {
+    if (fileErr) {
+      return onFileRead(fileErr);
+    }
 
-  csv
-    .fromPath(filePath, {headers: true})
-    .on('data', ddfRecord => content.push(ddfRecord))
-    .on('end', () => {
-      onFileRead(null, content);
+    (parse as any)(stripBom(data), {
+      header: true,
+      quotes: true,
+      skipEmptyLines: true,
+      complete: result => onFileRead(null, result.data),
+      error: onFileRead
     });
+  });
 }
 
 export function walkFile(filePath, onLineRead, onFileRead) {
@@ -158,17 +178,30 @@ export function walkFile(filePath, onLineRead, onFileRead) {
       return onFileRead();
     }
 
-    let line = 0;
+    const rl = readline.createInterface({
+      input: createReadStream(filePath, 'utf-8')
+    });
 
-    csv
-      .fromPath(filePath, {headers: true})
-      .on('data', ddfRecord => onLineRead(ddfRecord, line++))
-      .on('end', () => {
-        onFileRead();
-      })
-      .on('error', err => {
-        logger.error(err);
-      });
+    let header = [];
+    let lineNo = 0;
+
+    rl.on('line', line => {
+      if (header.length === 0) {
+        header = (parse as any)(stripBom(line), {header: true, quotes: true}).meta.fields;
+        return;
+      } else {
+        const csvLine = (parse as any)(line, {skipEmptyLines: true, quotes: true}).data[0];
+        const jsonLine = {};
+
+        for (let i = 0; i < header.length; i++) {
+          jsonLine[header[i]] = csvLine[i];
+        }
+
+        onLineRead(jsonLine, lineNo++);
+      }
+    });
+
+    rl.on('close', onFileRead);
   });
 }
 

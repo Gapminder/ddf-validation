@@ -1,6 +1,6 @@
-import { createReadStream } from 'fs';
-
-const csv = require('fast-csv');
+import { parse } from 'papaparse';
+import { readFile as readFileFs } from 'fs';
+import { stripBom } from '../utils/file';
 
 export class Db {
   private storage: any;
@@ -15,40 +15,32 @@ export class Db {
     }
 
     const collection = this.getCollection(collectionName);
-    const fileStream = createReadStream(csvPath);
 
-    let header = [];
-    let ddfRecord = {};
-    let lineNumber = 1;
-    let isError = false;
+    readFileFs(csvPath, 'utf-8', (fileErr, data) => {
+      if (fileErr) {
+        return onCollectionReady();
+      }
 
-    fileStream.on('error', error => {
-      onCollectionReady(error, []);
-    });
+      (parse as any)(stripBom(data), {
+        header: true,
+        quotes: true,
+        skipEmptyLines: true,
+        complete: result => {
+          let lineNumber = 1;
 
-    csv
-      .fromStream(fileStream, {headers: true})
-      .on('data', data => {
-        if (lineNumber === 1) {
-          header = Object.keys(data);
-        }
+          for (const ddfRecord of result.data) {
+            ddfRecord['$$source'] = csvPath;
+            ddfRecord['$$lineNumber'] = lineNumber;
 
-        ddfRecord = data;
-        ddfRecord['$$source'] = csvPath;
-        ddfRecord['$$lineNumber'] = lineNumber;
-        collection.push(ddfRecord);
-        ddfRecord = {};
-        lineNumber++;
-      })
-      .on('end', () => {
-        onCollectionReady(null, header);
-      })
-      .on('error', err => {
-        if (!isError) {
-          onCollectionReady(err);
-          isError = true;
-        }
+            collection.push(ddfRecord);
+            lineNumber++;
+          }
+
+          onCollectionReady(null, result.data);
+        },
+        error: onCollectionReady
       });
+    });
   }
 
   getCollection(collectionName) {

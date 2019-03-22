@@ -1,24 +1,21 @@
-import * as fs from 'fs';
+import { parse } from 'papaparse';
 
-const csv = require('fast-csv');
+export function stripBom(s) {
+  if (s.charCodeAt(0) === 0xFEFF) {
+    return s.slice(1);
+  }
 
-export function csvToJson(path, cb) {
-  const result = [];
-  const fileStream = fs.createReadStream(path);
-
-  fileStream.on('error', error => cb(error));
-
-  csv
-    .fromStream(fileStream, {headers: true})
-    .on('data', data => result.push(data))
-    .on('end', () => cb(null, result));
+  return s;
 }
 
 export function csvToJsonByString(jsonStr, cb) {
-  const result = [];
-
-  csv
-    .fromString(jsonStr, {headers: true})
-    .on('data', data => result.push(data))
-    .on('end', () => cb(null, result));
+  (parse as any)(stripBom(jsonStr), {
+    header: true,
+    quotes: true,
+    skipEmptyLines: true,
+    complete: result => {
+      cb(null, result.data);
+    },
+    error: cb
+  });
 }
