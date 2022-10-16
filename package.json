@@ -1,0 +1,29 @@
+{
+  "name": "ddf-validation-ng",
+  "version": "0.0.3",
+  "description": "DDF validion tool",
+  "author": "Semio Zheng <semio@gapminder.org>",
+  "license": "GPL-3.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "bin": {
+    "validate-ddf-ng": "./dist/cli.js"
+  },
+  "scripts": {
+    "clean": "rm -rf node_modules output .spago dist/*.js *.lock .cache",
+    "build": "spago build",
+    "test": "spago test",
+    "serve": "spago build && esbuild --bundle ./index.js --servedir=dist",
+    "bundle-app": "spago bundle-app --platform node --no-build --to dist/app.js",
+    "bundle-module": "spago bundle-module --platform node --no-build --to dist/lib.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "csv-parse": "^5.3.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.14.38"
+  }
+}
