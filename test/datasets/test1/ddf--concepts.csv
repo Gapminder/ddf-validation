@@ -1,0 +1,4 @@
+concept,concept_type,name,invalid
+_name,string,String,
+geo,entity_domain,Geo,
+_test,measure,Testing,

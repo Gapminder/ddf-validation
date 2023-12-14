@@ -1,0 +1,6 @@
+concept,concept_type,name,domain
+name,string,Name,
+geo,entity_domain,geo,
+country,entity_set,country,kkk
+age,entity_domain,Age,
+indicator,measure,Indicator,

@@ -1,0 +1,59 @@
+{
+    "name": "ddf--test--new",
+    "language": {
+        "name": "English",
+        "id": "en"
+    },
+    "title": "Test DDF",
+    "description": "Test DDF",
+    "author": "Gapminder",
+    "license": "CC-BY-4.0",
+    "translations": [],
+    "version": "0.0.1",
+    "created": "2022-10-02T02:59:10.856944+00:00",
+    "resources": [
+        {
+            "name": "ddf--concepts",
+            "path": "ddf--concepts.csv",
+            "schema": {
+                "fields": [
+                    {
+                        "name": "concept"
+                    },
+                    {
+                        "name": "concept_type"
+                    },
+                    {
+                        "name": "name"
+                    }
+                ],
+                "primaryKey": "concept"
+            }
+        }
+    ],
+    "ddfSchema": {
+        "concepts": [
+            {
+                "primaryKey": [
+                    "concept"
+                ],
+                "value": "concept_type",
+                "resources": [
+                    "ddf--concepts"
+                ]
+            },
+            {
+                "primaryKey": [
+                    "concept"
+                ],
+                "value": "name",
+                "resources": [
+                    "ddf--concepts"
+                ]
+            }
+        ],
+        "entities": [],
+        "datapoints": [],
+        "synonyms": []
+    }
+}
