@@ -5,9 +5,9 @@
   "author": "Semio Zheng <semio@gapminder.org>",
   "license": "GPL-3.0",
   "type": "module",
-  "main": "./src/index.js",
+  "main": "src/index.js",
   "bin": {
-    "validate-ddf-ng": "./src/cli.js"
+    "validate-ddf-ng": "src/cli.js"
   },
   "scripts": {
     "clean": "rm -rf node_modules output .spago dist/*.js *.lock .cache",
@@ -19,8 +19,8 @@
   },
   "files": [
     "dist",
-    "./src/index.js",
-    "./src/cli.js"
+    "src/index.js",
+    "src/cli.js"
   ],
   "dependencies": {
     "csv-parse": "^5.5.3"
