@@ -17,9 +17,8 @@ export function readCsvImpl(filepath) {
         bom: true,
         quote: '"',
         columns: false,
-        relax_column_count: true,
-        // We will skip the records that have different field numbers from headers.
-        // MAYBE: move the checking to purescript code and log it with other errors
+        relax_column_count: true, // send all records to purescript side.
+        // uncomment below to skip the records that have different field numbers from headers.
         // on_record: (record, { lines, error }) => {
         //     if (error) {
         //         console.log(`Warning: ${filepath}: skipped row because ${error.message}`);

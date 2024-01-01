@@ -4,3 +4,4 @@ geo,entity_domain,geo,
 country,entity_set,country,kkk
 age,entity_domain,Age,
 indicator,measure,Indicator,
+I,measure,t,

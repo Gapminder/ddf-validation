@@ -2,7 +2,7 @@ module Data.JSON.DataPackage where
 
 import Prelude
 import Data.Argonaut.Parser (jsonParser)
-import Data.DDF.Validation.Result (Errors, Error(..))
+import Data.Validation.Issue (Issues, Issue(..))
 import Data.List (List)
 import Data.Maybe (Maybe(..))
 import Data.String.NonEmpty.Internal (NonEmptyString(..))
@@ -37,13 +37,18 @@ data SchemaField
     , constrains :: Maybe { enum :: Array NonEmptyString }
     }
 
-datapackageExists :: FilePath -> Effect (V Errors FilePath)
+datapackageExists :: FilePath -> Effect (V Issues FilePath)
 datapackageExists path = do
   let
     datapackagePath = Path.concat [ path, "datapackage.json" ]
 
     v true = pure path
 
-    v false = invalid [ Error $ "no datapackage in this folder" ]
+    v false = invalid [ Issue $ "no datapackage in this folder" ]
   dpExisted <- exists datapackagePath
   pure $ v dpExisted
+
+-- Things that needs to be validated:
+-- 1. concepts not found
+-- 2. unexisting constrain values
+-- 3.

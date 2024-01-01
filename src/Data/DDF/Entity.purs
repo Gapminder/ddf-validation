@@ -3,12 +3,12 @@ module Data.DDF.Entity where
 import Prelude
 
 import Data.Array.NonEmpty as Narr
-import Data.DDF.Boolean (isBoolean)
-import Data.DDF.CsvFile (Header(..), CsvRec, header, headerVal)
-import Data.DDF.FileInfo as FI
-import Data.DDF.Identifier (Identifier)
-import Data.DDF.Identifier as Id
-import Data.DDF.Validation.Result (Error(..), Errors)
+import Data.DDF.Atoms.Boolean (parseBoolean)
+import Data.DDF.Csv.CsvFile (CsvRowRec)
+import Data.DDF.Csv.FileInfo as FI
+import Data.DDF.Atoms.Identifier (Identifier)
+import Data.DDF.Atoms.Identifier as Id
+import Data.Validation.Issue (Issue(..), Issues)
 import Data.List (List(..))
 import Data.List as L
 import Data.Map (Map)
@@ -25,14 +25,18 @@ import Data.Tuple as T
 import Data.Validation.Semigroup (V, invalid, isValid)
 import Partial.Unsafe (unsafePartial)
 import Safe.Coerce (coerce)
+import Data.DDF.Atoms.Header (Header(..), header, headerVal)
 
-data Entity
-  = Entity
-    { entityId :: Identifier
-    , entityDomain :: Identifier
-    , entitySets :: List Identifier
-    , props :: Props
-    }
+-- | Entity type.
+-- Entity MUST have id, entity_domain.
+-- Entity MAY have entity_set, which can have multiple values
+data Entity = Entity
+  { entityId :: Identifier
+  , entityDomain :: Identifier
+  , entitySets :: List Identifier
+  , props :: Props
+  , _info :: Map String String
+  }
 
 instance eqEntity :: Eq Entity where
   eq (Entity a) (Entity b) = (a.entityId == b.entityId) && (a.entityDomain == b.entityDomain)
@@ -41,30 +45,45 @@ instance showEntity :: Show Entity where
   show (Entity x) = show x
 
 -- | Properties type
-type Props
-  = Map Identifier String
+type Props = Map Identifier String
 
 entity :: Identifier -> Identifier -> List Identifier -> Props -> Entity
-entity entityId entityDomain entitySets props = Entity { entityId, entityDomain, entitySets, props }
+entity entityId entityDomain entitySets props = Entity { entityId, entityDomain, entitySets, props, _info }
+  where
+  _info = M.empty
 
 getId :: Entity -> Identifier
 getId (Entity e) = e.entityId
 
+getDomain :: Entity -> Identifier
+getDomain (Entity e) = e.entityDomain
+
+getDomainAndId :: Entity -> Tuple Identifier Identifier
+getDomainAndId (Entity e) = Tuple e.entityId e.entityDomain
+
 -- | Entity input from CsvFile
 -- The entityDomain and entitySet field comes from file name, so they are already nonempty
 -- entitySet might be absent.
-type EntityInput
-  = { entityId :: String, entityDomain :: NonEmptyString, entitySet :: Maybe NonEmptyString, props :: Map Header String }
+type EntityInput =
+  { entityId :: String
+  , entityDomain :: NonEmptyString
+  , entitySet :: Maybe NonEmptyString
+  , props :: Map Header String
+  , _info :: Map String String
+  }
 
-validEntityId :: String -> V Errors Identifier
+validEntityId :: String -> V Issues Identifier
 validEntityId s = Id.parseId s
 
-validEntityDomainId :: NonEmptyString -> Identifier
-validEntityDomainId = coerce
+-- because entity domain and entity set are validated in early processes
+-- no need to do more things.
+validEntityDomainId :: NonEmptyString -> V Issues Identifier
+validEntityDomainId = pure <<< coerce
 
-validEntitySetId :: NonEmptyString -> Identifier
-validEntitySetId = coerce
+validEntitySetId :: NonEmptyString -> V Issues Identifier
+validEntitySetId = pure <<< coerce
 
+-- | split entity properties input, separate is--entity_set header and others
 splitEntAndProps :: Map Header String -> Tuple (List (Tuple Identifier String)) (List (Tuple Identifier String))
 splitEntAndProps props =
   let
@@ -88,58 +107,61 @@ splitEntAndProps props =
   in
     Tuple yes_ no_
 
-getEntitySets :: List (Tuple Identifier String) -> V Errors (List Identifier)
+getEntitySets :: List (Tuple Identifier String) -> V Issues (List Identifier)
 getEntitySets lst = entitySetWithTureValue
   where
   entitySetWithTureValue = sequence $ map collectTrueItem lst
 
   collectTrueItem (Tuple header value) =
     let
-      boolValue = isBoolean value
+      boolValue = parseBoolean value
 
       headerStr = toString $ unwrap header
     in
       if isValid boolValue then
         pure header
       else
-        invalid [ Error $ "invalid boolean value for " <> headerStr <> ": " <> value ]
+        invalid [ Issue $ "invalid boolean value for " <> headerStr <> ": " <> value ]
 
-parseEntity :: EntityInput -> V Errors Entity
+parseEntity :: EntityInput -> V Issues Entity
 parseEntity { entityId: eid, entityDomain: edm, entitySet: es, props: props } =
-  -- TODO: validate if entitySet from file name matches
   if Str.null eid then
     -- TODO: specify which column should have value
-    invalid [ Error $ "entity MUST have an entity id" ]
+    invalid [ Issue $ "entity MUST have an entity id" ]
   else
     let
       validEid = validEntityId eid
-
       validEdomain = validEntityDomainId edm
-
       Tuple esets propsLst = splitEntAndProps props
-
+      -- FIXME: compare the sets and set in `es` in input
       validEsets = getEntitySets esets
-
       propsMinusIsHeaders = M.fromFoldable propsLst
     in
-      entity <$> validEid <*> pure validEdomain <*> validEsets <*> (pure propsMinusIsHeaders)
+      entity
+        <$> validEid
+        <*> validEdomain
+        <*> validEsets
+        <*> (pure propsMinusIsHeaders)
 
-entityInputFromCsvRecAndFileInfo :: FI.Ent -> CsvRec -> V Errors EntityInput
+entityInputFromCsvRecAndFileInfo :: FI.Ent -> CsvRowRec -> V Issues EntityInput
 entityInputFromCsvRecAndFileInfo { domain, set } (Tuple headers row) =
-  let 
+  let
     propsMap = M.fromFoldable $ Narr.zip headers row
 
     entityCol = case set of
       Nothing -> Header domain
-      Just s -> 
+      Just s ->
         if (Header s) `Narr.elem` headers then
           Header s
         else
           Header domain
-
+    -- TODO: validate if entitySet from file name matches
     Tuple eid props = unsafePartial $ fromJust $ M.pop entityCol propsMap
 
-  in        
-  pure { entityId: eid, entityDomain: domain, entitySet: set, props: props }
-
-
+  in
+    pure { entityId: eid
+         , entityDomain: domain
+         , entitySet: set
+         , props: props
+         , _info: M.empty  -- TODO: add additional infos about the entity.
+         }

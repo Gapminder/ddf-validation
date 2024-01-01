@@ -1,19 +1,18 @@
 module Data.DDF.Concept where
 
-import Data.Validation.Semigroup
 import Prelude
 
 import Data.Array as A
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Array.NonEmpty as Narr
 import Data.Csv (CsvRow(..))
-import Data.DDF.CsvFile (CsvRec, Header(..), headersExists, validCsvRec)
-import Data.DDF.FileInfo (FileInfo(..))
-import Data.DDF.Identifier (Identifier)
-import Data.DDF.Identifier as Id
-import Data.DDF.Validation.Result (Errors, Error(..))
-import Data.DDF.Validation.Result as Res
-import Data.DDF.Validation.ValidationT (Validation, vError, vWarning)
+import Data.DDF.Csv.CsvFile (CsvRowRec, headersExists, parseCsvRowRec)
+import Data.DDF.Csv.FileInfo (FileInfo(..))
+import Data.DDF.Csv.FileInfo as FI
+import Data.DDF.Atoms.Identifier (Identifier)
+import Data.DDF.Atoms.Identifier as Id
+import Data.Validation.Issue (Issues, Issue(..))
+import Data.Validation.ValidationT (Validation, vError, vWarning)
 import Data.Either (Either(..))
 import Data.List (List(..), concatMap, elem, elemIndex, length, zip)
 import Data.List as L
@@ -28,10 +27,25 @@ import Data.String as Str
 import Data.String.NonEmpty.Internal (NonEmptyString(..), toString)
 import Data.Traversable (for, traverse)
 import Data.Tuple (Tuple(..), fst)
+import Data.Validation.Semigroup
 import Data.Validation.Semigroup (V, invalid)
 import Safe.Coerce (coerce)
+import Data.DDF.Atoms.Header (parseHeader, createHeader, Header(..), headerVal)
 
--- | Types of concepts
+-- | Each Concept MUST have an Id and concept type.
+-- Other properties is a Map
+data Concept = Concept
+  { conceptId :: Identifier
+  , conceptType :: ConceptType
+  , props :: Props
+  , _info :: Map String String -- additional information used in the app, not in DDF data model
+  }
+
+-- | Properties type
+-- the Key MUST be valid identifier
+type Props = Map Identifier String
+
+-- | Types of concept
 data ConceptType
   = StringC
   | MeasureC
@@ -58,7 +72,8 @@ instance showConceptType :: Show ConceptType where
 
 derive instance eqConceptType :: Eq ConceptType
 
-parseConceptType :: String -> V Errors ConceptType
+-- | parse concept type from string
+parseConceptType :: String -> V Issues ConceptType
 parseConceptType x = ado
   cid <- Id.parseId x
   let
@@ -75,22 +90,13 @@ parseConceptType x = ado
       _ -> CustomC cid
   in res
 
--- | Each Concept should have an Id and concept type.
--- | Other properties will be a dictionary
-data Concept
-  = Concept
-    { conceptId :: Identifier
-    , conceptType :: ConceptType
-    , props :: Props
-    }
-
--- | Properties type
-type Props
-  = Map Identifier String
-
 -- | create concept
 concept :: Identifier -> ConceptType -> Props -> Concept
-concept conceptId conceptType props = Concept { conceptId, conceptType, props }
+concept conceptId conceptType props = Concept { conceptId, conceptType, props, _info }
+  where
+  _info = M.empty
+
+-- TODO: add a function that can add hidden props
 
 instance showConcept :: Show Concept where
   show (Concept x) = show x
@@ -98,30 +104,35 @@ instance showConcept :: Show Concept where
 instance eqConcept :: Eq Concept where
   eq (Concept a) (Concept b) = a.conceptId == b.conceptId
 
+-- | Concept Input, which comes from one row of CsvFile, is a Map.
+type ConceptInput = Map Identifier String
+
+-- FIXME: Concept Input should be consistent with Entity Input
+-- which use a record as type and content shoud be same as Concept.
+-- type ConceptInput = { conceptId :: String
+--                     , conceptType :: String
+--                     , props :: Map Identifier String }
+
+-- | get concept id
 getId :: Concept -> Identifier
 getId (Concept x) = x.conceptId
-
--- | Concept Input, which comes from CsvFile.
--- | if CsvFile is valid, then every concept should have conceptId and conceptType.
-type ConceptInput
-  = Map Identifier String
 
 hasProp :: String -> Props -> Boolean
 hasProp f props = M.member (Id.unsafeCreate f) props
 
-hasFieldAndGetValue :: String -> ConceptInput -> V Errors String
+hasFieldAndGetValue :: String -> ConceptInput -> V Issues String
 hasFieldAndGetValue field input = case M.lookup (Id.unsafeCreate field) input of
-  Nothing -> invalid [ Error $ "field " <> field <> "MUST exist for concept" ]
+  Nothing -> invalid [ Issue $ "field " <> field <> " MUST exist for concept" ]
   Just v -> pure v
 
-nonEmptyField :: String -> String -> V Errors String
+nonEmptyField :: String -> String -> V Issues String
 nonEmptyField field input =
   if Str.null input then
-    invalid [ Error $ "field " <> field <> " MUST not be empty" ]
+    invalid [ Issue $ "field " <> field <> " MUST not be empty" ]
   else
     pure input
 
-checkMandatoryField :: Concept -> V Errors Concept
+checkMandatoryField :: Concept -> V Issues Concept
 checkMandatoryField input@(Concept c) = case c.conceptType of
   EntitySetC -> ado
     hasFieldAndGetValue "domain" c.props
@@ -131,14 +142,14 @@ checkMandatoryField input@(Concept c) = case c.conceptType of
   _ -> pure input
 
 -- | WS server have issue when concept Id is too long
-conceptIdTooLong :: Concept -> V Errors Concept
+conceptIdTooLong :: Concept -> V Issues Concept
 conceptIdTooLong conc@(Concept c) = ado
   Id.isLongerThan64Chars c.conceptId
-  in 
+  in
     conc
 
 -- | convert a ConceptInput into valid Concept or errors
-parseConcept :: ConceptInput -> V Errors Concept
+parseConcept :: ConceptInput -> V Issues Concept
 parseConcept input =
   let
     conceptId =
@@ -162,9 +173,49 @@ parseConcept input =
         checkMandatoryField
 
 -- | convert CsvRec to ConceptInput
-conceptInputFromCsvRec :: CsvRec -> ConceptInput
+conceptInputFromCsvRec :: CsvRowRec -> ConceptInput
 conceptInputFromCsvRec (Tuple headers row) = rowAsMap row
   where
   headersL = map coerce headers
 
   rowAsMap r = fromFoldable (Narr.zip headersL r)
+
+-- | create ConceptInput from csv row
+parseCsvRowRecConceptInput :: NonEmptyArray Header -> CsvRow -> V Issues Concept
+parseCsvRowRecConceptInput headers row =
+  parseCsvRowRec headers row
+    `andThen`
+      (\x -> pure $ conceptInputFromCsvRec x)
+    `andThen`
+      parseConcept
+
+-- | unsafe create, useful for testing.
+unsafeCreate :: String -> String -> Map String String -> Map String String -> Concept
+unsafeCreate concept_id concept_type props_ info =
+  Concept
+    { conceptId: conceptId
+    , conceptType: conceptType
+    , props: props
+    , _info: info
+    }
+  where
+  conceptId = Id.unsafeCreate concept_id
+  conceptType = unsafeCreateConceptType concept_type
+  props = mapKeys Id.unsafeCreate props_
+
+unsafeCreateConceptType :: String -> ConceptType
+unsafeCreateConceptType x =
+  case x of
+    "string" -> StringC
+    "meaeure" -> MeasureC
+    "bollean" -> BooleanC
+    "interval" -> IntervalC
+    "entity_domain" -> EntityDomainC
+    "entity_set" -> EntitySetC
+    "role" -> RoleC
+    "composite" -> CompositeC
+    "time" -> TimeC
+    _ -> CustomC $ Id.unsafeCreate x
+
+-- TODO: create validation in which will check discrete/continuous concepts files.
+-- conceptInputFromCsvRecAndFileInfo :: FileInfo -> CsvRec -> V Issues ConceptInput

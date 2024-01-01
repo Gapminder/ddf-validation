@@ -21,7 +21,7 @@
     "dist"
   ],
   "dependencies": {
-    "csv-parse": "^5.3.0"
+    "csv-parse": "^5.5.3"
   },
   "devDependencies": {
     "esbuild": "^0.14.38"

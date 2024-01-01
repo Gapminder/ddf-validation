@@ -1,14 +1,14 @@
-module Data.DDF.FileInfo where
+module Data.DDF.Csv.FileInfo where
 
 import Prelude
 
 import Control.Alt ((<|>))
-import Data.DDF.Identifier (identifier)
-import Data.DDF.Validation.Result (Errors, Error(..))
+import Data.Array as A
+import Data.DDF.Atoms.Identifier (identifier)
+import Data.Validation.Issue (Issue(..), Issues)
 import Data.Either (Either(..))
 import Data.List (List(..))
 import Data.List.Types (NonEmptyList)
-import Data.Array as A
 import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..), stripSuffix)
 import Data.String.NonEmpty (NonEmptyString(..))
@@ -45,7 +45,9 @@ type Ent
   = { domain :: NonEmptyString, set :: Maybe NonEmptyString }
 
 type DP
-  = { indicator :: NonEmptyString, pkeys :: NonEmptyList NonEmptyString, constrains :: NonEmptyList (Maybe NonEmptyString) }
+  = { indicator :: NonEmptyString,
+      pkeys :: NonEmptyList NonEmptyString,
+      constrains :: NonEmptyList (Maybe NonEmptyString) }
 
 instance showCollection :: Show CollectionInfo where
   show Concepts = "concepts"
@@ -168,17 +170,19 @@ datapointFile = do
 getName :: String -> Maybe String
 getName = stripSuffix (Pattern ".csv")
 
-validateFileInfo :: FilePath -> V Errors FileInfo
+validateFileInfo :: FilePath -> V Issues FileInfo
 validateFileInfo fp = case getName $ basename fp of
-  Nothing -> invalid [ Error $ fp <> " is not a csv file" ]
+  Nothing -> invalid [ InvalidCSV fp ]
   Just fn ->
     let
       fileParser = conceptFile <|> entityFile <|> datapointFile
     in
       case runParser fileParser fn of
         Right ci -> pure $ FileInfo fp ci fn
-        Left err -> invalid [ Error $ fp <> " is not correct ddf file: " <> err.error ]
+        Left err -> invalid [ InvalidDDFCSV fp err.error ]
 
-fromFilePath :: FilePath -> Either Errors FileInfo
+parseFileInfo :: FilePath -> V Issues FileInfo
+parseFileInfo = validateFileInfo
+
+fromFilePath :: FilePath -> Either Issues FileInfo
 fromFilePath = toEither <<< validateFileInfo
-

@@ -8,21 +8,132 @@ import Effect.Aff (launchAff_)
 import Effect.Class.Console (log)
 import Main as M
 import Node.Path (resolve)
-import Test.Spec (pending, describe, it)
-import Test.Spec.Assertions (shouldEqual)
+import Test.Spec (pending, describe, describeOnly, it, itOnly, Spec)
+import Test.Spec.Assertions
+  ( shouldEqual
+  , shouldSatisfy
+  , shouldNotSatisfy
+  , shouldNotContain
+  , shouldContain
+  , fail
+  )
 import Test.Spec.Reporter.Console (consoleReporter)
 import Test.Spec.Runner (runSpec)
-
+import Data.Validation.Semigroup (isValid, andThen)
+import Data.DDF.Atoms.Identifier (parseId, isLongerThan64Chars)
+import Data.DDF.Atoms.Identifier as Id
+import Data.Validation.Issue (Issue(..), Issues)
+import Data.DDF.Csv.FileInfo (parseFileInfo)
+import Data.DDF.Csv.CsvFile (parseCsvFile)
+import Data.String.CodeUnits (fromCharArray)
+import Data.List.Lazy (take, repeat)
+import Data.Array as Arr
+import Data.Foldable (for_)
+import Data.DDF.Concept (ConceptInput, parseConcept)
+import Data.DDF.Concept as Conc
+import Data.Map as Map
+import Data.Tuple (Tuple(..))
+import Data.Csv (readCsvs)
+import Data.Csv as Csv
+import Data.Maybe (Maybe(..), isJust, isNothing)
+import Utils (getFiles)
 
 testMain :: Effect Unit
 testMain = do
-  path <- resolve [ ] "test/datasets/ddf--test--new"
-  M.runMain(path)
-
+  path <- resolve [] "test/datasets/ddf--test--new"
+  M.runMain (path)
 
 main :: Effect Unit
-main = launchAff_ $ runSpec [consoleReporter] do
+main = launchAff_ $ runSpec [ consoleReporter ] do
   describe "ddf-validation" do
+    describeOnly "new things - low level" do
+      it "identifier - lowercase numeric" do
+        let
+          validIds =
+            [ "abc"
+            , "a_bc_123"
+            , "a"
+            ]
+        for_ validIds \s -> do
+          let output = parseId s
+          output `shouldSatisfy` isValid
+        let
+          inValidIds =
+            [ ""
+            , "a_bC_123"
+            , "B"
+            , "a-b-c"
+            ]
+        for_ inValidIds \s -> do
+          let output = parseId s
+          output `shouldNotSatisfy` isValid
+      it "identifier - should not longer than 64 chars" do
+        let
+          input = fromCharArray $ Arr.fromFoldable $ take 65 $ repeat 'a'
+          output = parseId input `andThen` isLongerThan64Chars
+        output `shouldNotSatisfy` isValid
+      it "filenames - ddf file" do
+        let
+          validFiles =
+            [ "ddf--concepts.csv"
+            , "ddf--concepts--discrete.csv"
+            , "ddf--entities--geo.csv"
+            , "ddf--entities--geo--country.csv"
+            , "ddf--datapoints--indicator--by--geo.csv"
+            , "ddf--datapoints--indicator--by--geo-geo--time.csv"
+            , "folder/ddf--concepts.csv"
+            ]
+        for_ validFiles \f -> do
+          let output = parseFileInfo f
+          output `shouldSatisfy` isValid
+        let
+          invalidFiles =
+            [ "ddf.csv"
+            , "datapoints.csv"
+            , ".gitignore"
+            , "ddf--concepts--main.csv"
+            , "ddf--datapoints--indicator--geo.csv"
+            ]
+        for_ invalidFiles \f -> do
+          let output = parseFileInfo f
+          output `shouldNotSatisfy` isValid
+      it "filenames vs headers" do
+        let
+          fileName = "ddf--concepts.csv"
+          rawCsvContent =
+            [ [ "concept", "concept_type", "name" ]
+            , [ "geo", "entity_domain", "Geo" ]
+            ]
+          output = ado
+            fileInfo <- parseFileInfo fileName
+            in parseCsvFile { fileInfo: fileInfo, csvContent: Csv.create rawCsvContent }
+        output `shouldSatisfy` isValid
+      it "concept validation - one concept" do
+        let
+          input =
+            [ (Tuple (Id.unsafeCreate "concept") "testing")
+            , (Tuple (Id.unsafeCreate "concept_type") "string")
+            , (Tuple (Id.unsafeCreate "name") "testing_name")
+            ]
+          output = parseConcept $ Map.fromFoldable input
+        output `shouldSatisfy` isValid
+      pending "ddf validation - duplicated concepts"
+        -- let
+        --   input = Conc.Concept
+      pending "entity validation - one entity" -- next: rethink about the EntityInput object.
+
+      -- IO things
+      it "read csv file" do
+        let filename = "test/datasets/ddf--test--new/ddf--concepts.csv"
+        output <- readCsvs [ filename ]
+        case (output Arr.!! 0) of
+          Nothing -> fail "it should not be nothing"
+          Just rawcsv ->
+            rawcsv.headers `shouldSatisfy` isJust
+      it "list all csv files in a folder" do
+        let dirname = "test/datasets/ddf--test--new/"
+        files <- getFiles dirname [ "etl" ]
+        files `shouldContain` (dirname <> "ddf--concepts.csv")
     -- many of below rules are from old ddf-validation code,
     -- TODO: needs cleanup
     describe "DDF Rules Checking" do
@@ -35,7 +146,7 @@ main = launchAff_ $ runSpec [consoleReporter] do
       -- entity
       pending "concept looks like boolean"
       pending "empty entity id"
-      pending "entity value as entity name"
+      -- pending "entity value as entity name"  -- only for old WS
       pending "incorrect boolean entity"
       pending "non unique entity value"
       pending "wrong entity is-- header"

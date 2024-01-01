@@ -2,62 +2,93 @@ module Utils where
 
 import Prelude
 
+import Data.Function (on)
 import Data.Array (concat, concatMap, elem, filter, filterA, partition)
+import Data.Array as Arr
 import Data.Either (Either(..))
 import Data.List (List(..), singleton)
+import Data.List as L
+import Data.List.NonEmpty as NL
 import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..), joinWith)
 import Data.Traversable (sequence, traverse)
-import Data.Tuple (fst)
+import Data.Traversable (for) as Tra
+import Data.Tuple (Tuple(..), fst, snd)
 import Effect (Effect)
-import Effect.Aff (Aff, attempt, launchAff, launchAff_, message)
+import Effect.Aff (Aff, attempt, launchAff, launchAff_, message, joinFiber)
+import Effect.Aff.Class (liftAff)
+import Effect.Class (liftEffect)
 import Effect.Class.Console (log, logShow)
 import Node.Encoding (Encoding(..))
 import Node.FS.Stats (isDirectory, isFile)
-import Node.FS.Sync (readTextFile, readdir, writeTextFile, stat)
+import Node.FS.Aff (readTextFile, readdir, writeTextFile, stat)
 import Node.Path (FilePath, basename, extname)
 import Node.Path as Path
+import Pipes (for, yield, (>->), await, each, (>~), cat)
+import Pipes.Core (Producer_, Pipe, runEffect)
+import Pipes.Prelude as P
 
-getFiles :: FilePath -> Array (String) -> Effect (Array FilePath)
-getFiles x excludes = do
-  fs <- readdir x
+
+readdirStream :: String -> Producer_ FilePath Aff Unit
+readdirStream x = do
+  fs <- liftAff $ readdir x
+  each fs
+
+-- | get all csv files from a directory recursively, using pipes and Aff
+getFiles_ :: FilePath -> Array String -> Producer_ FilePath Aff Unit
+getFiles_ x excl = do
   let
-    folderFilter f = not $ f `elem` excludes
+    excludePaths ps = P.filter (\x -> not $ x `elem` ps)
 
-    fsMinusExcludes = filter folderFilter fs
+    isCsvFile path = extname (basename path) == ".csv"
 
-    fsFullPath = map (\f -> Path.concat [ x, f ]) fsMinusExcludes
-  files <-
-    filterA
-      ( \f ->
-          (&&)
-            <$> (isFile <$> stat f)
-            <*> pure (extname (basename f) == ".csv")
-      )
-      fsFullPath
-  dirs <- filterA (\f -> isDirectory <$> stat f) fsFullPath
-  fsInDirs <- concat <$> traverse (\d -> getFiles d []) dirs
-  pure $ files <> fsInDirs
+    fs = readdirStream x
+      >-> excludePaths excl
+      >-> P.map (\f -> Path.concat [ x, f ])
+
+  for fs
+    ( \entry -> do
+        status <- liftAff $ stat entry
+        when (isFile status && isCsvFile entry) (yield entry)
+        when (isDirectory status) (getFiles_ entry [])
+    )
+
+-- | get all csv files from a directory recursively
+getFiles :: FilePath -> Array String -> Aff (Array FilePath)
+getFiles x excl = do
+  fib <- attempt $ P.toListM (getFiles_ x excl)
+  case fib of
+    Left e -> do
+      log $ "ERROR: " <> message e
+      pure $ [ ]
+    Right res -> pure $ Arr.fromFoldable res
 
 arrayOfRight :: forall a b. Either a b -> Array b
 arrayOfRight (Right b) = [ b ]
-
 arrayOfRight _ = []
 
 arrayOfLeft :: forall a b. Either a b -> Array a
 arrayOfLeft (Left a) = [ a ]
-
 arrayOfLeft _ = []
 
 listOfRight :: forall a b. Either a b -> List b
 listOfRight (Right b) = singleton b
-
 listOfRight _ = Nil
 
 listOfLeft :: forall a b. Either a b -> List a
 listOfLeft (Left a) = singleton a
-
 listOfLeft _ = Nil
+
+dupsBy :: ∀ a. (a -> a -> Ordering) -> List a -> List a
+dupsBy func lst =
+  let
+    gs = L.groupAllBy func lst
+
+    counts = map (\x -> (Tuple (NL.head x) (NL.length x))) gs
+
+    dups = L.filter (\x -> snd x > 1) counts
+  in
+    map fst dups
 
 -- | create a counter
 -- counter :: forall a. Ord a => Eq a => NonEmptyArray a -> NonEmptyArray (Tuple a Int)
