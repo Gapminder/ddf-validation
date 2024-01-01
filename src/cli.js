@@ -2,4 +2,4 @@
 
 'use strict';
 
-import "./app.js";
+import "../dist/app.js";

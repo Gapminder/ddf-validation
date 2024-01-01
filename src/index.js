@@ -1,4 +1,4 @@
-import { runMain } from "./lib.js";
+import { runMain } from "../dist/lib.js";
 
 function validate(fp = "./") {
   runMain(fp)();

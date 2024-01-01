@@ -34,6 +34,7 @@ to generate this file without the comments in this block.
   , "nonempty"
   , "ordered-collections"
   , "partial"
+  , "pipes"
   , "prelude"
   , "psci-support"
   , "quickcheck"
@@ -42,12 +43,11 @@ to generate this file without the comments in this block.
   , "string-parsers"
   , "strings"
   , "stringutils"
+  , "tailrec"
   , "transformers"
   , "tuples"
   , "typelevel"
   , "validation"
-  , "spec"
-  , "tailrec"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]
