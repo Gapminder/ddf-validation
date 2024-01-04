@@ -4,7 +4,6 @@ import Prelude
 
 import Data.Array.NonEmpty as Narr
 import Data.DDF.Atoms.Boolean (parseBoolean)
-import Data.DDF.Csv.CsvFile (CsvRowRec)
 import Data.DDF.Csv.FileInfo as FI
 import Data.DDF.Atoms.Identifier (Identifier)
 import Data.DDF.Atoms.Identifier as Id
@@ -23,14 +22,13 @@ import Data.Traversable (sequence)
 import Data.Tuple (Tuple(..))
 import Data.Tuple as T
 import Data.Validation.Semigroup (V, invalid, isValid)
-import Partial.Unsafe (unsafePartial)
 import Safe.Coerce (coerce)
 import Data.DDF.Atoms.Header (Header(..), header, headerVal)
 
 -- | Entity type.
 -- Entity MUST have id, entity_domain.
 -- Entity MAY have entity_set, which can have multiple values
-data Entity = Entity
+newtype Entity = Entity
   { entityId :: Identifier
   , entityDomain :: Identifier
   , entitySets :: List Identifier
@@ -142,26 +140,3 @@ parseEntity { entityId: eid, entityDomain: edm, entitySet: es, props: props } =
         <*> validEdomain
         <*> validEsets
         <*> (pure propsMinusIsHeaders)
-
-entityInputFromCsvRecAndFileInfo :: FI.Ent -> CsvRowRec -> V Issues EntityInput
-entityInputFromCsvRecAndFileInfo { domain, set } (Tuple headers row) =
-  let
-    propsMap = M.fromFoldable $ Narr.zip headers row
-
-    entityCol = case set of
-      Nothing -> Header domain
-      Just s ->
-        if (Header s) `Narr.elem` headers then
-          Header s
-        else
-          Header domain
-    -- TODO: validate if entitySet from file name matches
-    Tuple eid props = unsafePartial $ fromJust $ M.pop entityCol propsMap
-
-  in
-    pure { entityId: eid
-         , entityDomain: domain
-         , entitySet: set
-         , props: props
-         , _info: M.empty  -- TODO: add additional infos about the entity.
-         }

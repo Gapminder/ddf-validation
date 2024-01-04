@@ -25,6 +25,8 @@ import Data.DDF.Atoms.Identifier as Id
 import Data.Validation.Issue (Issue(..), Issues)
 import Data.DDF.Csv.FileInfo (parseFileInfo)
 import Data.DDF.Csv.CsvFile (parseCsvFile)
+import Data.DDF.DataPoint (parseDataPoint)
+import Data.DDF.Entity (parseEntity)
 import Data.String.CodeUnits (fromCharArray)
 import Data.List.Lazy (take, repeat)
 import Data.Array as Arr
@@ -35,7 +37,10 @@ import Data.Map as Map
 import Data.Tuple (Tuple(..))
 import Data.Csv (readCsvs)
 import Data.Csv as Csv
-import Data.Maybe (Maybe(..), isJust, isNothing)
+import Data.Maybe (Maybe(..), isJust, isNothing, fromJust)
+import Data.String.NonEmpty (fromString, unsafeFromString)
+import Data.List.NonEmpty (NonEmptyList(..))
+import Data.List.NonEmpty as NEL
 import Utils (getFiles)
 
 testMain :: Effect Unit
@@ -43,7 +48,7 @@ testMain = do
   path <- resolve [] "test/datasets/ddf--test--new"
   M.runMain (path)
 
-main :: Effect Unit
+main :: Partial => Effect Unit
 main = launchAff_ $ runSpec [ consoleReporter ] do
   describe "ddf-validation" do
     describeOnly "new things - low level" do
@@ -110,17 +115,46 @@ main = launchAff_ $ runSpec [ consoleReporter ] do
         output `shouldSatisfy` isValid
       it "concept validation - one concept" do
         let
+          input = { conceptId: "testing"
+                  , conceptType: "measure"
+                  , props: Map.fromFoldable [(Tuple
+                                              (Id.unsafeCreate "name")
+                                              "testing_name")]
+                  , _info: Map.empty
+                  }
+          output = parseConcept input
+        output `shouldSatisfy` isValid
+      it "entity validation - one entity" do
+        let
+          input = { entityId: "swe"
+                  , entityDomain: unsafeFromString "geo"
+                  , entitySet: Nothing
+                  , props: Map.empty
+                  , _info: Map.empty
+                  }
+          output = parseEntity input
+        output `shouldSatisfy` isValid
+      it "datapoint validation - one datapoint" do
+        let
           input =
-            [ (Tuple (Id.unsafeCreate "concept") "testing")
-            , (Tuple (Id.unsafeCreate "concept_type") "string")
-            , (Tuple (Id.unsafeCreate "name") "testing_name")
-            ]
-          output = parseConcept $ Map.fromFoldable input
+            { indicatorId: unsafeFromString "testing"
+            , primaryKeys: fromJust $
+                NEL.fromFoldable
+                  [ unsafeFromString "geo"
+                  , unsafeFromString "time"
+                  ]
+            , primaryKeyValues: fromJust $
+                NEL.fromFoldable
+                  [ "chn"
+                  , "1990"
+                  ]
+            , value: "1"
+            , _info: Map.empty
+            }
+          output = parseDataPoint $ input
         output `shouldSatisfy` isValid
       pending "ddf validation - duplicated concepts"
-        -- let
-        --   input = Conc.Concept
-      pending "entity validation - one entity" -- next: rethink about the EntityInput object.
+
 
       -- IO things
       it "read csv file" do

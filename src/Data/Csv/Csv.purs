@@ -1,4 +1,12 @@
-module Data.Csv where
+module Data.Csv
+  ( CsvRow(..)
+  , RawCsvContent
+  , readCsv
+  , getRow
+  , getLineNo
+  , readCsvs
+  , create
+  ) where
 
 import Prelude
 
@@ -23,19 +31,25 @@ import Safe.Coerce (coerce)
 
 -- | CsvRow is a tuple of line number and row content
 newtype CsvRow =
-  CsvRow (Tuple Int (Array String))
+  CsvRow (Tuple Int (Array String)) -- Note: just use type if newtype cost performance.
 
 instance showCsvRow :: Show CsvRow where
   show (CsvRow (Tuple i x)) =
     show rec
     where
-      rec = { line: i, record: x }
+    rec = { line: i, record: x }
 
 derive instance newtypeCsvRow :: Newtype CsvRow _
 
+-- | Split headers and data rows
+type RawCsvContent =
+  { headers :: Maybe (Array String)
+  , rows :: Maybe (Array CsvRow)
+  }
+
 foreign import readCsvImpl :: Fn1 FilePath (Array (Array String))
 
-readCsv :: FilePath -> Effect (Array (Array String))  -- NOTE: this will not handle exceptions from the js side.
+readCsv :: FilePath -> Effect (Array (Array String)) -- NOTE: this will not handle exceptions from the js side.
 readCsv x = pure $ runFn1 readCsvImpl x
 
 getRow :: CsvRow -> (Array String)
@@ -44,16 +58,11 @@ getRow (CsvRow tpl) = snd tpl
 getLineNo :: CsvRow -> Int
 getLineNo (CsvRow tpl) = fst tpl
 
-type RawCsvContent
-  = { headers :: Maybe (Array String)
-    , rows :: Maybe (Array CsvRow)
-    }
-
 toCsvRow :: Array (Array String) -> Array CsvRow
 toCsvRow [] = []
 toCsvRow xs =
   let
-    idxs = range 2 ((length xs) + 1)  -- idx starts from 2, excluding header row
+    idxs = range 2 ((length xs) + 1) -- idx starts from 2, excluding header row
 
     tuples = zip idxs xs
 

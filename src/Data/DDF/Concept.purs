@@ -5,8 +5,6 @@ import Prelude
 import Data.Array as A
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Array.NonEmpty as Narr
-import Data.Csv (CsvRow(..))
-import Data.DDF.Csv.CsvFile (CsvRowRec, headersExists, parseCsvRowRec)
 import Data.DDF.Csv.FileInfo (FileInfo(..))
 import Data.DDF.Csv.FileInfo as FI
 import Data.DDF.Atoms.Identifier (Identifier)
@@ -22,24 +20,29 @@ import Data.Map (Map, delete, fromFoldable, lookup, pop)
 import Data.Map as M
 import Data.Map.Extra (mapKeys)
 import Data.Maybe (Maybe(..), isNothing)
-import Data.Newtype (unwrap)
+import Data.Newtype (unwrap, class Newtype)
 import Data.String as Str
 import Data.String.NonEmpty.Internal (NonEmptyString(..), toString)
 import Data.Traversable (for, traverse)
 import Data.Tuple (Tuple(..), fst)
 import Data.Validation.Semigroup
 import Data.Validation.Semigroup (V, invalid)
-import Safe.Coerce (coerce)
 import Data.DDF.Atoms.Header (parseHeader, createHeader, Header(..), headerVal)
 
 -- | Each Concept MUST have an Id and concept type.
 -- Other properties is a Map
-data Concept = Concept
+newtype Concept = Concept
   { conceptId :: Identifier
   , conceptType :: ConceptType
   , props :: Props
   , _info :: Map String String -- additional information used in the app, not in DDF data model
   }
+
+instance eqConcept :: Eq Concept where
+  eq (Concept a) (Concept b) = a.conceptId == b.conceptId
+
+instance showConcept :: Show Concept where
+  show (Concept a) = show a
 
 -- | Properties type
 -- the Key MUST be valid identifier
@@ -90,6 +93,10 @@ parseConceptType x = ado
       _ -> CustomC cid
   in res
 
+-- | reversed keywords which can not used as concept id
+reversedConcepts :: Array String
+reversedConcepts = [ "concept", "concept_type" ]
+
 -- | create concept
 concept :: Identifier -> ConceptType -> Props -> Concept
 concept conceptId conceptType props = Concept { conceptId, conceptType, props, _info }
@@ -97,41 +104,24 @@ concept conceptId conceptType props = Concept { conceptId, conceptType, props, _
   _info = M.empty
 
 -- TODO: add a function that can add hidden props
+setInfo :: Map String String -> Concept -> Concept
+setInfo info (Concept c) = Concept (c { _info = info })
 
-instance showConcept :: Show Concept where
-  show (Concept x) = show x
-
-instance eqConcept :: Eq Concept where
-  eq (Concept a) (Concept b) = a.conceptId == b.conceptId
-
--- | Concept Input, which comes from one row of CsvFile, is a Map.
-type ConceptInput = Map Identifier String
-
--- FIXME: Concept Input should be consistent with Entity Input
--- which use a record as type and content shoud be same as Concept.
--- type ConceptInput = { conceptId :: String
---                     , conceptType :: String
---                     , props :: Map Identifier String }
+-- | The unvalidated concept record.
+type ConceptInput =
+  { conceptId :: String
+  , conceptType :: String
+  , props :: Map Identifier String
+  , _info :: Map String String
+  }
 
 -- | get concept id
 getId :: Concept -> Identifier
 getId (Concept x) = x.conceptId
 
-hasProp :: String -> Props -> Boolean
-hasProp f props = M.member (Id.unsafeCreate f) props
-
-hasFieldAndGetValue :: String -> ConceptInput -> V Issues String
-hasFieldAndGetValue field input = case M.lookup (Id.unsafeCreate field) input of
-  Nothing -> invalid [ Issue $ "field " <> field <> " MUST exist for concept" ]
-  Just v -> pure v
-
-nonEmptyField :: String -> String -> V Issues String
-nonEmptyField field input =
-  if Str.null input then
-    invalid [ Issue $ "field " <> field <> " MUST not be empty" ]
-  else
-    pure input
-
+-- | some concept type require a column exists
+-- for example if concept type is entity_set, then it
+-- must have non empty domain.
 checkMandatoryField :: Concept -> V Issues Concept
 checkMandatoryField input@(Concept c) = case c.conceptType of
   EntitySetC -> ado
@@ -141,6 +131,22 @@ checkMandatoryField input@(Concept c) = case c.conceptType of
     in input
   _ -> pure input
 
+hasFieldAndGetValue :: String -> Props -> V Issues String
+hasFieldAndGetValue field input =
+  case M.lookup (Id.unsafeCreate field) input of
+    Nothing -> invalid [ Issue $ "field " <> field <> " MUST exist for concept" ]
+    Just v -> pure v
+
+nonEmptyField :: String -> String -> V Issues String
+nonEmptyField field input =
+  if Str.null input then
+    invalid [ Issue $ "field " <> field <> " MUST not be empty" ]
+  else
+    pure input
+
+hasProp :: String -> Props -> Boolean
+hasProp f props = M.member (Id.unsafeCreate f) props
+
 -- | WS server have issue when concept Id is too long
 conceptIdTooLong :: Concept -> V Issues Concept
 conceptIdTooLong conc@(Concept c) = ado
@@ -148,46 +154,28 @@ conceptIdTooLong conc@(Concept c) = ado
   in
     conc
 
+-- | check if concept id is not reversed keyword
+notReversed :: String -> V Issues String
+notReversed conceptId =
+  if conceptId `elem` reversedConcepts then
+    invalid [ Issue $ "concept/concept_type can not be used as concept id" ]
+  else
+    pure conceptId
+
 -- | convert a ConceptInput into valid Concept or errors
 parseConcept :: ConceptInput -> V Issues Concept
 parseConcept input =
   let
-    conceptId =
-      hasFieldAndGetValue "concept" input
-        `andThen`
-          nonEmptyField "concept"
-        `andThen`
-          Id.parseId
+    conceptId = notReversed input.conceptId
+      `andThen` Id.parseId
+    conceptType = parseConceptType input.conceptType
 
-    conceptType =
-      hasFieldAndGetValue "concept_type" input
-        `andThen`
-          nonEmptyField "concept_type"
-        `andThen`
-          parseConceptType
-
-    props = input # (M.delete (Id.unsafeCreate "concept") >>> M.delete (Id.unsafeCreate "concept_type"))
   in
-    (concept <$> conceptId <*> conceptType <*> pure props)
+    (concept <$> conceptId <*> conceptType <*> pure input.props)
       `andThen`
         checkMandatoryField
-
--- | convert CsvRec to ConceptInput
-conceptInputFromCsvRec :: CsvRowRec -> ConceptInput
-conceptInputFromCsvRec (Tuple headers row) = rowAsMap row
-  where
-  headersL = map coerce headers
-
-  rowAsMap r = fromFoldable (Narr.zip headersL r)
-
--- | create ConceptInput from csv row
-parseCsvRowRecConceptInput :: NonEmptyArray Header -> CsvRow -> V Issues Concept
-parseCsvRowRecConceptInput headers row =
-  parseCsvRowRec headers row
-    `andThen`
-      (\x -> pure $ conceptInputFromCsvRec x)
-    `andThen`
-      parseConcept
+      `andThen`
+        (\c -> pure $ setInfo input._info c)
 
 -- | unsafe create, useful for testing.
 unsafeCreate :: String -> String -> Map String String -> Map String String -> Concept

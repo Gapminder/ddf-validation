@@ -1,5 +1,13 @@
--- | A good ddf csv file should have consistency in its headers and filename
-module Data.DDF.Csv.CsvFile where
+-- | This module defines csv files in DDF csv model.
+-- Files are in csv format with a mandatory header row on the first line.
+
+module Data.DDF.Csv.CsvFile
+  ( CsvFile
+  , CsvContent
+  , CsvFileInput
+  , parseCsvFile
+  , noDupCols
+  ) where
 
 import Prelude
 import StringParser
@@ -33,37 +41,18 @@ import Data.Validation.Semigroup (V, andThen, invalid, isValid, toEither)
 import StringParser (Parser, choice, eof, runParser, string)
 import Data.DDF.Atoms.Header (parseHeader, createHeader, Header, headerVal)
 
+-- | csv file combines file name info and file content
+type CsvFile =
+  { fileInfo :: FileInfo -- the info come from file name
+  , csvContent :: CsvContent -- the info come from file content
+  }
 
 -- | CsvContent is the data read from a csv file.
-type CsvContent
-  = { headers :: NonEmptyArray Header  -- must have header
-    , rows :: Array CsvRow             -- can be empty
-    }
+type CsvContent =
+  { headers :: NonEmptyArray Header -- must have header
+  , rows :: Array CsvRow -- can be empty
+  }
 
--- | csv file combines file name info and file content
-data CsvFile
-  = CsvFile
-    { fileInfo :: FileInfo
-    , csvContent :: CsvContent
-    }
-
-instance showCsvFile :: Show CsvFile where
-  show (CsvFile x) = show x
-
--- getters / setters
-mkCsvContent :: NonEmptyArray Header -> Array CsvRow -> CsvContent
-mkCsvContent headers rows = { headers: headers, rows: rows }
-
-mkCsvFile :: FileInfo -> CsvContent -> CsvFile
-mkCsvFile fi csv = CsvFile { fileInfo: fi, csvContent: csv }
-
-getCsvContent :: CsvFile -> CsvContent
-getCsvContent (CsvFile { csvContent }) = csvContent
-
-getFileInfo :: CsvFile -> FileInfo
-getFileInfo (CsvFile { fileInfo }) = fileInfo
-
--- Validation: Errors
 -- | input data
 type CsvFileInput =
   { fileInfo :: FileInfo
@@ -71,10 +60,27 @@ type CsvFileInput =
   }
 
 -- | intermediate type for validating csv content
-type NonEmptyRawCsvContent
-  = { headers :: NonEmptyArray String
-    , rows :: Array CsvRow
-    }
+-- We will check the RawCsvContent to ensure the headers are not empty
+-- because the file name have indicated what columns must present.
+type NonEmptyRawCsvContent =
+  { headers :: NonEmptyArray String
+  , rows :: Array CsvRow
+  }
+
+-- getters / setters
+mkCsvContent :: NonEmptyArray Header -> Array CsvRow -> CsvContent
+mkCsvContent headers rows = { headers: headers, rows: rows }
+
+mkCsvFile :: FileInfo -> CsvContent -> CsvFile
+mkCsvFile fi csv = { fileInfo: fi, csvContent: csv }
+
+getCsvContent :: CsvFile -> CsvContent
+getCsvContent { csvContent } = csvContent
+
+getFileInfo :: CsvFile -> FileInfo
+getFileInfo { fileInfo } = fileInfo
+
+-- parse from CsvFileInput -> CsvFile
 
 -- | function that checks if first list is subset of second list
 -- use this to check if required columns are existed.
@@ -87,7 +93,6 @@ hasCols expected actual =
   in
     S.subset expectedSet actualSet
 
-
 -- | check if csv file has headers
 notEmptyCsv :: RawCsvContent -> V Issues NonEmptyRawCsvContent
 notEmptyCsv input = case join $ Narr.fromArray <$> input.headers of
@@ -95,7 +100,6 @@ notEmptyCsv input = case join $ Narr.fromArray <$> input.headers of
   Just hs -> case input.rows of
     Nothing -> pure $ { headers: hs, rows: [] }
     Just rs -> pure $ { headers: hs, rows: rs }
-
 
 -- | check all columns are valid identifiers
 colsAreValidIds :: NonEmptyRawCsvContent -> V Issues CsvContent
@@ -115,7 +119,6 @@ colsAreValidIds input =
             xs -> invalid [ InvalidCSV $ "these headers are not valid Ids: " <> show xs ]
       Left errs -> invalid errs
 
-
 -- | check all columns are valid headers (including is-- headers)
 colsAreValidHeaders :: NonEmptyRawCsvContent -> V Issues CsvContent
 colsAreValidHeaders input =
@@ -125,7 +128,6 @@ colsAreValidHeaders input =
     case toEither res of
       Right hs -> pure $ input { headers = hs }
       Left errs -> invalid errs
-
 
 -- | check required headers
 headersExists :: Array String -> NonEmptyRawCsvContent -> V Issues NonEmptyRawCsvContent
@@ -159,64 +161,61 @@ oneOfHeaderExists expected csvcontent =
     else
       invalid [ InvalidCSV $ "file MUST have one and only one of follwoing field: " <> show expected ]
 
+-- | check if csv file has duplicated headers
+noDupCols :: NonEmptyRawCsvContent -> V Issues NonEmptyRawCsvContent
+noDupCols input =
+  if nub input.headers == input.headers then
+    pure input
+  else
+    invalid [ InvalidCSV $ "duplicated headers: " <> show dups <> ", only last one will be use" ]
+  where
+  counter = map (\x -> (Tuple (Narr.head x) (Narr.length x))) <<< Narr.group <<< Narr.sort $ input.headers
+
+  dups = Narr.filter (\x -> (snd x) > 1) counter
+
 -- | main validation entry point
 parseCsvFile :: CsvFileInput -> V Issues CsvFile
 parseCsvFile { fileInfo, csvContent } =
-  case FileInfo.collection fileInfo of
-    Concepts ->
-      let
-        required = [ "concept", "concept_type" ]
+  let
+    goodCsvContent = notEmptyCsv csvContent
+      `andThen`
+        noDupCols
+  in
+    case FileInfo.collection fileInfo of
+      Concepts ->
+        let
+          required = [ "concept", "concept_type" ]
 
-        vc =
-          notEmptyCsv csvContent
-          `andThen`
-          headersExists required
-          `andThen`
-          colsAreValidIds
-      in
-       mkCsvFile <$> pure fileInfo <*> vc
-    Entities { domain, set } ->
-      let
-        required = case set of
-          Just s -> [ toString s, toString domain ]
-          Nothing -> [ toString domain ]
+          vc =
+            goodCsvContent
+              `andThen`
+                headersExists required
+              `andThen`
+                colsAreValidIds
+        in
+          mkCsvFile <$> pure fileInfo <*> vc
+      Entities { domain, set } ->
+        let
+          required = case set of
+            Just s -> [ toString s, toString domain ]
+            Nothing -> [ toString domain ]
 
-        vc = notEmptyCsv csvContent
-          `andThen`
-            oneOfHeaderExists required
-          `andThen`
-            colsAreValidHeaders
-      in
-       mkCsvFile <$> pure fileInfo <*> vc
-    otherwise -> invalid [ NotImplemented ]
+          vc = goodCsvContent
+            `andThen`
+              oneOfHeaderExists required
+            `andThen`
+              colsAreValidHeaders
+        in
+          mkCsvFile <$> pure fileInfo <*> vc
+      DataPoints dp ->
+        let
+          required = [ toString dp.indicator ] <> A.fromFoldable (toString <$> dp.pkeys)
 
-
--- Validation: Warnings
--- | check if csv file has duplicated headers
-noDupCols :: CsvContent -> V Issues Unit
-noDupCols input =
-  if nub input.headers == input.headers then
-    pure unit
-  else
-    invalid [ InvalidCSV $ "duplicated headers: " <> show dups <> ", only last one will be use" ]
-    where
-      counter = map (\x -> (Tuple (Narr.head x) (Narr.length x))) <<< Narr.group <<< Narr.sort $ input.headers
-
-      dups = Narr.filter (\x -> (snd x) > 1) counter
-
-
--- Utils
--- | CsvRowRec is a valid CsvRow with headers info
-type CsvRowRec
-  = Tuple (NonEmptyArray Header) (NonEmptyArray String)
-
--- | create a record from one Row
--- | FIXME: record should be a Map?
-parseCsvRowRec :: NonEmptyArray Header -> CsvRow -> V Issues CsvRowRec
-parseCsvRowRec headers (CsvRow (Tuple idx row)) =
-  if Narr.length headers /= A.length row then
-    invalid [ InvalidCSV $ "bad csv row" ]
-  else
-    pure $ (Tuple headers row_)
-  where
-  row_ = NonEmptyArray row
+          vc = goodCsvContent
+            `andThen`
+              headersExists required
+            `andThen`
+              colsAreValidIds
+        in
+          mkCsvFile <$> pure fileInfo <*> vc
+      otherwise -> invalid [ NotImplemented ]

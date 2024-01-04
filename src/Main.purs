@@ -7,17 +7,13 @@ import Data.Array as Arr
 import Data.Array.NonEmpty (NonEmptyArray, groupAllBy, groupBy)
 import Data.Csv (CsvRow(..), RawCsvContent, getLineNo, getRow, readCsv)
 import Data.Csv as C
-import Data.DDF.Concept (Concept(..), parseConcept, conceptInputFromCsvRec)
+import Data.DDF.Concept (Concept(..), parseConcept)
 import Data.DDF.Concept as Conc
 import Data.DDF.Atoms.Header (Header(..))
 import Data.DDF.Csv.CsvFile
   ( CsvContent
   , CsvFile(..)
-  , getCsvContent
   , parseCsvFile
-  , parseCsvRowRec
-  , CsvRowRec
-  , getFileInfo
   )
 import Data.DDF.Csv.CsvFile as CSV
 import Data.DDF.Csv.FileInfo
@@ -28,7 +24,9 @@ import Data.DDF.Csv.FileInfo
   , isEntitiesFile
   , isDataPointsFile
   )
+import Data.DDF.Csv.Utils
 import Data.DDF.Csv.FileInfo as FI
+import Data.DDF.DataPoint (DataPoint, parseDataPoint)
 import Data.DDF.BaseDataSet as DS
 import Data.DDF.BaseDataSet (BaseDataSet, parseBaseDataSet)
 import Data.DDF.Entity as Ent
@@ -62,35 +60,36 @@ validateConcepts :: forall m. Monad m => Pipe CsvFile Concept (ValidationT Messa
 validateConcepts = do
   csvfile <- await
   let
-    csvContent = getCsvContent csvfile
-    fileInfo = getFileInfo csvfile
+    csvContent = csvfile.csvContent
+    fileInfo = csvfile.fileInfo
     fp = FI.filepath fileInfo
     headers = csvContent.headers
     rows = csvContent.rows
 
-  for (each rows)
-    ( \row -> do
-        let
-          concept = parseCsvRowRec headers row
-            `andThen`
-              (\x -> pure $ conceptInputFromCsvRec x)
-            `andThen`
-              parseConcept
-        case toEither concept of
-          Left errs -> do
-            _ <- lift $ vWarning msgs
-            pure unit
-            where
-            msgs = map (setLineNo (getLineNo row) <<< setFile fp <<< messageFromError) errs
-          Right vconc -> yield vconc
-    )
+  case FI.collection fileInfo of
+    Concepts ->
+      for (each rows)
+        ( \row -> do
+            let
+              concept = createConceptInput fp headers row
+                `andThen`
+                  parseConcept
+            case toEither concept of
+              Left errs -> do
+                _ <- lift $ vWarning msgs
+                pure unit
+                where
+                msgs = map (setLineNo (getLineNo row) <<< setFile fp <<< messageFromError) errs
+              Right vconc -> yield vconc
+        )
+    otherwise -> pure unit
 
 validateEntities :: forall m. Monad m => Pipe CsvFile Entity (ValidationT Messages m) Unit
 validateEntities = do
   csvfile <- await
   let
-    csvContent = getCsvContent csvfile
-    fileInfo = getFileInfo csvfile
+    csvContent = csvfile.csvContent
+    fileInfo = csvfile.fileInfo
     fp = FI.filepath fileInfo
     headers = csvContent.headers
     rows = csvContent.rows
@@ -100,9 +99,7 @@ validateEntities = do
       for (each rows)
         ( \row -> do
             let
-              entity = parseCsvRowRec headers row
-                `andThen`
-                  Ent.entityInputFromCsvRecAndFileInfo ent
+              entity = createEntityInput fp ent headers row
                 `andThen`
                   Ent.parseEntity
             case toEither entity of
@@ -112,6 +109,34 @@ validateEntities = do
                 where
                 msgs = map (setLineNo (getLineNo row) <<< setFile fp <<< messageFromError) errs
               Right vent -> yield vent
+        )
+    otherwise -> pure unit
+
+validateDataPoint :: forall m. Monad m => Pipe CsvFile DataPoint (ValidationT Messages m) Unit
+validateDataPoint = do
+  csvfile <- await
+  let
+    csvContent = csvfile.csvContent
+    fileInfo = csvfile.fileInfo
+    fp = FI.filepath fileInfo
+    headers = csvContent.headers
+    rows = csvContent.rows
+
+  case FI.collection fileInfo of
+    DataPoints dp ->
+      for (each rows)
+        ( \row -> do
+            let
+              datapoint = createDataPointInput fp dp headers row
+                `andThen`
+                  parseDataPoint
+            case toEither datapoint of
+              Left errs -> do
+                _ <- lift $ vWarning msgs
+                pure unit
+                where
+                msgs = map (setLineNo (getLineNo row) <<< setFile fp <<< messageFromError) errs
+              Right vdp -> yield vdp
         )
     otherwise -> pure unit
 
@@ -138,7 +163,7 @@ validateCsvFile = do
 
 -- | main entry point for validation
 -- This one checks all files and build the dataset
-validate :: FilePath -> Aff (Tuple Messages (Maybe BaseDataSet))
+validate :: FilePath -> Aff (Tuple Messages (Maybe (List DataPoint)))
 validate path = do
   -- list all csv files in the folder
   fs <- getFiles path [ ".git", "etl", "lang", "assets" ]
@@ -164,23 +189,23 @@ validate path = do
       -- get valid concepts from each file.
       validConcepts =
         conceptFiles
-        >-> P.mapM
-          ( \fi -> do
-              csvRows <- liftEffect $ (readCsv $ FI.filepath fi)
-              pure $ Tuple fi csvRows
-          )
-        >-> validateCsvFile  -- check filename vs headers.
-        >-> validateConcepts -- generate concept object from each row.
+          >-> P.mapM
+            ( \fi -> do
+                csvRows <- liftEffect $ (readCsv $ FI.filepath fi)
+                pure $ Tuple fi csvRows
+            )
+          >-> validateCsvFile -- check filename vs headers.
+          >-> validateConcepts -- generate concept object from each row.
       -- get valid entities from each file.
       validEntities =
         entityFiles
-        >-> P.mapM
-          ( \fi -> do
-              csvRows <- liftEffect $ (readCsv $ FI.filepath fi)
-              pure $ Tuple fi csvRows
-          )
-        >-> validateCsvFile  -- check filename vs headers
-        >-> validateEntities  -- generate entity object from each row.
+          >-> P.mapM
+            ( \fi -> do
+                csvRows <- liftEffect $ (readCsv $ FI.filepath fi)
+                pure $ Tuple fi csvRows
+            )
+          >-> validateCsvFile -- check filename vs headers
+          >-> validateEntities -- generate entity object from each row.
 
     -- now we can create a BaseDataSet which contains all concepts and entities
     -- so that we can use to validate datapoints and others
@@ -191,8 +216,23 @@ validate path = do
       baseDataSetV = parseBaseDataSet { concepts: conceptList, entities: entityList }
 
     case toEither baseDataSetV of
-      Right baseDataSet -> pure baseDataSet
       Left errs -> vError $ map (setError <<< messageFromError) errs
+      Right baseDataSet -> do
+        -- validate datapoints with baseDataset
+        let
+          datapointFiles = ddfFiles >-> P.filter (isDataPointsFile)
+
+          validDPs =
+            datapointFiles
+              >-> P.mapM
+                ( \fi -> do
+                    csvRows <- liftEffect $ (readCsv $ FI.filepath fi)
+                    pure $ Tuple fi csvRows
+                )
+              >-> validateCsvFile -- check filename vs headers
+              >-> validateDataPoint
+        dpList <- P.toListM validDPs
+        pure dpList
 
 -- TODO: I will need an other one to build the dataset from datapackage.json.
 

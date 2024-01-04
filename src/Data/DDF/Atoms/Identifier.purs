@@ -22,14 +22,12 @@ newtype Identifier
 
 derive instance newtypeId :: Newtype Identifier _
 
-derive instance genericId :: Generic Identifier _
-
 derive instance eqId :: Eq Identifier
 
 derive instance ordId :: Ord Identifier
 
 instance showId :: Show Identifier where
-  show = genericShow
+  show (Id x) = "(Id " <> (show $ toString x) <> ")"
 
 value :: Identifier -> String
 value (Id x) = toString $ x
@@ -69,6 +67,10 @@ parseId x = case runParser identifier' x of
     msg = "invalid id: " <> x <> ", " <> e.error <> "at pos " <> pos
 
     err = InvalidValue x msg
+
+-- | parse an id, when the id is non empty string
+parseId' :: NonEmptyString -> V Issues Identifier
+parseId' = parseId <<< toString
 
 -- | check if identifier longer than 64 chars
 -- | idenfitier longer than 64 chars is know to break WS server

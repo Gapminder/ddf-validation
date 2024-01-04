@@ -45,9 +45,10 @@ type Ent
   = { domain :: NonEmptyString, set :: Maybe NonEmptyString }
 
 type DP
-  = { indicator :: NonEmptyString,
-      pkeys :: NonEmptyList NonEmptyString,
-      constrains :: NonEmptyList (Maybe NonEmptyString) }
+  = { indicator :: NonEmptyString
+    , pkeys :: NonEmptyList NonEmptyString
+    , constrains :: NonEmptyList (Maybe NonEmptyString)  -- length of pkeys should equal to length of constrains.
+    }
 
 instance showCollection :: Show CollectionInfo where
   show Concepts = "concepts"
@@ -80,6 +81,9 @@ filepath (FileInfo fp _ _) = fp
 
 collection :: FileInfo -> CollectionInfo
 collection (FileInfo _ c _) = c
+
+resourceName :: FileInfo -> String
+resourceName (FileInfo _ _ n) = n
 
 -- | filter a collection from array of fileinfos
 getCollectionFiles :: String -> Array FileInfo -> Array FileInfo
