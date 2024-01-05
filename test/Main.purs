@@ -120,7 +120,7 @@ main = launchAff_ $ runSpec [ consoleReporter ] do
                   , props: Map.fromFoldable [(Tuple
                                               (Id.unsafeCreate "name")
                                               "testing_name")]
-                  , _info: Map.empty
+                  , _info: Just $ { filepath: "a.csv", row: 1 }
                   }
           output = parseConcept input
         output `shouldSatisfy` isValid
@@ -130,7 +130,7 @@ main = launchAff_ $ runSpec [ consoleReporter ] do
                   , entityDomain: unsafeFromString "geo"
                   , entitySet: Nothing
                   , props: Map.empty
-                  , _info: Map.empty
+                  , _info: Just $ { filepath: "a.csv", row: 1 }
                   }
           output = parseEntity input
         output `shouldSatisfy` isValid
@@ -149,7 +149,7 @@ main = launchAff_ $ runSpec [ consoleReporter ] do
                   , "1990"
                   ]
             , value: "1"
-            , _info: Map.empty
+            , _info: Just $ { filepath: "a.csv", row: 1 }
             }
           output = parseDataPoint $ input
         output `shouldSatisfy` isValid

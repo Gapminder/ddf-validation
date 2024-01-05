@@ -52,6 +52,7 @@ setError :: Message -> Message
 setError m = m { isWarning = false }
 
 messageFromError :: Issue -> Message
+messageFromError (DuplicatedItem fp row msg) = { message: msg, file: fp, lineNo: row, isWarning: true }
 messageFromError issue = { message: show issue, file: "", lineNo: 0, isWarning: true }
 
 hasError :: Array Message -> Boolean

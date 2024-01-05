@@ -79,12 +79,14 @@ listOfLeft :: forall a b. Either a b -> List a
 listOfLeft (Left a) = singleton a
 listOfLeft _ = Nil
 
+-- | Given a list, calculate duplicated items by some comparing function.
+-- | return all duplicated items
 dupsBy :: ∀ a. (a -> a -> Ordering) -> List a -> List a
 dupsBy func lst =
   let
     gs = L.groupAllBy func lst
 
-    counts = map (\x -> (Tuple (NL.head x) (NL.length x))) gs
+    counts = map (\x -> (Tuple (NL.last x) (NL.length x))) gs
 
     dups = L.filter (\x -> snd x > 1) counts
   in

@@ -32,9 +32,6 @@ import Safe.Coerce (coerce)
 import Partial.Unsafe (unsafePartial)
 import Data.Traversable (sequence)
 
--- -- | CsvRowRec is a valid CsvRow with headers info. So the headers and cells have same length.
--- type CsvRowRec = Tuple (NonEmptyArray Header) (NonEmptyArray String)
-
 -- | CsvRowRec is a valid CsvRow converted to a Map.
 type CsvRowRec = Map Header String
 
@@ -49,7 +46,7 @@ rowLengthMatchesHeaders headers row =
 
 -- | create ConceptInput for Concept parsing
 createConceptInput :: String -> NonEmptyArray Header -> CsvRow -> V Issues ConceptInput
-createConceptInput resourceName headers (CsvRow (Tuple idx row)) =
+createConceptInput fp headers (CsvRow (Tuple idx row)) =
   let
     conceptInput = { conceptId: _, conceptType: _, props: _, _info: _ }
     headers_ = map coerce (NEA.toArray headers)
@@ -59,7 +56,7 @@ createConceptInput resourceName headers (CsvRow (Tuple idx row)) =
       ( M.delete (Id.unsafeCreate "concept")
           >>> M.delete (Id.unsafeCreate "concept_type")
       )
-    _info = M.fromFoldable [ (Tuple "resourceName" resourceName), (Tuple "lineNo" (show idx)) ]
+    _info = Just $ { filepath: fp, row: idx }
   in
     ado
       _ <- rowLengthMatchesHeaders headers row
@@ -70,7 +67,7 @@ createConceptInput resourceName headers (CsvRow (Tuple idx row)) =
 
 -- | create EntityInput for Entity parsing
 createEntityInput :: String -> FI.Ent -> NonEmptyArray Header -> CsvRow -> V Issues EntityInput
-createEntityInput resourceName { domain, set } headers (CsvRow (Tuple idx row)) =
+createEntityInput fp { domain, set } headers (CsvRow (Tuple idx row)) =
   let
     entityInput = { entityId: _, entityDomain: _, entitySet: _, props: _, _info: _ }
     entityCol = case set of
@@ -83,7 +80,7 @@ createEntityInput resourceName { domain, set } headers (CsvRow (Tuple idx row)) 
     propsMap = M.fromFoldable $ A.zip (NEA.toArray headers) row
     Tuple eid props = unsafePartial $ fromJust $ M.pop entityCol propsMap
 
-    _info = M.fromFoldable [ (Tuple "resourceName" resourceName), (Tuple "lineNo" (show idx)) ]
+    _info = Just $ { filepath: fp, row: idx }
   in
     ado
       _ <- rowLengthMatchesHeaders headers row
@@ -92,13 +89,13 @@ createEntityInput resourceName { domain, set } headers (CsvRow (Tuple idx row)) 
 
 -- | create DataPointInput for DataPoint parsing
 createDataPointInput :: String -> FI.DP -> NonEmptyArray Header -> CsvRow -> V Issues DataPointInput
-createDataPointInput resourceName { indicator, pkeys, constrains } headers (CsvRow (Tuple idx row)) =
+createDataPointInput fp { indicator, pkeys, constrains } headers (CsvRow (Tuple idx row)) =
   -- TODO: check constrains
   let
     datapointInput = { indicatorId: _, primaryKeys: _, primaryKeyValues: _, value: _, _info: _ }
     rowMap = M.fromFoldable $ A.zip (NEA.toArray headers) row
 
-    _info = M.fromFoldable [ (Tuple "resourceName" resourceName), (Tuple "lineNo" (show idx)) ]
+    _info = Just $ { filepath: fp, row: idx }
   in
     ado
       _ <- rowLengthMatchesHeaders headers row

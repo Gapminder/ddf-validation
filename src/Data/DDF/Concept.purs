@@ -7,6 +7,7 @@ import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Array.NonEmpty as Narr
 import Data.DDF.Csv.FileInfo (FileInfo(..))
 import Data.DDF.Csv.FileInfo as FI
+import Data.DDF.Internal (ItemInfo)
 import Data.DDF.Atoms.Identifier (Identifier)
 import Data.DDF.Atoms.Identifier as Id
 import Data.Validation.Issue (Issues, Issue(..))
@@ -35,7 +36,7 @@ newtype Concept = Concept
   { conceptId :: Identifier
   , conceptType :: ConceptType
   , props :: Props
-  , _info :: Map String String -- additional information used in the app, not in DDF data model
+  , _info :: Maybe ItemInfo -- additional information used in the app, not in DDF data model
   }
 
 instance eqConcept :: Eq Concept where
@@ -101,10 +102,10 @@ reversedConcepts = [ "concept", "concept_type" ]
 concept :: Identifier -> ConceptType -> Props -> Concept
 concept conceptId conceptType props = Concept { conceptId, conceptType, props, _info }
   where
-  _info = M.empty
+  _info = Nothing
 
 -- TODO: add a function that can add hidden props
-setInfo :: Map String String -> Concept -> Concept
+setInfo :: (Maybe ItemInfo) -> Concept -> Concept
 setInfo info (Concept c) = Concept (c { _info = info })
 
 -- | The unvalidated concept record.
@@ -112,7 +113,7 @@ type ConceptInput =
   { conceptId :: String
   , conceptType :: String
   , props :: Map Identifier String
-  , _info :: Map String String
+  , _info :: Maybe ItemInfo
   }
 
 -- | get concept id
@@ -178,13 +179,13 @@ parseConcept input =
         (\c -> pure $ setInfo input._info c)
 
 -- | unsafe create, useful for testing.
-unsafeCreate :: String -> String -> Map String String -> Map String String -> Concept
+unsafeCreate :: String -> String -> Map String String -> ItemInfo -> Concept
 unsafeCreate concept_id concept_type props_ info =
   Concept
     { conceptId: conceptId
     , conceptType: conceptType
     , props: props
-    , _info: info
+    , _info: Just info
     }
   where
   conceptId = Id.unsafeCreate concept_id

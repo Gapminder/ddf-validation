@@ -3,6 +3,7 @@ module Data.DDF.Entity where
 import Prelude
 
 import Data.Array.NonEmpty as Narr
+import Data.DDF.Internal (ItemInfo)
 import Data.DDF.Atoms.Boolean (parseBoolean)
 import Data.DDF.Csv.FileInfo as FI
 import Data.DDF.Atoms.Identifier (Identifier)
@@ -33,7 +34,7 @@ newtype Entity = Entity
   , entityDomain :: Identifier
   , entitySets :: List Identifier
   , props :: Props
-  , _info :: Map String String
+  , _info :: Maybe ItemInfo
   }
 
 instance eqEntity :: Eq Entity where
@@ -48,7 +49,7 @@ type Props = Map Identifier String
 entity :: Identifier -> Identifier -> List Identifier -> Props -> Entity
 entity entityId entityDomain entitySets props = Entity { entityId, entityDomain, entitySets, props, _info }
   where
-  _info = M.empty
+  _info = Nothing
 
 getId :: Entity -> Identifier
 getId (Entity e) = e.entityId
@@ -57,7 +58,14 @@ getDomain :: Entity -> Identifier
 getDomain (Entity e) = e.entityDomain
 
 getDomainAndId :: Entity -> Tuple Identifier Identifier
-getDomainAndId (Entity e) = Tuple e.entityId e.entityDomain
+getDomainAndId (Entity e) = Tuple e.entityId e.entityDomain  -- FIXME: value order
+
+getIdAndFile :: Entity -> Tuple Identifier String
+getIdAndFile (Entity e) = Tuple e.entityId fp
+                          where
+                            fp = case e._info of
+                              Nothing -> ""
+                              Just { filepath } -> filepath
 
 -- | Entity input from CsvFile
 -- The entityDomain and entitySet field comes from file name, so they are already nonempty
@@ -67,7 +75,7 @@ type EntityInput =
   , entityDomain :: NonEmptyString
   , entitySet :: Maybe NonEmptyString
   , props :: Map Header String
-  , _info :: Map String String
+  , _info :: Maybe ItemInfo
   }
 
 validEntityId :: String -> V Issues Identifier

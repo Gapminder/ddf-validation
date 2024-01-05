@@ -20,6 +20,7 @@ data Issue
   | IdLongerThan64Chars String
   | InvalidCSV Msg
   | InvalidDDFCSV String Msg
+  | DuplicatedItem FilePath Int Msg
 
 derive instance genericIssue :: Generic Issue _
 

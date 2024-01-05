@@ -1,3 +1,5 @@
+-- | This module defines DDF csv file naming conventions
+
 module Data.DDF.Csv.FileInfo where
 
 import Prelude
@@ -19,7 +21,8 @@ import StringParser (Parser, choice, eof, runParser, sepBy1, sepEndBy1, string, 
 
 -- | file info are information contains in file name.
 -- | it consists of 3 parts
--- | the full file path, the collection info object and name
+-- | the full file path, the collection info object and resource name
+-- | resource name is useful in datapackage.
 data FileInfo
   = FileInfo FilePath CollectionInfo String
 
@@ -33,13 +36,14 @@ data FileInfo
 -- Which one is better??
 
 -- | collection info
--- | there are 3 main collections
+-- | there are 5 collections in DDF
 -- | Entities, DataPoints and Concepts
+-- | and Synonyms, Metadata.
 data CollectionInfo
   = Concepts
   | Entities Ent
   | DataPoints DP
-  | Other NonEmptyString
+  | Other NonEmptyString -- TODO: add synonyms and metadata
 
 type Ent
   = { domain :: NonEmptyString, set :: Maybe NonEmptyString }

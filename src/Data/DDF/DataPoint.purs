@@ -3,7 +3,7 @@
 module Data.DDF.DataPoint where
 
 import Prelude
-
+import Data.DDF.Internal (ItemInfo)
 import Data.DDF.Atoms.Header (Header)
 import Data.DDF.Atoms.Identifier (Identifier, parseId', parseId)
 import Data.DDF.Atoms.Value (Value, parseNonEmptyString)
@@ -19,6 +19,7 @@ import Data.String.NonEmpty (NonEmptyString, toString)
 import Data.Tuple (Tuple(..))
 import Data.Validation.Issue (Issues)
 import Data.Validation.Semigroup (V, andThen)
+import Data.Maybe (Maybe(..))
 
 
 -- | Datapoints contain multidimensional data.
@@ -31,7 +32,7 @@ newtype DataPoint =
     , primaryKeyValues :: NonEmptyList String
     , value :: String -- it should be one of the Value types. But we cannot parse it solely from datapoint itself.
     -- , props :: Map Identifier String  -- no other poperties in datapoint files. They are defined in metadata.
-    , _info :: Map String String
+    , _info :: Maybe ItemInfo
     }
 
 instance showDataPoint :: Show DataPoint where
@@ -47,18 +48,18 @@ type DataPointInput =
   , primaryKeyValues :: NonEmptyList String
   , value :: String
   -- , props :: Map Identifier String
-  , _info :: Map String String
+  , _info :: Maybe ItemInfo
   }
 
 
 create :: Identifier -> NonEmptyList Identifier -> NonEmptyList String -> String -> DataPoint
 create indicatorId primaryKeys primaryKeyValues value =
   let
-    _info = M.empty
+    _info = Nothing
   in
     DataPoint { indicatorId, primaryKeys, primaryKeyValues, value, _info }
 
-setInfo :: Map String String -> DataPoint -> DataPoint
+setInfo :: Maybe ItemInfo -> DataPoint -> DataPoint
 setInfo info (DataPoint rec) =
   DataPoint (rec { _info = info })
 

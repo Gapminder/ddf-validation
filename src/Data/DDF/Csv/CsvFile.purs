@@ -167,11 +167,12 @@ noDupCols input =
   if nub input.headers == input.headers then
     pure input
   else
-    invalid [ InvalidCSV $ "duplicated headers: " <> show dups <> ", only last one will be use" ]
+    invalid [ InvalidCSV $ "duplicated headers: " <> show dups ]
   where
   counter = map (\x -> (Tuple (Narr.head x) (Narr.length x))) <<< Narr.group <<< Narr.sort $ input.headers
 
   dups = Narr.filter (\x -> (snd x) > 1) counter
+
 
 -- | main validation entry point
 parseCsvFile :: CsvFileInput -> V Issues CsvFile
