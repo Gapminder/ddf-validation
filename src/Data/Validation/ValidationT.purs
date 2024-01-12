@@ -11,9 +11,10 @@ import Control.Monad.Except (class MonadTrans, ExceptT, lift, runExceptT, throwE
 import Control.Monad.State (StateT, modify_, runStateT)
 import Data.Either (Either(..), either)
 import Data.Maybe (Maybe(..))
-import Data.Newtype (class Newtype)
+import Data.Newtype (class Newtype, over)
 import Data.Tuple (Tuple(..))
 import Effect.Class (class MonadEffect)
+import Control.Monad.Rec.Class (class MonadRec)
 
 -- learn from https://hackage.haskell.org/package/validationt-0.3.0/
 
@@ -35,6 +36,12 @@ derive newtype instance monadVT :: Monad m => Monad (ValidationT e m)
 derive newtype instance bindVT :: Monad m => Bind (ValidationT e m)
 
 derive newtype instance monadEffectVT :: MonadEffect m => MonadEffect (ValidationT e m)
+
+derive newtype instance monadRecVT :: MonadRec m => MonadRec (ValidationT e m)
+
+derive newtype instance semigroupVT :: (Monad m, Semigroup a) => Semigroup (ValidationT e m a)
+
+derive newtype instance monoidVT :: (Monad m, Monoid a) => Monoid (ValidationT e m a)
 
 -- | Returns 'mempty' instead of error if no warnings have occurred.
 -- Returns 'Nothing' as the second element of tuple if computation was
