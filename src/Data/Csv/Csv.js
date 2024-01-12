@@ -1,5 +1,4 @@
 import { parse } from 'csv-parse/sync';
-import { readFileSync } from 'node:fs'
 
 
 // fs.createReadStream(path.resolve(__dirname, 'assets', 'parse.csv'))
@@ -9,9 +8,7 @@ import { readFileSync } from 'node:fs'
 //     .on('end', rowCount => console.log(`Parsed ${rowCount} rows`));
 
 
-export function readCsvImpl(filepath) {
-
-    let csvLine = readFileSync(filepath, { encoding: "utf-8" })
+export function readCsvImpl(csvLine) {
 
     return parse(csvLine, {
         bom: true,

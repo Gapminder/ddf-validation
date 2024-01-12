@@ -25,9 +25,11 @@ import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Aff (Aff)
 import Node.Encoding (Encoding(..))
-import Node.FS.Sync (readTextFile)
 import Node.Path (FilePath)
 import Safe.Coerce (coerce)
+import Node.FS.Aff (readTextFile)
+import Node.Encoding (Encoding(..))
+import Node.Buffer as Buf
 
 -- | CsvRow is a tuple of line number and row content
 newtype CsvRow =
@@ -47,10 +49,12 @@ type RawCsvContent =
   , rows :: Maybe (Array CsvRow)
   }
 
-foreign import readCsvImpl :: Fn1 FilePath (Array (Array String))
+foreign import readCsvImpl :: Fn1 String (Array (Array String))
 
-readCsv :: FilePath -> Effect (Array (Array String)) -- NOTE: this will not handle exceptions from the js side.
-readCsv x = pure $ runFn1 readCsvImpl x
+readCsv :: FilePath -> Aff (Array (Array String)) -- NOTE: this will not handle exceptions from the js side.
+readCsv x = do
+  csvContent <- readTextFile UTF8 x
+  pure $ runFn1 readCsvImpl csvContent
 
 getRow :: CsvRow -> (Array String)
 getRow (CsvRow tpl) = snd tpl
@@ -78,6 +82,6 @@ create recs = { headers: headers, rows: rows }
   rows = toCsvRow <$> tail recs
 
 readCsvs :: (Array FilePath) -> Aff (Array RawCsvContent)
-readCsvs = traverse (\f -> create <$> (liftEffect $ readCsv f))
+readCsvs = traverse (\f -> create <$> (readCsv f))
 
 -- TODO: add column view. i.e. convert List CsvRow to List CsvColumn
