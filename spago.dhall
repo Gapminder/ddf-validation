@@ -25,6 +25,7 @@ to generate this file without the comments in this block.
   , "foldable-traversable"
   , "functions"
   , "identity"
+  , "integers"
   , "lists"
   , "maybe"
   , "newtype"
@@ -33,6 +34,7 @@ to generate this file without the comments in this block.
   , "node-path"
   , "node-process"
   , "nonempty"
+  , "numbers"
   , "ordered-collections"
   , "partial"
   , "pipes"
@@ -48,6 +50,7 @@ to generate this file without the comments in this block.
   , "transformers"
   , "tuples"
   , "typelevel"
+  , "unordered-collections"
   , "validation"
   ]
 , packages = ./packages.dhall
