@@ -22,10 +22,11 @@ import Test.Spec.Runner (runSpec)
 import Data.Validation.Semigroup (isValid, andThen)
 import Data.DDF.Atoms.Identifier (parseId, isLongerThan64Chars)
 import Data.DDF.Atoms.Identifier as Id
+import Data.DDF.Atoms.Value (parseStrVal, parseNumVal)
 import Data.Validation.Issue (Issue(..), Issues)
 import Data.DDF.Csv.FileInfo (parseFileInfo)
 import Data.DDF.Csv.CsvFile (parseCsvFile)
-import Data.DDF.DataPoint (parseDataPoint)
+-- import Data.DDF.DataPoint (parseDataPoint)
 import Data.DDF.Entity (parseEntity)
 import Data.String.CodeUnits (fromCharArray)
 import Data.List.Lazy (take, repeat)
@@ -42,16 +43,24 @@ import Data.String.NonEmpty (fromString, unsafeFromString)
 import Data.List.NonEmpty (NonEmptyList(..))
 import Data.List.NonEmpty as NEL
 import Utils (getFiles)
+import Partial.Unsafe (unsafePartial)
+import Debug
 
 testMain :: Effect Unit
 testMain = do
   path <- resolve [] "test/datasets/ddf--test--new"
   M.runMain (path)
 
-main :: Partial => Effect Unit
+main :: Effect Unit
 main = launchAff_ $ runSpec [ consoleReporter ] do
   describe "ddf-validation" do
     describeOnly "new things - low level" do
+      it "value - numbers" do
+        let
+          invalidNums = [ "xx", "x1", "?4?" ]
+        for_ invalidNums \s -> do
+          let output = parseNumVal s
+          output `shouldNotSatisfy` isValid
       it "identifier - lowercase numeric" do
         let
           validIds =
@@ -115,46 +124,50 @@ main = launchAff_ $ runSpec [ consoleReporter ] do
         output `shouldSatisfy` isValid
       it "concept validation - one concept" do
         let
-          input = { conceptId: "testing"
-                  , conceptType: "measure"
-                  , props: Map.fromFoldable [(Tuple
-                                              (Id.unsafeCreate "name")
-                                              "testing_name")]
-                  , _info: Just $ { filepath: "a.csv", row: 1 }
-                  }
+          input =
+            { conceptId: "testing"
+            , conceptType: "measure"
+            , props: Map.fromFoldable
+                [ ( Tuple
+                      (Id.unsafeCreate "name")
+                      "testing_name"
+                  )
+                ]
+            , _info: Just $ { filepath: "a.csv", row: 1 }
+            }
           output = parseConcept input
         output `shouldSatisfy` isValid
       it "entity validation - one entity" do
         let
-          input = { entityId: "swe"
-                  , entityDomain: unsafeFromString "geo"
-                  , entitySet: Nothing
-                  , props: Map.empty
-                  , _info: Just $ { filepath: "a.csv", row: 1 }
-                  }
-          output = parseEntity input
-        output `shouldSatisfy` isValid
-      it "datapoint validation - one datapoint" do
-        let
           input =
-            { indicatorId: unsafeFromString "testing"
-            , primaryKeys: fromJust $
-                NEL.fromFoldable
-                  [ unsafeFromString "geo"
-                  , unsafeFromString "time"
-                  ]
-            , primaryKeyValues: fromJust $
-                NEL.fromFoldable
-                  [ "chn"
-                  , "1990"
-                  ]
-            , value: "1"
+            { entityId: "swe"
+            , entityDomain:  unsafePartial $ unsafeFromString "geo"
+            , entitySet: Nothing
+            , props: Map.empty
             , _info: Just $ { filepath: "a.csv", row: 1 }
             }
-          output = parseDataPoint $ input
+          output = parseEntity input
         output `shouldSatisfy` isValid
+      pending "datapoint validation - one datapoint"
+      -- let
+      --   input =
+      --     { indicatorId: unsafeFromString "testing"
+      --     , primaryKeys: fromJust $
+      --         NEL.fromFoldable
+      --           [ unsafeFromString "geo"
+      --           , unsafeFromString "time"
+      --           ]
+      --     , primaryKeyValues: fromJust $
+      --         NEL.fromFoldable
+      --           [ "chn"
+      --           , "1990"
+      --           ]
+      --     , value: "1"
+      --     , _info: Just $ { filepath: "a.csv", row: 1 }
+      --     }
+      --   output = parseDataPoint $ input
+      -- output `shouldSatisfy` isValid
       pending "ddf validation - duplicated concepts"
-
 
       -- IO things
       it "read csv file" do

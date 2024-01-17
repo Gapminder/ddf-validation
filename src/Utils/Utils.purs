@@ -5,10 +5,12 @@ import Prelude
 import Data.Function (on)
 import Data.Array (concat, concatMap, elem, filter, filterA, partition)
 import Data.Array as Arr
+import Data.Array.NonEmpty as NEA
+import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Either (Either(..))
 import Data.List (List(..), singleton)
 import Data.List as L
-import Data.List.NonEmpty as NL
+import Data.List.NonEmpty as NEL
 import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..), joinWith)
 import Data.Traversable (sequence, traverse)
@@ -24,44 +26,29 @@ import Node.FS.Stats (isDirectory, isFile)
 import Node.FS.Aff (readTextFile, readdir, writeTextFile, stat)
 import Node.Path (FilePath, basename, extname)
 import Node.Path as Path
-import Pipes (for, yield, (>->), await, each, (>~), cat)
-import Pipes.Core (Producer_, Pipe, runEffect)
-import Pipes.Prelude as P
 
-
-readdirStream :: String -> Producer_ FilePath Aff Unit
-readdirStream x = do
-  fs <- liftAff $ readdir x
-  each fs
-
--- | get all csv files from a directory recursively, using pipes and Aff
-getFiles_ :: FilePath -> Array String -> Producer_ FilePath Aff Unit
-getFiles_ x excl = do
-  let
-    excludePaths ps = P.filter (\x -> not $ x `elem` ps)
-
-    isCsvFile path = extname (basename path) == ".csv"
-
-    fs = readdirStream x
-      >-> excludePaths excl
-      >-> P.map (\f -> Path.concat [ x, f ])
-
-  for fs
-    ( \entry -> do
-        status <- liftAff $ stat entry
-        when (isFile status && isCsvFile entry) (yield entry)
-        when (isDirectory status) (getFiles_ entry [])
-    )
 
 -- | get all csv files from a directory recursively
 getFiles :: FilePath -> Array String -> Aff (Array FilePath)
 getFiles x excl = do
-  fib <- attempt $ P.toListM (getFiles_ x excl)
-  case fib of
-    Left e -> do
-      log $ "ERROR: " <> message e
-      pure $ [ ]
-    Right res -> pure $ Arr.fromFoldable res
+  allFiles <- readdir x
+
+  let
+    fsToGo = Arr.filter (\f -> not $ f `elem` excl)
+             >>> map (\f -> Path.concat [ x, f ])
+             $ allFiles
+
+    isCsvFile path = extname (basename path) == ".csv"
+
+    go f st acc | (isFile st && isCsvFile f) = pure $ Arr.cons f acc
+                | (isDirectory st) = do
+                                     dirfs <- getFiles f [ ]
+                                     pure $ acc <> dirfs
+                | otherwise = pure acc
+
+  Arr.foldM (\acc f -> do
+                st <- stat f
+                go f st acc) [ ] fsToGo
 
 arrayOfRight :: forall a b. Either a b -> Array b
 arrayOfRight (Right b) = [ b ]
@@ -81,16 +68,22 @@ listOfLeft _ = Nil
 
 -- | Given a list, calculate duplicated items by some comparing function.
 -- | return all duplicated items
-dupsBy :: ∀ a. (a -> a -> Ordering) -> List a -> List a
+dupsBy :: forall a. (a -> a -> Ordering) -> Array a -> Array a
 dupsBy func lst =
   let
-    gs = L.groupAllBy func lst
-
-    counts = map (\x -> (Tuple (NL.last x) (NL.length x))) gs
-
-    dups = L.filter (\x -> snd x > 1) counts
+    gs = Arr.groupAllBy func lst
   in
-    map fst dups
+    map NEA.last $ Arr.filter (\g -> NEA.length g > 1) gs
+
+-- | Given a list, calculate duplicated items by some comparing function.
+-- | return all duplicated items
+dupsByL :: forall a. (a -> a -> Ordering) -> List a -> List a
+dupsByL func lst =
+  let
+    gs = L.groupAllBy func lst
+  in
+    map NEL.last $ L.filter (\g -> NEL.length g > 1) gs
+
 
 -- | create a counter
 -- counter :: forall a. Ord a => Eq a => NonEmptyArray a -> NonEmptyArray (Tuple a Int)
