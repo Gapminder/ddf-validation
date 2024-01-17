@@ -2,33 +2,20 @@ module Data.DDF.Concept where
 
 import Prelude
 
-import Data.Array as A
-import Data.Array.NonEmpty (NonEmptyArray)
-import Data.Array.NonEmpty as Narr
-import Data.DDF.Csv.FileInfo (FileInfo(..))
-import Data.DDF.Csv.FileInfo as FI
 import Data.DDF.Internal (ItemInfo)
 import Data.DDF.Atoms.Identifier (Identifier)
 import Data.DDF.Atoms.Identifier as Id
 import Data.Validation.Issue (Issues, Issue(..))
-import Data.Validation.ValidationT (Validation, vError, vWarning)
-import Data.Either (Either(..))
-import Data.List (List(..), concatMap, elem, elemIndex, length, zip)
-import Data.List as L
-import Data.List.NonEmpty (NonEmptyList)
-import Data.List.NonEmpty as NL
-import Data.Map (Map, delete, fromFoldable, lookup, pop)
+import Data.List (elem)
+import Data.Map (Map)
 import Data.Map as M
 import Data.Map.Extra (mapKeys)
-import Data.Maybe (Maybe(..), isNothing)
-import Data.Newtype (unwrap, class Newtype)
+import Data.Maybe (Maybe(..))
+import Data.Newtype (unwrap)
 import Data.String as Str
-import Data.String.NonEmpty.Internal (NonEmptyString(..), toString)
-import Data.Traversable (for, traverse)
-import Data.Tuple (Tuple(..), fst)
-import Data.Validation.Semigroup
-import Data.Validation.Semigroup (V, invalid)
-import Data.DDF.Atoms.Header (parseHeader, createHeader, Header(..), headerVal)
+import Data.String.NonEmpty (NonEmptyString, toString)
+import Data.Validation.Semigroup (V, andThen, invalid)
+import Data.DDF.Atoms.Value (Value, parseStrVal', isEmpty)
 
 -- | Each Concept MUST have an Id and concept type.
 -- Other properties is a Map
@@ -47,7 +34,7 @@ instance showConcept :: Show Concept where
 
 -- | Properties type
 -- the Key MUST be valid identifier
-type Props = Map Identifier String
+type Props = Map Identifier Value
 
 -- | Types of concept
 data ConceptType
@@ -72,7 +59,7 @@ instance showConceptType :: Show ConceptType where
   show RoleC = "role"
   show CompositeC = "composite"
   show TimeC = "time"
-  show (CustomC x) = show x
+  show (CustomC x) = "custom type: " <> Id.value x
 
 derive instance eqConceptType :: Eq ConceptType
 
@@ -83,8 +70,8 @@ parseConceptType x = ado
   let
     res = case toString $ unwrap cid of
       "string" -> StringC
-      "meaeure" -> MeasureC
-      "bollean" -> BooleanC
+      "measure" -> MeasureC
+      "boolean" -> BooleanC
       "interval" -> IntervalC
       "entity_domain" -> EntityDomainC
       "entity_set" -> EntitySetC
@@ -94,9 +81,9 @@ parseConceptType x = ado
       _ -> CustomC cid
   in res
 
--- | reversed keywords which can not used as concept id
-reversedConcepts :: Array String
-reversedConcepts = [ "concept", "concept_type" ]
+-- | reserved keywords which can not used as concept id
+reservedConcepts :: Array Identifier
+reservedConcepts = map Id.unsafeCreate [ "concept", "concept_type", "drill_up", "domain" ]
 
 -- | create concept
 concept :: Identifier -> ConceptType -> Props -> Concept
@@ -104,9 +91,14 @@ concept conceptId conceptType props = Concept { conceptId, conceptType, props, _
   where
   _info = Nothing
 
--- TODO: add a function that can add hidden props
+-- | set additional infos
 setInfo :: (Maybe ItemInfo) -> Concept -> Concept
 setInfo info (Concept c) = Concept (c { _info = info })
+
+-- | get concept id
+getId :: Concept -> Identifier
+getId (Concept x) = x.conceptId
+
 
 -- | The unvalidated concept record.
 type ConceptInput =
@@ -116,13 +108,9 @@ type ConceptInput =
   , _info :: Maybe ItemInfo
   }
 
--- | get concept id
-getId :: Concept -> Identifier
-getId (Concept x) = x.conceptId
-
 -- | some concept type require a column exists
--- for example if concept type is entity_set, then it
--- must have non empty domain.
+-- | for example if concept type is entity_set, then it
+-- | must have non empty domain.
 checkMandatoryField :: Concept -> V Issues Concept
 checkMandatoryField input@(Concept c) = case c.conceptType of
   EntitySetC -> ado
@@ -132,15 +120,15 @@ checkMandatoryField input@(Concept c) = case c.conceptType of
     in input
   _ -> pure input
 
-hasFieldAndGetValue :: String -> Props -> V Issues String
+hasFieldAndGetValue :: String -> Props -> V Issues Value
 hasFieldAndGetValue field input =
   case M.lookup (Id.unsafeCreate field) input of
     Nothing -> invalid [ Issue $ "field " <> field <> " MUST exist for concept" ]
     Just v -> pure v
 
-nonEmptyField :: String -> String -> V Issues String
+nonEmptyField :: String -> Value -> V Issues Value
 nonEmptyField field input =
-  if Str.null input then
+  if isEmpty input then
     invalid [ Issue $ "field " <> field <> " MUST not be empty" ]
   else
     pure input
@@ -156,27 +144,33 @@ conceptIdTooLong conc@(Concept c) = ado
     conc
 
 -- | check if concept id is not reversed keyword
-notReversed :: String -> V Issues String
-notReversed conceptId =
-  if conceptId `elem` reversedConcepts then
+notReserved :: String -> V Issues String
+notReserved conceptId =
+  if conceptId `elem` reservedConcepts_ then
     invalid [ Issue $ "concept/concept_type can not be used as concept id" ]
   else
     pure conceptId
+  where
+    reservedConcepts_ = map Id.value reservedConcepts
 
 -- | convert a ConceptInput into valid Concept or errors
 parseConcept :: ConceptInput -> V Issues Concept
 parseConcept input =
   let
-    conceptId = notReversed input.conceptId
+    conceptId = notReserved input.conceptId
       `andThen` Id.parseId
     conceptType = parseConceptType input.conceptType
+    props = map parseStrVal' input.props
 
   in
-    (concept <$> conceptId <*> conceptType <*> pure input.props)
+    (concept <$> conceptId <*> conceptType <*> pure props)
       `andThen`
         checkMandatoryField
       `andThen`
         (\c -> pure $ setInfo input._info c)
+
+-- TODO:
+-- parseConceptWithValueParsers :: create valid concept, then parse property columns.
 
 -- | unsafe create, useful for testing.
 unsafeCreate :: String -> String -> Map String String -> ItemInfo -> Concept
@@ -190,7 +184,7 @@ unsafeCreate concept_id concept_type props_ info =
   where
   conceptId = Id.unsafeCreate concept_id
   conceptType = unsafeCreateConceptType concept_type
-  props = mapKeys Id.unsafeCreate props_
+  props = map parseStrVal' <<< mapKeys Id.unsafeCreate $ props_
 
 unsafeCreateConceptType :: String -> ConceptType
 unsafeCreateConceptType x =
@@ -205,6 +199,3 @@ unsafeCreateConceptType x =
     "composite" -> CompositeC
     "time" -> TimeC
     _ -> CustomC $ Id.unsafeCreate x
-
--- TODO: create validation in which will check discrete/continuous concepts files.
--- conceptInputFromCsvRecAndFileInfo :: FileInfo -> CsvRec -> V Issues ConceptInput

@@ -2,33 +2,32 @@ module Data.DDF.Entity where
 
 import Prelude
 
-import Data.Array.NonEmpty as Narr
 import Data.DDF.Internal (ItemInfo)
 import Data.DDF.Atoms.Boolean (parseBoolean)
-import Data.DDF.Csv.FileInfo as FI
 import Data.DDF.Atoms.Identifier (Identifier)
 import Data.DDF.Atoms.Identifier as Id
+import Data.DDF.Atoms.Value (Value, parseStrVal')
 import Data.Validation.Issue (Issue(..), Issues)
-import Data.List (List(..))
+import Data.List (List)
 import Data.List as L
 import Data.Map (Map)
 import Data.Map as M
-import Data.Maybe (Maybe(..), fromJust)
+import Data.Maybe (Maybe(..))
 import Data.Newtype (unwrap)
 import Data.String (Pattern(..))
 import Data.String as Str
 import Data.String.NonEmpty.Internal (NonEmptyString(..), stripPrefix, toString)
-import Data.String.Utils (startsWith)
 import Data.Traversable (sequence)
 import Data.Tuple (Tuple(..))
-import Data.Tuple as T
-import Data.Validation.Semigroup (V, invalid, isValid)
+import Data.Validation.Semigroup (V, invalid, isValid, andThen)
 import Safe.Coerce (coerce)
 import Data.DDF.Atoms.Header (Header(..), header, headerVal)
+import Data.List.NonEmpty (NonEmptyList)
+import Data.List.NonEmpty as NEL
 
 -- | Entity type.
--- Entity MUST have id, entity_domain.
--- Entity MAY have entity_set, which can have multiple values
+-- | Entity MUST have id, entity_domain.
+-- | Entity MAY have entity_set, which can have multiple values
 newtype Entity = Entity
   { entityId :: Identifier
   , entityDomain :: Identifier
@@ -41,10 +40,11 @@ instance eqEntity :: Eq Entity where
   eq (Entity a) (Entity b) = (a.entityId == b.entityId) && (a.entityDomain == b.entityDomain)
 
 instance showEntity :: Show Entity where
-  show (Entity x) = show x
+  show (Entity x) = "Entity " <> Id.value x.entityId <> " of " <> Id.value x.entityDomain
 
 -- | Properties type
-type Props = Map Identifier String
+-- | The key MUST be vaild Ideitifier
+type Props = Map Identifier Value
 
 entity :: Identifier -> Identifier -> List Identifier -> Props -> Entity
 entity entityId entityDomain entitySets props = Entity { entityId, entityDomain, entitySets, props, _info }
@@ -58,18 +58,24 @@ getDomain :: Entity -> Identifier
 getDomain (Entity e) = e.entityDomain
 
 getDomainAndId :: Entity -> Tuple Identifier Identifier
-getDomainAndId (Entity e) = Tuple e.entityId e.entityDomain  -- FIXME: value order
+getDomainAndId (Entity e) = Tuple e.entityId e.entityDomain -- FIXME: change value order
+
+getDomainAndSets :: Entity -> NonEmptyList Identifier
+getDomainAndSets (Entity e) = NEL.cons' e.entityDomain e.entitySets
 
 getIdAndFile :: Entity -> Tuple Identifier String
 getIdAndFile (Entity e) = Tuple e.entityId fp
-                          where
-                            fp = case e._info of
-                              Nothing -> ""
-                              Just { filepath } -> filepath
+  where
+  fp = case e._info of
+    Nothing -> ""
+    Just { filepath } -> filepath
+
+setInfo :: Maybe ItemInfo -> Entity -> Entity
+setInfo _info (Entity e) = Entity (e { _info = _info })
 
 -- | Entity input from CsvFile
--- The entityDomain and entitySet field comes from file name, so they are already nonempty
--- entitySet might be absent.
+-- | The entityDomain and entitySet field comes from file name, so they are already nonempty
+-- | entitySet might be absent.
 type EntityInput =
   { entityId :: String
   , entityDomain :: NonEmptyString
@@ -78,8 +84,9 @@ type EntityInput =
   , _info :: Maybe ItemInfo
   }
 
+-- | entity ID MUST be valid Identifier
 validEntityId :: String -> V Issues Identifier
-validEntityId s = Id.parseId s
+validEntityId = Id.parseId
 
 -- because entity domain and entity set are validated in early processes
 -- no need to do more things.
@@ -90,7 +97,10 @@ validEntitySetId :: NonEmptyString -> V Issues Identifier
 validEntitySetId = pure <<< coerce
 
 -- | split entity properties input, separate is--entity_set header and others
-splitEntAndProps :: Map Header String -> Tuple (List (Tuple Identifier String)) (List (Tuple Identifier String))
+-- FIXME: This should be done in CSVfile parsing stage.
+splitEntAndProps
+  :: Map Header String
+  -> Tuple (List (Tuple Identifier String)) (List (Tuple Identifier String))
 splitEntAndProps props =
   let
     isIsHeader (Tuple header _) =
@@ -129,22 +139,42 @@ getEntitySets lst = entitySetWithTureValue
       else
         invalid [ Issue $ "invalid boolean value for " <> headerStr <> ": " <> value ]
 
+-- | compare the sets infered from filename and the sets from file header.
+-- FIXME: double check the doc and move this to CsvFile parsing stage.
+compareEntSets :: List Identifier -> Maybe NonEmptyString -> V Issues (List Identifier)
+compareEntSets setsFromHeader setsFromFileName =
+  case setsFromFileName of
+    Nothing -> pure setsFromHeader
+    Just sf ->
+      case L.head setsFromHeader of
+        Nothing -> invalid [ Issue $ "there should be a header is--" <> toString sf ]
+        Just sh ->
+          if Id.value sh == toString sf then
+            pure setsFromHeader
+          else
+            invalid [ Issue $ "there should be only one is--entity header: is--" <> Id.value sh ]
+
 parseEntity :: EntityInput -> V Issues Entity
-parseEntity { entityId: eid, entityDomain: edm, entitySet: es, props: props } =
+parseEntity { entityId: eid, entityDomain: edm, entitySet: es, props: props, _info } =
   if Str.null eid then
-    -- TODO: specify which column should have value
     invalid [ Issue $ "entity MUST have an entity id" ]
   else
     let
-      validEid = validEntityId eid
       validEdomain = validEntityDomainId edm
       Tuple esets propsLst = splitEntAndProps props
-      -- FIXME: compare the sets and set in `es` in input
-      validEsets = getEntitySets esets
-      propsMinusIsHeaders = M.fromFoldable propsLst
+      validEsets = getEntitySets esets `andThen` (\xs -> compareEntSets xs es)
+      validEid = validEntityId eid
+      propsMinusIsHeaders = map parseStrVal' $ M.fromFoldable propsLst
     in
-      entity
-        <$> validEid
-        <*> validEdomain
-        <*> validEsets
-        <*> (pure propsMinusIsHeaders)
+      ( entity
+          <$> validEid
+          <*> validEdomain
+          <*> validEsets
+          <*> (pure propsMinusIsHeaders)
+      )
+        `andThen`
+          (\e -> pure $ setInfo _info e)
+
+
+-- TODO: add parseEntityWithValueParsers
+--

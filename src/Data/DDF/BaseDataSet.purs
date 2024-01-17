@@ -16,119 +16,174 @@ import Data.Map (Map)
 import Data.Map as M
 import Data.DDF.Atoms.Identifier (Identifier)
 import Data.DDF.Atoms.Identifier as Id
-import Data.DDF.Concept (Concept(..))
+import Data.DDF.Atoms.Value
+import Data.DDF.Concept (Concept(..), ConceptType(..))
 import Data.DDF.Concept as Conc
-import Data.DDF.Entity (Entity)
+import Data.DDF.Entity (Entity(..))
 import Data.DDF.Entity as Ent
 import Utils (dupsBy)
-import Data.List (List, groupBy, sortBy, null)
+import Data.Array (groupBy, sortBy, null)
+import Data.Array as Arr
+import Data.Array.NonEmpty (NonEmptyArray)
+import Data.Array.NonEmpty as NEA
+import Data.List.NonEmpty as NEL
 import Data.Tuple (Tuple(..))
+import Data.Either (Either(..))
 import Data.Function (on)
 import Data.Validation.Issue (Issues, Issue(..))
 import Data.Validation.Semigroup (V, andThen, invalid, isValid, toEither)
-import Data.List.NonEmpty as NL
 import Data.Maybe (Maybe(..))
+import Data.HashSet (HashSet)
+import Data.HashSet as HS
+import Data.HashMap (HashMap)
+import Data.HashMap as HM
+import Data.String.NonEmpty as NES
 
 -- Use a dictionary for data, make it easier to query.
-type ConceptDict = Map Identifier Concept
+type ConceptDict = HashMap Identifier Concept
 
-type EntityDict = Map Identifier (Map Identifier Entity)
+type EntityDict = HashMap Identifier (HashSet Identifier)
 
-data BaseDataSet = BaseDataSet
-  { concepts :: ConceptDict
-  , entities :: EntityDict
+-- | BaseDataSet only stores data which will be useful for validation
+newtype BaseDataSet = BaseDataSet
+  { concepts :: ConceptDict -- It should be NonEmpty, how to do it?
+  , entityDomains :: EntityDict
   }
 
 instance showBaseDataSet :: Show BaseDataSet where
-  show (BaseDataSet { concepts, entities }) =
+  show (BaseDataSet { concepts, entityDomains }) =
     "concepts: \n"
       <> show concepts
       <> "\nentities: \n"
-      <> show entities
+      <> show entityDomains
 
-create :: ConceptDict -> EntityDict -> BaseDataSet
-create concepts entities = BaseDataSet { concepts, entities }
+-- create :: ConceptDict -> EntityDict -> BaseDataSet
+-- create concepts entities =
+--     BaseDataSet { concepts, entities }
 
 type BaseDataSetInput =
-  { concepts :: List Concept
-  , entities :: List Entity
+  { concepts :: Array Concept
+  , entities :: Array Entity
   }
 
--- | check if there are duplicated concepts and convert them into concept input
--- | Concepts are not allowed to have duplicates in a dataset.
-convertConceptInput :: List Concept -> V Issues ConceptDict
-convertConceptInput lst =
+-- createConceptDomain :: ConceptDict -> HashSet Identifier
+-- createConceptDomain cd =
+--   HS.fromFoldable $ M.keys cd
+
+fromConcepts :: Array Concept -> V Issues BaseDataSet
+fromConcepts lst =
   let
     dups = dupsBy (compare `on` Conc.getId) lst
+
+    createIssue (Concept d) =
+      case d._info of
+        Nothing ->
+          DuplicatedItem "" (-1) $
+            "multiple definition found for " <> (Id.value d.conceptId)
+        Just info ->
+          DuplicatedItem info.filepath info.row $
+            "multiple definition found for " <> (Id.value d.conceptId)
   in
-   if null dups then
-     pure $ M.fromFoldable $ map (\c -> (Tuple (Conc.getId c) c)) lst
-   else
-     let
-       createIssue (Concept d) =
-         case d._info of
-           Nothing ->
-             DuplicatedItem "" (-1) $
-             "multiple definition found for " <> (Id.value d.conceptId)
-           Just info ->
-             DuplicatedItem info.filepath info.row $
-             "multiple definition found for " <> (Id.value d.conceptId)
-       issues = A.fromFoldable $ map createIssue dups
-     in
-      invalid issues
+    if null dups then
+      let
+        concepts = HM.fromArray $ map (\x -> Tuple (Conc.getId x) x) lst
+        entityDomains = HM.empty
+      in
+        pure $ BaseDataSet { concepts, entityDomains }
+    else
+      let
+        issues = A.fromFoldable $ map createIssue dups
+      in
+        invalid issues
 
+-- | adding entity will never fail because duplication is allowed.
+appendEntity :: Entity -> BaseDataSet -> BaseDataSet
+appendEntity ent@(Entity e) (BaseDataSet ds) =
+  let
+    domainAndSets = Ent.getDomainAndSets ent
+    currentDomains = ds.entityDomains
+    eid = e.entityId
 
-notEmptyConcepts :: List Concept -> V Issues (List Concept)
+    func domain domainMap =
+      case HM.lookup domain domainMap of
+        Nothing -> HM.insert domain (HS.singleton eid) domainMap
+        Just set -> HM.insert domain (HS.insert eid set) domainMap -- TODO: maybe merge duplicates
+
+    newDomainMap = NEL.foldr func currentDomains domainAndSets
+  in
+    BaseDataSet $ ds { entityDomains = newDomainMap }
+
+notEmptyConcepts :: Array Concept -> V Issues (Array Concept)
 notEmptyConcepts lst =
   if null lst then
     invalid [ Issue $ "Data set must have concepts" ]
   else
     pure lst
 
--- | Same Entity exists multiple times in one entity file is not allowed.
-noDupsEntityPerFile :: List Entity -> V Issues (List Entity)
-noDupsEntityPerFile lst =
-  let
-    dups = dupsBy (compare `on` Ent.getIdAndFile) lst
-
-    createIssue (Tuple id file) = Issue $
-                                  "multiple definition found for "
-                                  <> (Id.value id) <> " in file: " <> file
-  in
-   case null dups of
-     false -> invalid $ map (createIssue <<< Ent.getIdAndFile) (A.fromFoldable dups)
-     true -> pure lst
-
-convertEntityInput :: List Entity -> EntityDict
-convertEntityInput lst =
-  -- FIXME: merge duplicated entities come from multiple files
-  let
-    compareEntity a b = Ent.getDomain a == Ent.getDomain b
-    groups = groupBy compareEntity lst
-
-    entToTuple e = Tuple (Ent.getId e) e
-    groupToTuple g = Tuple (Ent.getDomain $ NL.head g) g
-    -- 1. convert List to Map DomainId (List Entity)
-    groupsMap = M.fromFoldable $ map groupToTuple groups
-    -- 2. convert Map DomainId (List Entity) to
-    -- Map Domain (List (Tuple EntityId Entity))
-    groupsMapWithTuple = map (\es -> map entToTuple es) groupsMap
-  in
-    -- map M.fromFoldable $ groupsMapWithTuple
-    map M.fromFoldable $ groupsMapWithTuple
-
 parseBaseDataSet :: BaseDataSetInput -> V Issues BaseDataSet
-parseBaseDataSet input =
+parseBaseDataSet { concepts, entities } = ado
+  dataset <- notEmptyConcepts concepts
+    `andThen` fromConcepts
+  in Arr.foldr appendEntity dataset entities
+
+-- Utils
+
+-- getConceptParser :: BaseDataSet -> ValueParser String
+-- getConceptParser (BaseDataSet ds) =
+--   parseDomainVal $ HS.fromArray $ map Id.value (HM.keys ds.concepts)
+
+-- getDomainParser ::  BaseDataSet -> Identifier -> Maybe (ValueParser String)
+-- getDomainParser (BaseDataSet ds) k =
+--   case HM.lookup k ds.entityDomains of
+--     Nothing -> Nothing
+--     Just entList -> Just $ parseDomainVal $ HS.map Id.value entList
+
+-- -- FIXME: how to get parser for string datapoints?
+-- getValueParser :: BaseDataSet -> Identifier -> Maybe (ValueParser Number)
+-- getValueParser _ _ = Just $ parseNumVal
+
+getConcept :: BaseDataSet -> Identifier -> V Issues Concept
+getConcept (BaseDataSet ds) c =
+  case HM.lookup c ds.concepts of
+    Just x -> pure x
+    Nothing -> invalid [ Issue $ "concept not found: " <> Id.value c ]
+
+getDomainSetValues :: BaseDataSet -> Identifier -> HashSet String
+getDomainSetValues (BaseDataSet ds) c =
+  case HM.lookup c ds.entityDomains of
+    Just x -> HS.map Id.value x
+    Nothing -> HS.empty
+
+getValueParser :: BaseDataSet -> Identifier -> V Issues (String -> (V Issues Value))
+getValueParser d c =
   let
-    -- TODO: add more checkings
-    -- check concept of poperty columns exists.
-    -- check poverty values looks good.
-    conceptDict = notEmptyConcepts input.concepts
-                  `andThen` convertConceptInput
-    entityDict = noDupsEntityPerFile input.entities
-                 `andThen`
-                 (\x -> pure $ convertEntityInput x)
+    concept = getConcept d c
   in
-    create
-      <$> conceptDict
-      <*> entityDict
+    case toEither concept of
+      Left errs -> invalid errs
+      Right (Concept conc) ->
+        case conc.conceptType of
+          StringC -> pure parseStrVal
+          MeasureC -> pure parseNumVal
+          BooleanC -> pure parseBoolVal
+          IntervalC -> pure parseStrVal
+          EntityDomainC -> pure $ (parseDomainVal $ getDomainSetValues d c)
+          EntitySetC -> pure $ (parseDomainVal $ getDomainSetValues d c)
+          RoleC -> pure parseStrVal
+          CompositeC -> pure parseStrVal
+          TimeC -> pure parseStrVal
+          (CustomC _) -> pure parseStrVal
+
+-- conceptExists :: BaseDataSet -> Identifier -> V Issues Unit
+-- conceptExists (BaseDataSet ds) c =
+--   if HM.member c ds.concepts then
+--     pure unit
+--   else
+--     invalid [ Issue $ "concept not found: " <> Id.value c ]
+
+-- entityDomainSetExists :: BaseDataSet -> Identifier -> V Issues Unit
+-- entityDomainSetExists (BaseDataSet ds) d =
+--   if HM.member d ds.concepts then
+--     pure unit
+--   else
+--     invalid [ Issue $ "domain/set not found: " <> Id.value d ]

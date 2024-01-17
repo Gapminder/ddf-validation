@@ -11,6 +11,7 @@ import Data.Validation.Issue (Issue(..), Issues)
 import Data.Either (Either(..))
 import Data.List (List(..))
 import Data.List.Types (NonEmptyList)
+import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..), stripSuffix)
 import Data.String.NonEmpty (NonEmptyString(..))
@@ -18,6 +19,8 @@ import Data.Tuple (Tuple(..), fst, snd)
 import Data.Validation.Semigroup (V, invalid, toEither)
 import Node.Path (FilePath, basename)
 import StringParser (Parser, choice, eof, runParser, sepBy1, sepEndBy1, string, try)
+import Data.Set as Set
+import Data.String.NonEmpty as NES
 
 -- | file info are information contains in file name.
 -- | it consists of 3 parts
@@ -59,11 +62,44 @@ instance showCollection :: Show CollectionInfo where
   show (Entities e) = case e.set of
     Nothing -> "entity_domain: " <> show e.domain
     Just s -> "entity_domain: " <> show e.domain <> "; entnty_set: " <> show s
-  show (DataPoints d) = "datapoints: " <> show d.indicator
+  show (DataPoints d) = "datapoints: " <> show d.indicator <> ", by: " <> (NES.joinWith "," d.pkeys)
   show (Other x) = "custom collection: " <> show x
+
+-- | define Eq instance, useful to group the files
+instance eqCollection :: Eq CollectionInfo where
+    eq Concepts Concepts = true
+    eq (Entities _) (Entities _) = true
+    eq (DataPoints _) (DataPoints _) = true
+    eq (Other a) (Other b) = a == b
+    eq _ _ = false
+
+-- | define Ord instance, useful to sort and group the files
+instance ordCollection :: Ord CollectionInfo where
+  compare Concepts other = case other of
+                             Concepts -> EQ
+                             _ -> GT
+  compare (Entities _) other = case other of
+                             Concepts -> LT
+                             Entities _ -> EQ
+                             _ -> GT
+  compare (DataPoints _) other = case other of
+                                   DataPoints _ -> EQ
+                                   Concepts -> LT
+                                   Entities _ -> LT
+                                   _ -> GT
+  compare (Other a) other = case other of
+                              (Other b) -> compare a b
+                              _ -> LT
 
 instance showFileInfo :: Show FileInfo where
   show (FileInfo fp ci _) = "file: " <> fp <> "; collection: " <> show ci
+
+
+-- | compare the collection of datapoints, for sorting and grouping indicator files.
+compareDP :: CollectionInfo -> CollectionInfo -> Ordering
+compareDP (DataPoints dp1) (DataPoints dp2) | (dp1.indicator == dp2.indicator) = compare dp1.pkeys dp2.pkeys
+                                            | otherwise = compare dp1.indicator dp2.indicator
+compareDP _ _ = EQ  -- otherfiles are grouped together
 
 isConceptFile :: FileInfo -> Boolean
 isConceptFile (FileInfo _ collection _) = case collection of

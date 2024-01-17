@@ -2,35 +2,40 @@ module Data.DDF.Csv.Utils
   ( CsvRowRec
   , createConceptInput
   , createEntityInput
-  , createDataPointInput
+  --  , createDataPointInput
+  , createPointInput
+  , createDataPointListInput
   ) where
 
 import Prelude
+
+import Data.Array as A
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Array.NonEmpty as NEA
-import Data.Array as A
 import Data.Array.NonEmpty.Internal (NonEmptyArray(..))
-import Data.DDF.Atoms.Header (Header(..))
-import Data.DDF.Atoms.Identifier as Id
-import Data.Validation.Issue (Issue(..), Issues)
 import Data.Csv (CsvRow(..))
+import Data.DDF.Atoms.Header (Header(..))
+import Data.DDF.Atoms.Identifier (Identifier, parseId')
+import Data.DDF.Atoms.Identifier as Id
+import Data.DDF.Concept (ConceptInput)
 import Data.DDF.Csv.CsvFile (CsvFile)
 import Data.DDF.Csv.FileInfo (FileInfo(..))
 import Data.DDF.Csv.FileInfo as FI
-import Data.DDF.Concept (ConceptInput)
+import Data.DDF.DataPoint (DataPointListInput, PointInput)
 import Data.DDF.Entity (EntityInput)
-import Data.DDF.DataPoint (DataPointInput)
-import Data.Validation.Semigroup (V, invalid)
-import Data.Tuple (Tuple(..))
+import Data.List.NonEmpty (NonEmptyList)
+import Data.List.NonEmpty as NEL
 import Data.Map (Map)
 import Data.Map as M
 import Data.Map.Extra (popV, lookupV)
 import Data.Maybe (Maybe(..), fromJust)
-import Pipes (for, yield)
-import Pipes.Core (Pipe)
-import Safe.Coerce (coerce)
-import Partial.Unsafe (unsafePartial)
+import Data.String.NonEmpty (NonEmptyString)
 import Data.Traversable (sequence)
+import Data.Tuple (Tuple(..))
+import Data.Validation.Issue (Issue(..), Issues)
+import Data.Validation.Semigroup (V, invalid, andThen)
+import Partial.Unsafe (unsafePartial)
+import Safe.Coerce (coerce)
 
 -- | CsvRowRec is a valid CsvRow converted to a Map.
 type CsvRowRec = Map Header String
@@ -58,12 +63,14 @@ createConceptInput fp headers (CsvRow (Tuple idx row)) =
       )
     _info = Just $ { filepath: fp, row: idx }
   in
-    ado
-      _ <- rowLengthMatchesHeaders headers row
-      conceptId <- lookupV (Id.unsafeCreate "concept") rowMap
-      conceptType <- lookupV (Id.unsafeCreate "concept_type") rowMap
-      in
-        conceptInput conceptId conceptType props _info
+    rowLengthMatchesHeaders headers row
+      `andThen`
+        ( \_ -> conceptInput
+            <$> lookupV (Id.unsafeCreate "concept") rowMap
+            <*> lookupV (Id.unsafeCreate "concept_type") rowMap
+            <*> pure props
+            <*> pure _info
+        )
 
 -- | create EntityInput for Entity parsing
 createEntityInput :: String -> FI.Ent -> NonEmptyArray Header -> CsvRow -> V Issues EntityInput
@@ -82,24 +89,58 @@ createEntityInput fp { domain, set } headers (CsvRow (Tuple idx row)) =
 
     _info = Just $ { filepath: fp, row: idx }
   in
-    ado
-      _ <- rowLengthMatchesHeaders headers row
-      in
-        entityInput eid domain set props _info
+    rowLengthMatchesHeaders headers row
+      `andThen`
+        ( \_ -> entityInput
+            <$> pure eid
+            <*> pure domain
+            <*> pure set
+            <*> pure props
+            <*> pure _info
+        )
 
--- | create DataPointInput for DataPoint parsing
-createDataPointInput :: String -> FI.DP -> NonEmptyArray Header -> CsvRow -> V Issues DataPointInput
-createDataPointInput fp { indicator, pkeys, constrains } headers (CsvRow (Tuple idx row)) =
-  -- TODO: check constrains
+createPointInput
+  :: String -> Identifier -> NonEmptyList Identifier -> NonEmptyArray Header -> CsvRow -> V Issues PointInput
+createPointInput fp indicator pkeys headers (CsvRow (Tuple idx row)) =
   let
-    datapointInput = { indicatorId: _, primaryKeys: _, primaryKeyValues: _, value: _, _info: _ }
+    createpointInput = { key: _, value: _, _info: _ }
     rowMap = M.fromFoldable $ A.zip (NEA.toArray headers) row
 
-    _info = Just $ { filepath: fp, row: idx }
+    _info = Just { filepath: fp, row: idx }
   in
     ado
       _ <- rowLengthMatchesHeaders headers row
-      value <- lookupV (Header indicator) rowMap
-      primaryKeyValues <- sequence $ map (\k -> lookupV (Header k) rowMap) pkeys
-      in
-        datapointInput indicator pkeys primaryKeyValues value _info
+      pkeyvals <- (NEL.sequence1 $ map (\k -> lookupV (coerce k) rowMap) pkeys)
+      val <- lookupV (coerce indicator) rowMap
+      in createpointInput pkeyvals val _info
+
+
+createDataPointListInput :: Identifier -> NonEmptyList Identifier -> (Array PointInput) -> DataPointListInput
+createDataPointListInput indicator pkeys dps =
+  let
+    dplinput = { indicatorId: _, primaryKeys: _, datapoints: _ }
+  in
+    dplinput indicator pkeys dps
+
+-- | create DataPointInput for DataPoint parsing
+-- createDataPointInput
+--   :: String
+--   -> Identifier -- indicator
+--   -> NonEmptyList Identifier -- pkey values
+--   -> NonEmptyList (Maybe NonEmptyString) --constrains
+--   -> NonEmptyArray Header
+--   -> CsvRow
+--   -> V Issues DataPointInput
+-- createDataPointInput fp indicator pkeys constrains headers (CsvRow (Tuple idx row)) =
+--   -- TODO: check constrains
+--   let
+--     datapointInput = { indicatorId: _, primaryKeys: _, primaryKeyValues: _, value: _, _info: _ }
+--     rowMap = M.fromFoldable $ A.zip (NEA.toArray headers) row
+
+--     _info = Just $ { filepath: fp, row: idx }
+--   in
+--    ado
+--     _ <- rowLengthMatchesHeaders headers row
+--     pkeyvals <- (NEL.sequence1 $ map (\k -> lookupV (coerce k) rowMap) pkeys)
+--     val <- lookupV (coerce indicator) rowMap
+--     in datapointInput indicator pkeys pkeyvals val _info
