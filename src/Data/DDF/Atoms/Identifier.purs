@@ -8,12 +8,11 @@ import Control.Alt ((<|>))
 import Data.Array.NonEmpty (fromFoldable1)
 import Data.Validation.Issue (Issue(..), Issues)
 import Data.Either (Either(..))
-import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap)
-import Data.Show.Generic (genericShow)
 import Data.String.NonEmpty.CodeUnits (charAt, fromNonEmptyCharArray)
 import Data.String.NonEmpty.Internal (NonEmptyString(..), fromString, toString)
+import Data.Hashable (class Hashable, hash)
 
 -- | identifiers are strings, but MUST be non empty and
 -- | and consisted with alphanumeric chars and underscores.
@@ -25,6 +24,9 @@ derive instance newtypeId :: Newtype Identifier _
 derive instance eqId :: Eq Identifier
 
 derive instance ordId :: Ord Identifier
+
+instance hashableId :: Hashable Identifier where
+  hash (Id (NonEmptyString x)) = hash x
 
 instance showId :: Show Identifier where
   show (Id x) = "(Id " <> (show $ toString x) <> ")"
