@@ -4,7 +4,6 @@ module Data.DDF.Csv.Utils
   , createEntityInput
   --  , createDataPointInput
   , createPointInput
-  , createDataPointListInput
   ) where
 
 import Prelude
@@ -113,34 +112,3 @@ createPointInput fp indicator pkeys headers (CsvRow (Tuple idx row)) =
       pkeyvals <- (NEL.sequence1 $ map (\k -> lookupV (coerce k) rowMap) pkeys)
       val <- lookupV (coerce indicator) rowMap
       in createpointInput pkeyvals val _info
-
-
-createDataPointListInput :: Identifier -> NonEmptyList Identifier -> (Array PointInput) -> DataPointListInput
-createDataPointListInput indicator pkeys dps =
-  let
-    dplinput = { indicatorId: _, primaryKeys: _, datapoints: _ }
-  in
-    dplinput indicator pkeys dps
-
--- | create DataPointInput for DataPoint parsing
--- createDataPointInput
---   :: String
---   -> Identifier -- indicator
---   -> NonEmptyList Identifier -- pkey values
---   -> NonEmptyList (Maybe NonEmptyString) --constrains
---   -> NonEmptyArray Header
---   -> CsvRow
---   -> V Issues DataPointInput
--- createDataPointInput fp indicator pkeys constrains headers (CsvRow (Tuple idx row)) =
---   -- TODO: check constrains
---   let
---     datapointInput = { indicatorId: _, primaryKeys: _, primaryKeyValues: _, value: _, _info: _ }
---     rowMap = M.fromFoldable $ A.zip (NEA.toArray headers) row
-
---     _info = Just $ { filepath: fp, row: idx }
---   in
---    ado
---     _ <- rowLengthMatchesHeaders headers row
---     pkeyvals <- (NEL.sequence1 $ map (\k -> lookupV (coerce k) rowMap) pkeys)
---     val <- lookupV (coerce indicator) rowMap
---     in datapointInput indicator pkeys pkeyvals val _info

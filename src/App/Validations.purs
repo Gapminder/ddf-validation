@@ -14,15 +14,16 @@ import Data.Csv (CsvRow(..), RawCsvContent, getLineNo, getRow, readCsv)
 import Data.Csv as C
 import Data.DDF.Atoms.Identifier (Identifier)
 import Data.DDF.Atoms.Identifier as Id
+import Data.DDF.Atoms.Header (Header)
 import Data.DDF.Atoms.Value
-import Data.DDF.Concept (Concept, parseConcept, reservedConcepts)
+import Data.DDF.Concept (Concept, parseConcept, reservedConcepts, getId, getInfo)
 import Data.DDF.Csv.CsvFile (CsvFile, parseCsvFile)
 import Data.DDF.Csv.FileInfo (FileInfo, CollectionInfo(..))
 import Data.DDF.Csv.FileInfo as FI
 import Data.DDF.Csv.Utils (createConceptInput, createEntityInput, createPointInput)
-import Data.DDF.DataPoint (PointInput, DataPointList, DataPointListInput, parseDataPointListWithValueParser)
+import Data.DDF.DataPoint (Point, PointInput, DataPointList, DataPointListInput, parseDataPointList, parseDataPointWithValueParser)
 import Data.DDF.Entity (Entity, parseEntity)
-import Data.DDF.BaseDataSet (BaseDataSet(..), getValueParser)
+import Data.DDF.BaseDataSet (BaseDataSet(..), getValueParser, getConceptIds, updateValueParserWithConstrain)
 import Data.Either (Either(..))
 import Data.List.NonEmpty (NonEmptyList)
 import Data.List.NonEmpty as NEL
@@ -32,8 +33,8 @@ import Data.String.NonEmpty.Internal (NonEmptyString(..))
 import Data.String.NonEmpty as NES
 import Data.Traversable (sequence, for)
 import Data.Tuple (Tuple(..))
-import Data.Validation.Issue (Issue(..), Issues)
-import Data.Validation.Result (Messages, hasError, messageFromError, setError, setFile, setLineNo)
+import Data.Validation.Issue (Issue(..), Issues, withRowInfo)
+import Data.Validation.Result (Messages, hasError, messageFromIssue, setError, setFile, setLineNo)
 import Data.Validation.Semigroup (V, isValid, andThen, toEither, invalid, validation)
 import Data.Validation.ValidationT (Validation, ValidationT(..), runValidationT, vError, vWarning)
 import Effect.Aff (Aff)
@@ -55,7 +56,7 @@ checkNonEmptyArray name xs =
     Nothing ->
       vError msgs
       where
-      msgs = [ messageFromError $ Issue $ "expect " <> name <> " has at least one item" ]
+      msgs = [ messageFromIssue $ Issue $ "expect " <> name <> " has at least one item" ]
     Just xs_ ->
       pure xs_
 
@@ -80,7 +81,7 @@ validateCsvFile (Tuple fi csvRows) = do
       vWarning msgs -- not valid but we just keep the validation going
       pure $ []
       where
-      msgs = map (setFile fp <<< messageFromError) errs
+      msgs = map (setFile fp <<< messageFromIssue) errs
 
 validateCsvFiles :: (Array (Tuple FileInfo (Array (Array String)))) -> Validation Messages (Array CsvFile)
 validateCsvFiles xs = do
@@ -110,7 +111,13 @@ validateConcepts csvfile = do
                 _ <- vWarning msgs
                 pure acc
                 where
-                msgs = map (setLineNo (getLineNo row) <<< setFile fp <<< messageFromError) errs
+                msgs = map
+                  ( setLineNo (getLineNo row)
+                      <<< setFile fp
+                      <<< setError
+                      <<< messageFromIssue
+                  )
+                  errs
               Right vconc -> pure $ Arr.cons vconc acc
         )
         []
@@ -139,7 +146,13 @@ validateEntities csvfile = do
                 _ <- vWarning msgs
                 pure acc
                 where
-                msgs = map (setLineNo (getLineNo row) <<< setFile fp <<< messageFromError) errs
+                msgs = map
+                  ( setLineNo (getLineNo row)
+                      <<< setFile fp
+                      <<< setError
+                      <<< messageFromIssue
+                  )
+                  errs
               Right vent -> pure $ Arr.cons vent acc
         )
         []
@@ -151,7 +164,48 @@ emitWarnings issues = do
   vWarning msgs
   pure unit
   where
-  msgs = map messageFromError issues
+  msgs = map messageFromIssue issues
+
+validateOneDataPointFile
+  :: NonEmptyArray Header
+  -> V Issues Identifier
+  -> V Issues (NonEmptyList Identifier)
+  -> V Issues (NonEmptyList ValueParser)
+  -> V Issues ValueParser
+  -> CsvFile
+  -> V Issues (Array Point)
+validateOneDataPointFile headers indicatorId pKeys keyParsers valueParser csvfile =
+  let
+    rows = csvfile.csvContent.rows
+    collection = FI.collection csvfile.fileInfo
+    fp = FI.filepath csvfile.fileInfo
+
+    updatedKparsers :: V Issues (NonEmptyList ValueParser)
+    updatedKparsers = keyParsers
+      `andThen`
+        ( \kp -> pure $
+            updateValueParserWithConstrain kp collection
+        )
+
+    func indicator pk kp vp row = createPointInput fp indicator pk headers row
+      `andThen`
+        ( \input -> case input._info of
+            Nothing -> parseDataPointWithValueParser kp vp input
+            Just info -> withRowInfo info.filepath info.row $
+              parseDataPointWithValueParser kp vp input
+        )
+  in
+    case
+      toEither
+        ( func
+            <$> indicatorId
+            <*> pKeys
+            <*> updatedKparsers
+            <*> valueParser
+        )
+      of
+      Right f -> sequence $ map f rows
+      Left issues -> invalid issues
 
 validateDataPoints
   :: BaseDataSet
@@ -162,75 +216,71 @@ validateDataPoints dataset csvfiles = do
     csvfile = NEA.head csvfiles
     csvContent = csvfile.csvContent
     fileInfo = csvfile.fileInfo
-    fp = FI.filepath fileInfo
+    -- fp = FI.filepath fileInfo
     -- Assume that all csv have same headers. If the input is not like that this function will not work.
     headers = csvContent.headers
 
   case FI.collection fileInfo of
-    -- FIXME: check constrains
     DataPoints { indicator, pkeys, constrains } -> do
       let
         vid = Id.parseId' indicator
         vpkeys = NEL.sequence1 $ Id.parseId' <$> pkeys
-        idAndKeys = (Tuple <$> vid <*> vpkeys)
-      case toEither idAndKeys of
+
+        keyParsers :: V Issues (NonEmptyList ValueParser)
+        keyParsers = vpkeys
+          `andThen` (\k -> sequence $ map (getValueParser dataset) k)
+
+        valueParser :: V Issues ValueParser
+        valueParser = vid
+          `andThen` getValueParser dataset
+      -- TODO: clean up the code
+      points <- for csvfiles
+        ( \f -> do
+            let
+              ptsRes =
+                validateOneDataPointFile
+                  headers
+                  vid
+                  vpkeys
+                  keyParsers
+                  valueParser
+                  f
+            case toEither ptsRes of
+              Right pts -> pure pts
+              Left errs -> do
+                vWarning msgs
+                pure []
+                where
+                msgs = map (setError <<< messageFromIssue) errs
+        )
+      let
+        createInput = { indicatorId: _, primaryKeys: _, datapoints: _ }
+
+        res =
+          ( createInput
+              <$> vid
+              <*> vpkeys
+              <*> pure (Arr.concat $ NEA.toArray points)
+          )
+            `andThen`
+              (\input -> parseDataPointList input)
+      case toEither res of
+        Right dpl -> pure [ dpl ]
         Left errs -> do
           vWarning msgs
           pure []
           where
-          msgs = map messageFromError errs
-        Right (Tuple indicatorId primaryKeys) -> do
-          let
-            func row = createPointInput fp indicatorId primaryKeys headers row
-
-            keyParsers :: V Issues (NonEmptyList ValueParser)
-            keyParsers = sequence $ map (getValueParser dataset) primaryKeys
-
-            valueParser :: V Issues ValueParser
-            valueParser = getValueParser dataset indicatorId
-
-          points <- for csvfiles
-            ( \f -> do
-                let
-                  rows = f.csvContent.rows
-                  ptsRes = map func rows
-                  { yes, no } = Arr.partition isValid ptsRes
-                  toReturn = sequence yes
-                  toEmit = sequence no
-                case toEither toEmit of
-                  Left errs -> do
-                    vWarning msgs
-                    pure unit
-                    where
-                    filepath = FI.filepath f.fileInfo
-                    msgs = map (setFile filepath <<< messageFromError) errs
-                  Right _ -> pure unit
-                case toEither toReturn of
-                  Left _ -> pure []
-                  Right res -> pure res
-            )
-          let
-            datapoints = Arr.concat $ NEA.toArray points
-            datapointListInput = { indicatorId, primaryKeys, datapoints }
-
-            res = (Tuple <$> keyParsers <*> valueParser)
-              `andThen` (\(Tuple kp vp) -> parseDataPointListWithValueParser kp vp datapointListInput)
-          case toEither res of
-            Right dpl -> pure [ dpl ]
-            Left errs -> do
-              vWarning msgs
-              pure []
-              where
-              msgs = map (setFile fp <<< messageFromError) errs
+          msgs = map (setError <<< messageFromIssue) errs
     otherwise -> pure []
 
 -- | Warn if Csv Headers are not in concept list
 validateCsvHeaders :: BaseDataSet -> CsvFile -> Validation Messages Unit
-validateCsvHeaders (BaseDataSet ds) { csvContent } = do
+validateCsvHeaders (BaseDataSet ds) { csvContent, fileInfo } = do
   let
     headers = map unwrap $ csvContent.headers
     concepts = map unwrap $ HM.keys ds.concepts
     reserved = map unwrap reservedConcepts
+    filepath = FI.filepath fileInfo
 
   _ <- for headers
     ( \h -> do
@@ -242,10 +292,28 @@ validateCsvHeaders (BaseDataSet ds) { csvContent } = do
         when (not predicate)
           $ vWarning
           $
-            [ messageFromError
+            [ setFile filepath <<< messageFromIssue
                 $ Issue
-                $ hstr <> " is not in concept list."
+                $ hstr <> " is not in concept list but it's in the header."
             ]
     )
-
   pure unit
+
+-- | Warn if concept length is longer then 64 chars
+validateConceptLength :: BaseDataSet -> Validation Messages Unit
+validateConceptLength (BaseDataSet ds) = do
+  let
+    concepts = HM.values ds.concepts
+    check concept =
+      case getInfo concept of
+        Just { filepath, row } -> withRowInfo filepath row $
+                                  Id.isLongerThan64Chars $ getId concept
+        Nothing -> Id.isLongerThan64Chars $ getId concept
+    res = sequence $ map check concepts
+
+  case toEither res of
+    Left errs -> do
+      vWarning msgs
+      where
+      msgs = map messageFromIssue errs
+    Right _ -> pure unit

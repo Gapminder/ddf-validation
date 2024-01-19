@@ -20,14 +20,14 @@ import Data.Map as M
 import Data.Maybe (Maybe(..))
 import Data.String.NonEmpty (NonEmptyString, toString)
 import Data.Tuple (Tuple(..))
-import Data.Validation.Issue (Issue(..), Issues)
+import Data.Validation.Issue (Issue(..), Issues, withRowInfo)
 import Data.Validation.Semigroup (V, andThen, invalid)
 import Data.List (List)
 import Data.List as List
 import Data.Array as Arr
 import Data.Traversable (sequence)
 import Data.Function (on)
-import Utils (dupsBy)
+import Utils (dupsBy, dupsByL)
 
 -- | Datapoints contain multidimensional data.
 -- | Data in DDF is stored in key-value pairs called DataPoints.
@@ -36,7 +36,7 @@ newtype DataPointList =
   DataPointList
     { indicatorId :: Identifier
     , primaryKeys :: NonEmptyList Identifier -- TODO: NonEmptyList means 1 or more. Find a type to repersent 2 or more dims
-    , datapoints :: List Point
+    , datapoints :: Array Point
     }
 
 -- | Point is a key value pair
@@ -54,7 +54,7 @@ instance showDataPointList :: Show DataPointList where
 type DataPointListInput =
   { indicatorId :: Identifier
   , primaryKeys :: NonEmptyList Identifier
-  , datapoints :: Array PointInput
+  , datapoints :: Array Point
   }
 
 type PointInput =
@@ -66,7 +66,7 @@ type PointInput =
 datapointList
   :: Identifier
   -> NonEmptyList Identifier
-  -> List Point
+  -> Array Point
   -> DataPointList
 datapointList indicatorId primaryKeys datapoints =
   DataPointList { indicatorId, primaryKeys, datapoints }
@@ -95,28 +95,36 @@ checkDuplicatedPoints :: Array Point -> V Issues (Array Point)
 checkDuplicatedPoints pts =
   let
     dups = dupsBy (compare `on` _.key) pts
+
+    createIssue p =
+      case p._info of
+        Just { filepath, row } -> InvalidItem filepath row "duplicated datapoints"
+        Nothing -> Issue $ "duplicated datapoints: " <> show p
   in
     case Arr.head dups of
       Nothing -> pure pts
-      Just _ -> invalid [ Issue $ "duplicated datapoints: " <> show dups ]
+      Just _ -> invalid $ map createIssue dups
 
-parseDataPointListWithValueParser
+parseDataPointsWithValueParser
   :: NonEmptyList ValueParser
   -> ValueParser
-  -> DataPointListInput
-  -> V Issues DataPointList
-parseDataPointListWithValueParser keyParsers valParser input =
+  -> Array PointInput
+  -> V Issues (Array Point)
+parseDataPointsWithValueParser keyParsers valParser input =
   let
     run :: PointInput -> V Issues Point
-    run x = parseDataPointWithValueParser keyParsers valParser x
+    run x =
+      case x._info of
+        Just { filepath, row } -> withRowInfo filepath row $
+          parseDataPointWithValueParser keyParsers valParser x
+        Nothing -> parseDataPointWithValueParser keyParsers valParser x
 
-    points :: V Issues (Array Point)
-    points = (sequence $ map run input.datapoints)
-      `andThen` checkDuplicatedPoints
-
-    pointsList = List.fromFoldable <$> points
   in
-    datapointList
-      <$> pure input.indicatorId
-      <*> pure input.primaryKeys
-      <*> pointsList
+    sequence $ map run input
+
+parseDataPointList :: DataPointListInput -> V Issues DataPointList
+parseDataPointList { indicatorId, primaryKeys, datapoints } =
+  datapointList
+  <$> pure indicatorId
+  <*> pure primaryKeys
+  <*> checkDuplicatedPoints datapoints

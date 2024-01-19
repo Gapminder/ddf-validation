@@ -8,24 +8,7 @@ import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Show.Generic (genericShow)
-
--- type Input = String
--- type IssueMsg = String
-
--- -- | Issue names
--- data Issue
---   = BadCsvRow IssueMsg
---   | NotAnIdentifier Input IssueMsg
---   | NotACsvFile Input
---   | NotDDFFile Input IssueMsg
---   | NoHeaders
---   | InvalidHeader Input IssueMsg
---   | DuplicatedCsvHeader Input
---   | MandatoryFieldNotFound Input
---   | GeneralIssue Input
---   | DuplicatedConcept Input
---   | DuplicatedEntity Input
---   | NotImplemented
+import Data.String (null)
 
 
 -- | message that contains context information and the issue.
@@ -51,12 +34,26 @@ setLineNo i m = m { lineNo = i }
 setError :: Message -> Message
 setError m = m { isWarning = false }
 
-messageFromError :: Issue -> Message
-messageFromError (DuplicatedItem fp row msg) = { message: msg, file: fp, lineNo: row, isWarning: true }
-messageFromError issue = { message: show issue, file: "", lineNo: 0, isWarning: true }
+messageFromIssue :: Issue -> Message
+messageFromIssue (InvalidItem fp row msg) = { message: msg, file: fp, lineNo: row, isWarning: true }
+messageFromIssue issue = { message: show issue, file: "", lineNo: -1, isWarning: true }
 
 hasError :: Array Message -> Boolean
 hasError msgs =
   case find (\msg -> not $ msg.isWarning) msgs of
     Nothing -> false
     Just _ -> true
+
+
+showMessage :: Message -> String
+showMessage { message, file, lineNo, isWarning } =
+  let
+    statstr = if isWarning then "[WARN] " else "[ERR] "
+    filestr = if null file then "" else file <> ":"
+    linestr = if lineNo == -1 then "" else (show lineNo) <> ":"
+    messagestr = message
+  in
+    if (null filestr) && (null linestr) then
+       statstr <> messagestr
+    else
+      statstr <> filestr <> linestr <> " " <> messagestr

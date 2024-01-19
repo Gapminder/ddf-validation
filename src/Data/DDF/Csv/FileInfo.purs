@@ -26,8 +26,7 @@ import Data.String.NonEmpty as NES
 -- | it consists of 3 parts
 -- | the full file path, the collection info object and resource name
 -- | resource name is useful in datapackage.
-data FileInfo
-  = FileInfo FilePath CollectionInfo String
+data FileInfo = FileInfo FilePath CollectionInfo String
 
 -- alternative:
 -- data FileInfo
@@ -48,14 +47,13 @@ data CollectionInfo
   | DataPoints DP
   | Other NonEmptyString -- TODO: add synonyms and metadata
 
-type Ent
-  = { domain :: NonEmptyString, set :: Maybe NonEmptyString }
+type Ent = { domain :: NonEmptyString, set :: Maybe NonEmptyString }
 
-type DP
-  = { indicator :: NonEmptyString
-    , pkeys :: NonEmptyList NonEmptyString
-    , constrains :: NonEmptyList (Maybe NonEmptyString)  -- length of pkeys should equal to length of constrains.
-    }
+type DP =
+  { indicator :: NonEmptyString
+  , pkeys :: NonEmptyList NonEmptyString
+  , constrains :: NonEmptyList (Maybe NonEmptyString) -- length of pkeys should equal to length of constrains.
+  }
 
 instance showCollection :: Show CollectionInfo where
   show Concepts = "concepts"
@@ -67,39 +65,39 @@ instance showCollection :: Show CollectionInfo where
 
 -- | define Eq instance, useful to group the files
 instance eqCollection :: Eq CollectionInfo where
-    eq Concepts Concepts = true
-    eq (Entities _) (Entities _) = true
-    eq (DataPoints _) (DataPoints _) = true
-    eq (Other a) (Other b) = a == b
-    eq _ _ = false
+  eq Concepts Concepts = true
+  eq (Entities _) (Entities _) = true
+  eq (DataPoints _) (DataPoints _) = true
+  eq (Other a) (Other b) = a == b
+  eq _ _ = false
 
 -- | define Ord instance, useful to sort and group the files
 instance ordCollection :: Ord CollectionInfo where
   compare Concepts other = case other of
-                             Concepts -> EQ
-                             _ -> GT
+    Concepts -> EQ
+    _ -> GT
   compare (Entities _) other = case other of
-                             Concepts -> LT
-                             Entities _ -> EQ
-                             _ -> GT
+    Concepts -> LT
+    Entities _ -> EQ
+    _ -> GT
   compare (DataPoints _) other = case other of
-                                   DataPoints _ -> EQ
-                                   Concepts -> LT
-                                   Entities _ -> LT
-                                   _ -> GT
+    DataPoints _ -> EQ
+    Concepts -> LT
+    Entities _ -> LT
+    _ -> GT
   compare (Other a) other = case other of
-                              (Other b) -> compare a b
-                              _ -> LT
+    (Other b) -> compare a b
+    _ -> LT
 
 instance showFileInfo :: Show FileInfo where
   show (FileInfo fp ci _) = "file: " <> fp <> "; collection: " <> show ci
 
-
 -- | compare the collection of datapoints, for sorting and grouping indicator files.
 compareDP :: CollectionInfo -> CollectionInfo -> Ordering
-compareDP (DataPoints dp1) (DataPoints dp2) | (dp1.indicator == dp2.indicator) = compare dp1.pkeys dp2.pkeys
-                                            | otherwise = compare dp1.indicator dp2.indicator
-compareDP _ _ = EQ  -- otherfiles are grouped together
+compareDP (DataPoints dp1) (DataPoints dp2)
+  | (dp1.indicator == dp2.indicator) = compare dp1.pkeys dp2.pkeys
+  | otherwise = compare dp1.indicator dp2.indicator
+compareDP _ _ = EQ -- otherfiles are grouped together
 
 isConceptFile :: FileInfo -> Boolean
 isConceptFile (FileInfo _ collection _) = case collection of
@@ -185,6 +183,7 @@ entityFile = choice [ try e2, try e1 ]
 pkeyWithConstrain :: Parser (Tuple NonEmptyString (Maybe NonEmptyString))
 pkeyWithConstrain = do
   key <- identifier
+  -- TODO: support multiple constrains
   void $ string "-"
   constrain <- identifier
   pure $ Tuple key (Just constrain)
@@ -216,14 +215,14 @@ getName = stripSuffix (Pattern ".csv")
 
 validateFileInfo :: FilePath -> V Issues FileInfo
 validateFileInfo fp = case getName $ basename fp of
-  Nothing -> invalid [ InvalidCSV fp ]
+  Nothing -> invalid [ InvalidCSV "not a csv file" ]
   Just fn ->
     let
       fileParser = conceptFile <|> entityFile <|> datapointFile
     in
       case runParser fileParser fn of
         Right ci -> pure $ FileInfo fp ci fn
-        Left err -> invalid [ InvalidDDFCSV fp err.error ]
+        Left err -> invalid [ InvalidCSV $ "error parsing file: " <> err.error ]
 
 parseFileInfo :: FilePath -> V Issues FileInfo
 parseFileInfo = validateFileInfo

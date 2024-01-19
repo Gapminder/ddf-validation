@@ -38,6 +38,9 @@ import Data.HashSet as HS
 import Data.HashMap (HashMap)
 import Data.HashMap as HM
 import Data.String.NonEmpty as NES
+import Data.List.NonEmpty (NonEmptyList)
+import Data.List.NonEmpty as NEL
+import Data.DDF.Csv.FileInfo (CollectionInfo(..))
 
 -- Use a dictionary for data, make it easier to query.
 type ConceptDict = HashMap Identifier Concept
@@ -78,10 +81,10 @@ fromConcepts lst =
     createIssue (Concept d) =
       case d._info of
         Nothing ->
-          DuplicatedItem "" (-1) $
+          InvalidItem "" (-1) $
             "multiple definition found for " <> (Id.value d.conceptId)
         Just info ->
-          DuplicatedItem info.filepath info.row $
+          InvalidItem info.filepath info.row $
             "multiple definition found for " <> (Id.value d.conceptId)
   in
     if null dups then
@@ -148,6 +151,9 @@ getConcept (BaseDataSet ds) c =
     Just x -> pure x
     Nothing -> invalid [ Issue $ "concept not found: " <> Id.value c ]
 
+getConceptIds :: BaseDataSet -> Array Identifier
+getConceptIds (BaseDataSet ds) = HM.keys ds.concepts
+
 getDomainSetValues :: BaseDataSet -> Identifier -> HashSet String
 getDomainSetValues (BaseDataSet ds) c =
   case HM.lookup c ds.entityDomains of
@@ -167,23 +173,23 @@ getValueParser d c =
           MeasureC -> pure parseNumVal
           BooleanC -> pure parseBoolVal
           IntervalC -> pure parseStrVal
-          EntityDomainC -> pure $ (parseDomainVal $ getDomainSetValues d c)
-          EntitySetC -> pure $ (parseDomainVal $ getDomainSetValues d c)
+          EntityDomainC -> pure $ (parseDomainVal c $ getDomainSetValues d c)
+          EntitySetC -> pure $ (parseDomainVal c $ getDomainSetValues d c)
           RoleC -> pure parseStrVal
           CompositeC -> pure parseStrVal
-          TimeC -> pure parseStrVal
+          TimeC -> pure parseTimeVal
           (CustomC _) -> pure parseStrVal
 
--- conceptExists :: BaseDataSet -> Identifier -> V Issues Unit
--- conceptExists (BaseDataSet ds) c =
---   if HM.member c ds.concepts then
---     pure unit
---   else
---     invalid [ Issue $ "concept not found: " <> Id.value c ]
 
--- entityDomainSetExists :: BaseDataSet -> Identifier -> V Issues Unit
--- entityDomainSetExists (BaseDataSet ds) d =
---   if HM.member d ds.concepts then
---     pure unit
---   else
---     invalid [ Issue $ "domain/set not found: " <> Id.value d ]
+updateValueParserWithConstrain :: NonEmptyList ValueParser -> CollectionInfo -> NonEmptyList ValueParser
+updateValueParserWithConstrain vps (DataPoints dp) =
+  let
+    constrains = dp.constrains
+
+    fun vp con =
+      case con of
+        Nothing -> vp
+        Just c -> parseConstrainedDomainVal $ HS.fromArray [ NES.toString c ]
+  in
+    NEL.zipWith fun vps constrains
+updateValueParserWithConstrain vps _ = vps  -- constrain only works for datapoints

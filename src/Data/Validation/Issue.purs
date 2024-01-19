@@ -7,6 +7,7 @@ import Node.Path (FilePath)
 import Data.Generic.Rep (class Generic)
 import Data.Newtype (class Newtype)
 import Data.Show.Generic (genericShow)
+import Data.Validation.Semigroup (V, validation, invalid)
 
 
 type Msg = String
@@ -17,14 +18,25 @@ data Issue
   = NotImplemented
   | Issue Msg
   | InvalidValue String Msg
-  | IdLongerThan64Chars String
   | InvalidCSV Msg
-  | InvalidDDFCSV String Msg
-  | DuplicatedItem FilePath Int Msg
-
-derive instance genericIssue :: Generic Issue _
+  | InvalidItem FilePath Int Msg
 
 instance showId :: Show Issue where
-  show = genericShow
+  show NotImplemented = "Not Implemented"
+  show (Issue msg) = msg
+  show (InvalidValue str msg) = "invalid value " <> show str <> ": " <> msg
+  show (InvalidCSV msg) = msg
+  show (InvalidItem _ _ msg) = msg
 
 type Issues = Array Issue
+
+
+-- | when we want to add file and row to the issue, we should change it to InvalidItem
+toInvaildItem :: FilePath -> Int -> Issue -> Issue
+toInvaildItem _ _ NotImplemented = NotImplemented
+toInvaildItem fp row issue = InvalidItem fp row (show issue)
+
+
+withRowInfo :: forall a. FilePath -> Int -> V Issues a -> V Issues a
+withRowInfo fp row =
+  validation (\issues -> invalid $ map (toInvaildItem fp row) issues) pure

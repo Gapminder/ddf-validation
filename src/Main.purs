@@ -16,7 +16,7 @@ import Data.DDF.Csv.FileInfo
 import Data.DDF.Csv.FileInfo as FI
 import Data.DDF.BaseDataSet (BaseDataSet(..), parseBaseDataSet)
 import Data.Validation.Issue (Issue(..))
-import Data.Validation.Result (Messages, hasError, messageFromError)
+import Data.Validation.Result (Messages, hasError, messageFromIssue, showMessage)
 import Data.Validation.ValidationT (Validation, ValidationT, runValidationT, vError, vWarning)
 import Data.Either (Either(..), hush)
 import Data.JSON.DataPackage (datapackageExists)
@@ -54,7 +54,7 @@ validate path = do
     ddfFiles = Arr.catMaybes $ map (\f -> hush $ FI.fromFilePath f) fs
 
   when (isNothing $ Arr.head ddfFiles)
-    $ vError [ messageFromError $ Issue "No csv files in this folder. Please begin with a ddf--concepts.csv file." ]
+    $ vError [ messageFromIssue $ Issue "No csv files in this folder. Please begin with a ddf--concepts.csv file." ]
 
   _ <- lift $ liftEffect $ log "loading concepts and entities..."
 
@@ -90,13 +90,14 @@ validate path = do
     baseDataSet = parseBaseDataSet { concepts: Arr.concat concepts, entities: Arr.concat entities }
 
   case toEither baseDataSet of
-    Left errs -> vError $ messageFromError <$> errs
+    Left errs -> vError $ messageFromIssue <$> errs
     Right ds@(BaseDataSet ds_) -> do
       _ <- lift $ liftEffect $ log "validating concepts and entities..."
       -- Now we have baseDataSet, we can do more checking to csvfiles and concepts/entities
       -- 1. check file headers are valid concepts
       _ <- for conceptCsvFiles (\x -> validateCsvHeaders ds x)
       _ <- for entityCsvFiles (\x -> validateCsvHeaders ds x)
+      validateConceptLength ds
       -- TODO: 2. check concept and entity props values are good in their domain
 
       -- check datapoints, we will first group datapoint files by indicator and keys
@@ -129,10 +130,10 @@ validate path = do
 
 runMain :: FilePath -> Effect Unit
 runMain path = launchAff_ do
-  liftEffect $ log "v0.0.5"
+  liftEffect $ log "v0.0.6"
   (Tuple msgs ds) <- runValidationT $ validate path
   let
-    allmsgs = joinWith "\n" $ map show msgs
+    allmsgs = joinWith "\n" $ map showMessage msgs
   liftEffect $ log allmsgs
   case ds of
     Just ds_ -> do

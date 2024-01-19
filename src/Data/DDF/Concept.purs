@@ -81,9 +81,10 @@ parseConceptType x = ado
       _ -> CustomC cid
   in res
 
+-- FIXME: I think drill_up and domain should be reserved concepts.
 -- | reserved keywords which can not used as concept id
 reservedConcepts :: Array Identifier
-reservedConcepts = map Id.unsafeCreate [ "concept", "concept_type", "drill_up", "domain" ]
+reservedConcepts = map Id.unsafeCreate [ "concept", "concept_type" ]
 
 -- | create concept
 concept :: Identifier -> ConceptType -> Props -> Concept
@@ -94,6 +95,9 @@ concept conceptId conceptType props = Concept { conceptId, conceptType, props, _
 -- | set additional infos
 setInfo :: (Maybe ItemInfo) -> Concept -> Concept
 setInfo info (Concept c) = Concept (c { _info = info })
+
+getInfo :: Concept -> (Maybe ItemInfo)
+getInfo (Concept c) = c._info
 
 -- | get concept id
 getId :: Concept -> Identifier
@@ -147,7 +151,7 @@ conceptIdTooLong conc@(Concept c) = ado
 notReserved :: String -> V Issues String
 notReserved conceptId =
   if conceptId `elem` reservedConcepts_ then
-    invalid [ Issue $ "concept/concept_type can not be used as concept id" ]
+    invalid [ Issue $ conceptId <> " can not be use as concept Id" ]
   else
     pure conceptId
   where

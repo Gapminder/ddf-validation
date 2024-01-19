@@ -13,6 +13,7 @@ import Data.Newtype (class Newtype, unwrap)
 import Data.String.NonEmpty.CodeUnits (charAt, fromNonEmptyCharArray)
 import Data.String.NonEmpty.Internal (NonEmptyString(..), fromString, toString)
 import Data.Hashable (class Hashable, hash)
+import Data.String as Str
 
 -- | identifiers are strings, but MUST be non empty and
 -- | and consisted with alphanumeric chars and underscores.
@@ -66,7 +67,7 @@ parseId x = case runParser identifier' x of
     where
     pos = show $ e.pos
 
-    msg = "invalid id: " <> x <> ", " <> e.error <> "at pos " <> pos
+    msg = e.error <> "at pos " <> pos
 
     err = InvalidValue x msg
 
@@ -83,7 +84,10 @@ isLongerThan64Chars a =
   in
     case charAt 64 str of
       Nothing -> pure a
-      Just _ -> invalid [ IdLongerThan64Chars $ toString str ]
+      Just _ ->
+        invalid [ InvalidValue trimedstr "longer than 64 chars" ]
+          where
+            trimedstr = (Str.take 15 $ toString str) <> "..."
 
 -- | parse an id, return Either instead
 create :: String -> Either Issues Identifier
