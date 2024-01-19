@@ -3,6 +3,7 @@ module Data.DDF.Atoms.Value where
 import Prelude
 
 import Data.DDF.Atoms.Identifier (Identifier)
+import Data.DDF.Atoms.Identifier as Id
 import Data.List (List)
 import Data.Map (Map)
 import Data.Validation.Semigroup (V, invalid)
@@ -70,15 +71,36 @@ parseNonEmptyString input =
     Just str -> pure str
 
 -- | parse a domain value
-parseDomainVal :: HashSet String -> String -> V Issues Value
-parseDomainVal domain input =
-  case fromString input of
-    Nothing -> invalid $ [ Issue $ input <> " is not a valid value in its domain." ]
-    Just s ->
-      if HS.member input domain then
-        pure $ DomainVal s
-      else
-        invalid $ [ Issue $ input <> " is not a valid value in its domain." ]
+parseDomainVal :: Identifier -> HashSet String -> String -> V Issues Value
+parseDomainVal domainName domain input =
+  let
+    createIssue dn inp = Issue $ show inp
+                                 <> " is not a valid value in "
+                                 <> Id.value dn
+                                 <> " domain."
+  in
+    case fromString input of
+      Nothing -> invalid $ [ createIssue domainName input ]
+      Just s ->
+        if HS.member input domain then
+          pure $ DomainVal s
+        else
+          invalid $ [ createIssue domainName input ]
+
+-- | parse a domain value with constrain
+parseConstrainedDomainVal :: HashSet String -> String -> V Issues Value
+parseConstrainedDomainVal constrain input =
+  let
+    createIssue inp = Issue $ show inp
+                              <> " is not a valid value in the constrains set by filename."
+  in
+    case fromString input of
+      Nothing -> invalid $ [ createIssue input ]
+      Just s ->
+        if HS.member input constrain then
+          pure $ DomainVal s
+        else
+          invalid $ [ createIssue input ]
 
 parseStrVal :: String -> V Issues Value
 parseStrVal x = pure $ StrVal x
@@ -89,7 +111,9 @@ parseStrVal' = StrVal
 
 parseBoolVal :: String -> V Issues Value
 parseBoolVal "TRUE" = pure $ BoolVal true
+parseBoolVal "true" = pure $ BoolVal true
 parseBoolVal "FALSE" = pure $ BoolVal false
+parseBoolVal "false" = pure $ BoolVal false
 parseBoolVal x = invalid [ Issue $ "not a boolean value: " <> show x ]
 
 -- Num.fromString use parseFloat() from js which allows whitespace prefix and other chars at
@@ -104,7 +128,9 @@ parseNumVal input =
 -- TODO add more complex time parser.
 parseTimeVal :: ValueParser
 parseTimeVal input =
-  if (Str.length input == 4) && (isJust $ Int.fromString input) then
+  if (inputlen <= 4) && (inputlen >= 3) && (isJust $ Int.fromString input) then
     pure $ TimeVal input
   else
     invalid [ Issue $ (show input) <> " is not a valid time value." ]
+  where
+    inputlen = Str.length input

@@ -10,5 +10,7 @@ import Data.Validation.Semigroup (V, invalid)
 parseBoolean :: String -> V Issues Boolean
 parseBoolean x
     | x == "TRUE" = pure true
+    | x == "true" = pure true
     | x == "FALSE" = pure false
+    | x == "false" = pure false
     | otherwise = invalid [ InvalidValue x "not a boolean value" ]
