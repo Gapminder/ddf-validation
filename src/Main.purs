@@ -130,7 +130,7 @@ validate path = do
 
 runMain :: FilePath -> Effect Unit
 runMain path = launchAff_ do
-  liftEffect $ log "v0.0.6"
+  liftEffect $ log "v0.0.7"
   (Tuple msgs ds) <- runValidationT $ validate path
   let
     allmsgs = joinWith "\n" $ map showMessage msgs

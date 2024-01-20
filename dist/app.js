@@ -625,6 +625,9 @@ var sortByImpl2 = function() {
     return out;
   };
 }();
+var sliceImpl = function(s, e, l) {
+  return l.slice(s, e);
+};
 var zipWithImpl = function(f, xs, ys) {
   var l = xs.length < ys.length ? xs.length : ys.length;
   var result = new Array(l);
@@ -6996,6 +6999,16 @@ var validateDataPoints = (dataset) => (csvfiles) => (dictMonad) => {
         return applicativeVT2.pure($0._1);
       }
       if ($0.tag === "Left") {
+        if (101 < $0._1.length) {
+          const msgEnd = [
+            {
+              ...messageFromIssue($Issue("Issue", "too many issues detected, please fix and check again.")),
+              file: csvfile.fileInfo._1,
+              isWarning: false
+            }
+          ];
+          return bindVT2.bind(vWarning2(arrayMap((x) => ({ ...messageFromIssue(x), isWarning: false }))(sliceImpl(0, 100, $0._1))))(() => bindVT2.bind(vWarning2(msgEnd))(() => applicativeVT2.pure([])));
+        }
         return bindVT2.bind(vWarning2(arrayMap((x) => ({ ...messageFromIssue(x), isWarning: false }))($0._1)))(() => applicativeVT2.pure([]));
       }
       fail();
@@ -7789,7 +7802,7 @@ var validate = (path2) => bindVT.bind(monadtransVT.lift(monadAff)(_liftEffect(lo
 var runMain = (path2) => {
   const $0 = _makeFiber(
     ffiUtil,
-    _bind(_liftEffect(log2("v0.0.6")))(() => _bind(runValidationT2(validate(path2)))((v) => {
+    _bind(_liftEffect(log2("v0.0.7")))(() => _bind(runValidationT2(validate(path2)))((v) => {
       const $02 = v._2;
       const $1 = v._1;
       return _bind(_liftEffect(log2(joinWith("\n")(arrayMap(showMessage)($1)))))(() => {
