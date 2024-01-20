@@ -216,7 +216,7 @@ validateDataPoints dataset csvfiles = do
     csvfile = NEA.head csvfiles
     csvContent = csvfile.csvContent
     fileInfo = csvfile.fileInfo
-    -- fp = FI.filepath fileInfo
+    fp = FI.filepath fileInfo
     -- Assume that all csv have same headers. If the input is not like that this function will not work.
     headers = csvContent.headers
 
@@ -248,10 +248,25 @@ validateDataPoints dataset csvfiles = do
             case toEither ptsRes of
               Right pts -> pure pts
               Left errs -> do
-                vWarning msgs
-                pure []
-                where
-                msgs = map (setError <<< messageFromIssue) errs
+                case errs Arr.!! 101 of
+                  Just _ ->
+                    let
+                      msgs = map (setError <<< messageFromIssue) $
+                        Arr.take 100 errs
+                      msgEnd =
+                        [ (setFile fp <<< setError <<< messageFromIssue) $
+                            Issue "too many issues detected, please fix and check again."
+                        ]
+                    in
+                      do
+                        vWarning msgs
+                        vWarning msgEnd
+                        pure []
+                  Nothing -> do
+                    vWarning msgs
+                    pure []
+                    where
+                    msgs = map (setError <<< messageFromIssue) errs
         )
       let
         createInput = { indicatorId: _, primaryKeys: _, datapoints: _ }
@@ -306,8 +321,9 @@ validateConceptLength (BaseDataSet ds) = do
     concepts = HM.values ds.concepts
     check concept =
       case getInfo concept of
-        Just { filepath, row } -> withRowInfo filepath row $
-                                  Id.isLongerThan64Chars $ getId concept
+        Just { filepath, row } -> withRowInfo filepath row
+          $ Id.isLongerThan64Chars
+          $ getId concept
         Nothing -> Id.isLongerThan64Chars $ getId concept
     res = sequence $ map check concepts
 
